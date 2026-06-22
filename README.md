@@ -1,43 +1,54 @@
-# Sistema Eduarda Imbelloni - Clínica Especializada
+# Eduarda Imbelloni Clínica Especializada - Sistema Completo
 
-Sistema web pronto para clínica, no mesmo padrão do projeto New Clínica, adaptado para Eduarda Imbelloni.
+Sistema baseado no painel completo da Eduarda Imbelloni, personalizado para a identidade visual da Eduarda Imbelloni.
 
 ## Módulos inclusos
-- Dashboard
+
+- Dashboard/painel principal
 - Cadastro e busca de pacientes
-- Agenda com confirmação via WhatsApp
-- Anamnese digital
-- Planos de tratamento
-- Ortodontia com manutenção, pagamento e próxima consulta
-- Financeiro com pendências, recibo e marcação de pagamento
-- Profissionais e repasse mensal
-- Lugar preparado para integração Asaas: botão "Emitir boleto"
+- Painel individual do paciente
+- Agenda
+- Anamnese
+- Plano/ficha clínica
+- Odontograma
+- Orçamentos e impressões
+- Financeiro completo
+- Caixa
+- Categorias
+- Profissionais
+- Repasses
+- Aniversários com atalho para WhatsApp
+- Botão preparado para cobrança Asaas no financeiro
 
-## Rodar localmente
-```bash
-pip install -r requirements.txt
-python app.py
+## Coolify
+
+Use Dockerfile ou Docker Compose. Porta interna: `5000`.
+
+Variáveis recomendadas:
+
+```env
+FLASK_ENV=production
+SECRET_KEY=troque-por-uma-chave-grande
+DB_PATH=/data/eduarda_imbelloni.db
+CLINIC_NAME=Eduarda Imbelloni Clínica Especializada
+FINANCE_PASSWORD=eduarda2026
+ASAAS_API_KEY=
+ASAAS_ENV=sandbox
 ```
-Acesse: http://localhost:8080
 
-## Publicar no Coolify
-1. Suba esta pasta para um repositório no GitHub.
-2. No Coolify, crie um novo app pelo repositório.
-3. Use Dockerfile.
-4. Configure volume persistente:
-   - Caminho no container: `/app/instance`
-5. Variáveis de ambiente:
-   - `SECRET_KEY=uma_chave_segura`
-   - `ASAAS_API_KEY=` deixe vazio até vincular o Asaas
-   - `ASAAS_ENV=sandbox` ou `production`
-   - `CLINIC_WHATSAPP=55DDDNUMERO`
+Volume persistente:
+
+```txt
+/data
+```
+
+## Acesso inicial
+
+Usuário: `admin`
+Senha: `admin123`
+
+Depois altere em Configurações.
 
 ## Asaas
-O lugar já está pronto no financeiro. Quando configurar a API Key real do Asaas, o botão "Emitir boleto" passa a tentar criar cobrança.
 
-Antes de usar em produção, confirme na conta Asaas:
-- API Key correta
-- Ambiente sandbox ou produção
-- Dados do paciente com CPF/CNPJ válido
-- Tipo de cobrança desejado: boleto, Pix ou cartão
-
+O botão **Asaas** aparece em lançamentos de entrada pendentes. Sem `ASAAS_API_KEY`, ele avisa que falta configurar. Com a chave configurada, tenta gerar uma cobrança do tipo boleto no Asaas.

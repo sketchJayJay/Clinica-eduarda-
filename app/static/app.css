@@ -1,0 +1,133 @@
+:root{
+  --brand:#965B43;
+  --brand2:#CFA66D;
+  --brand3:#EAD6B1;
+  --ink:#3b241c;
+  --soft:#FBF7F1;
+  --bg:#f8f1ea;
+}
+body{
+  background:
+    radial-gradient(850px 240px at 8% 0%, rgba(207,166,109,.20), transparent 48%),
+    linear-gradient(180deg,#fffaf4 0%, #f8f1ea 100%);
+  color: var(--ink);
+}
+.card{ border-radius: 18px; }
+.form-control:focus,.form-select:focus{ border-color: rgba(207,166,109,.8); box-shadow: 0 0 0 .2rem rgba(207,166,109,.18); }
+.table-light{ --bs-table-bg:#f6eadc; }
+.badge.text-bg-light{ color: var(--ink)!important; }
+
+.brand-nav{ background: linear-gradient(90deg,#7B442F,#965B43 55%,#CFA66D); box-shadow: 0 10px 26px rgba(81,45,31,.18); }
+.brand-logo{ width:142px; height:42px; object-fit:contain; border-radius:10px; background:rgba(255,255,255,.92); padding:5px 8px; }
+.logo-lg{ width:280px; max-width:100%; height:auto; object-fit:contain; }
+.btn-brand{ background: var(--brand); color:#fff; border:none; }
+.btn-brand:hover{ background: var(--brand2); color:#fff; }
+.kpi .kpi-label{ font-size:.85rem; color:#6c757d; }
+.kpi .kpi-value{ font-size:1.6rem; font-weight:700; }
+
+/* ===== Cards futuristas (Atalhos da Home) ===== */
+.quick-grid{
+  display:grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.quick-card{
+  position:relative;
+  display:block;
+  padding: 16px 16px 14px 16px;
+  border-radius: 18px;
+  text-decoration:none;
+  color:#1d1d22;
+  background:
+    radial-gradient(900px 220px at 10% 0%, rgba(139,42,63,.15), transparent 45%),
+    radial-gradient(700px 200px at 95% 10%, rgba(91,27,42,.18), transparent 50%),
+    linear-gradient(180deg, rgba(255,255,255,.85), rgba(255,255,255,.70));
+  border: 1px solid rgba(91,27,42,.14);
+  box-shadow: 0 10px 24px rgba(15,15,18,.08);
+  backdrop-filter: blur(10px);
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+}
+
+.quick-card:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 16px 38px rgba(15,15,18,.12);
+  border-color: rgba(139,42,63,.30);
+  color:#1d1d22;
+}
+
+.quick-icon{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size: 20px;
+  background: linear-gradient(135deg, var(--brand), var(--brand2));
+  color: #fff;
+  box-shadow: 0 10px 20px rgba(91,27,42,.24);
+}
+
+.quick-title{
+  margin-top: 10px;
+  font-weight: 800;
+  letter-spacing: .2px;
+}
+
+.quick-sub{
+  margin-top: 2px;
+  font-size: .9rem;
+  color:#5b5b66;
+}
+
+.quick-badge{
+  position:absolute;
+  top: 12px;
+  right: 12px;
+  font-size: .75rem;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: rgba(91,27,42,.12);
+  color: var(--brand);
+  border: 1px solid rgba(91,27,42,.18);
+}
+
+@media (max-width: 576px){
+  .quick-grid{ grid-template-columns: 1fr; }
+}
+
+
+/* ===== Tema Eduarda Imbelloni ===== */
+.login-card-eduarda{
+  overflow:hidden;
+  border:1px solid rgba(207,166,109,.26)!important;
+  background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(255,250,244,.96));
+}
+.brand-title-eduarda{ letter-spacing:.08em; text-transform:uppercase; color:var(--brand); font-weight:700; }
+.hero-eduarda{
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(150,91,67,.92), rgba(117,65,45,.96)),
+    url('/static/logo_brown.jpg') center/cover no-repeat;
+  color:#fff;
+  box-shadow: 0 18px 48px rgba(81,45,31,.18);
+  border: 1px solid rgba(207,166,109,.35);
+}
+.hero-eduarda .muted{ color: rgba(255,255,255,.78); }
+.btn-brand{ background: linear-gradient(135deg,var(--brand),var(--brand2)); color:#fff; border:none; box-shadow:0 10px 18px rgba(150,91,67,.18); }
+.btn-brand:hover{ filter:brightness(.97); color:#fff; }
+.btn-outline-brand{ border-color:rgba(150,91,67,.35); color:var(--brand); }
+.btn-outline-brand:hover{ background:var(--brand); color:#fff; }
+.quick-card{
+  background:
+    radial-gradient(900px 220px at 10% 0%, rgba(207,166,109,.18), transparent 45%),
+    radial-gradient(700px 200px at 95% 10%, rgba(150,91,67,.14), transparent 50%),
+    linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,250,244,.78));
+  border: 1px solid rgba(207,166,109,.24);
+}
+.quick-icon{ background: linear-gradient(135deg,#965B43,#CFA66D); box-shadow: 0 10px 20px rgba(150,91,67,.22); }
+.quick-badge{ background:rgba(207,166,109,.18); color:#7B442F; border-color:rgba(207,166,109,.28); }
+.kpi .kpi-value{ color:var(--ink); }
+.print-logo{ max-width:260px; height:auto; }
+@media (max-width: 576px){ .brand-logo{ width:116px; height:38px; } }
