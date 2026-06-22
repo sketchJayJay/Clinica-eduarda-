@@ -1,0 +1,6 @@
+<!doctype html><html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>{{ clinic_name }} | Sistema</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head><body>
+<aside class="sidebar"><div class="brand"><img src="{{ url_for('static', filename='logo.jpeg') }}"><div><b>{{ clinic_name }}</b><span>{{ clinic_subtitle }}</span></div></div><nav>
+<a href="/">Dashboard</a><a href="/patients">Pacientes</a><a href="/agenda">Agenda</a><a href="/anamnese">Anamnese</a><a href="/plans">Planos</a><a href="/orthodontics">Ortodontia</a><a href="/finance">Financeiro</a><a href="/professionals">Profissionais</a>
+</nav><div class="hint">Sistema preparado para Asaas, WhatsApp, repasse e impressão.</div></aside>
+<main><header><div><h1>{% block title %}{% endblock %}</h1><p>{% block subtitle %}{% endblock %}</p></div><button onclick="window.print()" class="ghost">Imprimir</button></header>{% with messages=get_flashed_messages() %}{% if messages %}<div class="flash">{% for m in messages %}<p>{{m}}</p>{% endfor %}</div>{% endif %}{% endwith %}{% block content %}{% endblock %}</main>
+<script>function zap(phone,msg){let p=(phone||'').replace(/\D/g,''); if(!p) p='{{whatsapp}}'; window.open('https://wa.me/'+p+'?text='+encodeURIComponent(msg||'Olá!'), '_blank')}</script></body></html>

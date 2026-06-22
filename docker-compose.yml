@@ -1,0 +1,14 @@
+services:
+  eduarda-clinica:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - SECRET_KEY=troque_essa_chave
+      - ASAAS_API_KEY=
+      - ASAAS_ENV=sandbox
+      - CLINIC_WHATSAPP=5599999999999
+    volumes:
+      - eduarda_clinica_data:/app/instance
+volumes:
+  eduarda_clinica_data:
