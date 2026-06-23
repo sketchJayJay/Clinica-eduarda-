@@ -2,32 +2,32 @@
 {% set title = "Dashboard | Eduarda Imbelloni" %}
 {% block content %}
 <div class="hero-slim mb-4">
-  <div class="row align-items-center g-3">
-    <div class="col-xl-8">
+  <div class="row align-items-center g-3 position-relative" style="z-index:1">
+    <div class="col-xl-7">
       <div class="eyebrow mb-2">Painel da clínica</div>
-      <h1 class="hero-title mb-2">Luxo clean, com menos informação na tela.</h1>
-      <p class="hero-copy mb-0">Uma visão mais leve da rotina da clínica, focando no que realmente importa para o dia: pacientes, agenda, pendências e financeiro.</p>
+      <h2 class="hero-mini-title">Eduarda Imbelloni Clínica Especializada</h2>
+      <div class="hero-mini-sub">Resumo do dia, com visual mais leve e mais cor.</div>
     </div>
-    <div class="col-xl-4">
+    <div class="col-xl-5">
       <div class="d-flex gap-2 flex-wrap justify-content-xl-end">
         <a class="btn btn-brand" href="{{ url_for('patients.new_patient') }}"><i class="bi bi-person-plus me-1"></i>Novo paciente</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar3 me-1"></i>Abrir agenda</a>
+        <a class="btn action-soft" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar3 me-1"></i>Abrir agenda</a>
       </div>
     </div>
   </div>
-  <div class="quick-row mt-3">
-    <a class="quick-pill" href="{{ url_for('patients.list_patients') }}"><i class="bi bi-people"></i>Pacientes</a>
-    <a class="quick-pill" href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat"></i>Retornos</a>
-    <a class="quick-pill" href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}"><i class="bi bi-cash-stack"></i>Financeiro</a>
-    <a class="quick-pill" href="{{ url_for('birthdays.list_birthdays') }}"><i class="bi bi-gift"></i>Aniversários</a>
+  <div class="quick-row mt-3 position-relative" style="z-index:1">
+    <a class="quick-pill pill-patients" href="{{ url_for('patients.list_patients') }}"><i class="bi bi-people"></i>Pacientes</a>
+    <a class="quick-pill pill-retornos" href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat"></i>Retornos</a>
+    <a class="quick-pill pill-financeiro" href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}"><i class="bi bi-cash-stack"></i>Financeiro</a>
+    <a class="quick-pill pill-aniversarios" href="{{ url_for('birthdays.list_birthdays') }}"><i class="bi bi-gift"></i>Aniversários</a>
   </div>
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-people"></i></div><div><div class="kpi-label">Pacientes</div><div class="kpi-value">{{ ops.patients_total }}</div><div class="kpi-note">Base cadastrada</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-calendar-check"></i></div><div><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div><div class="kpi-note">Atendimentos do dia</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-bell"></i></div><div><div class="kpi-label">Pendências</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div><div class="kpi-note">Retornos e tarefas</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-currency-dollar"></i></div><div><div class="kpi-label">Financeiro do dia</div><div class="kpi-value">{% if stats %}R$ {{ stats.income_today }}{% else %}—{% endif %}</div><div class="kpi-note">{% if stats %}Entradas registradas{% else %}Protegido por senha{% endif %}</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-patients"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-people"></i></div><div><div class="kpi-label">Pacientes</div><div class="kpi-value">{{ ops.patients_total }}</div><div class="kpi-note">Base cadastrada</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-agenda"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-calendar-check"></i></div><div><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div><div class="kpi-note">Atendimentos do dia</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-pendencias"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-bell"></i></div><div><div class="kpi-label">Pendências</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div><div class="kpi-note">Retornos e tarefas</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-financeiro"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-currency-dollar"></i></div><div><div class="kpi-label">Financeiro do dia</div><div class="kpi-value">{% if stats %}R$ {{ stats.income_today }}{% else %}—{% endif %}</div><div class="kpi-note">{% if stats %}Entradas registradas{% else %}Protegido por senha{% endif %}</div></div></div></div></div>
 </div>
 
 {% if todays_birthdays and todays_birthdays|length > 0 %}

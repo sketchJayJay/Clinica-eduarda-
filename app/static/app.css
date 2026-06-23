@@ -2,8 +2,8 @@
 :root{
   --coffee:#4a3027;
   --coffee-2:#6a4739;
-  --accent:#b78a63;
-  --accent-2:#d8bda0;
+  --accent:#c47b5a;
+  --accent-2:#e8c7b7;
   --bg:#fcf8f3;
   --bg-2:#f7efe7;
   --card:#ffffff;
@@ -90,3 +90,48 @@ a{text-decoration:none;color:var(--coffee)} a:hover{color:var(--coffee-2)}
 .list-row .btn{white-space:nowrap}
 .info-card{padding:18px 20px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-xs)}
 @media(max-width:575px){.quick-row{display:grid;grid-template-columns:1fr 1fr}.quick-pill{justify-content:center}}
+
+
+/* V9 mais cor */
+:root{
+  --rose:#d88b90;
+  --sage:#8fad97;
+  --sky:#8faece;
+  --peach:#e0a06e;
+  --lavender:#b49ccf;
+}
+.brand-nav{background:rgba(255,255,255,.95)}
+.sidebar-nav a.active{background:linear-gradient(135deg,#fff7f1 0%, #fff 100%)}
+.sidebar-nav a:hover{background:linear-gradient(135deg,#fdf4ef 0%, #fbf8f5 100%)}
+.nav-ico{background:linear-gradient(135deg,#fbefe6 0%, #f8f5ff 100%)}
+.hero-slim{background:linear-gradient(135deg,#fff8f2 0%, #fffdfb 46%, #f7f8ff 100%); border-color:#eadfd7; position:relative; overflow:hidden}
+.hero-slim:after{content:""; position:absolute; right:-60px; top:-60px; width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(143,174,206,.18), transparent 65%)}
+.hero-slim:before{content:""; position:absolute; left:-40px; bottom:-50px; width:180px; height:180px; border-radius:50%; background:radial-gradient(circle, rgba(216,139,144,.16), transparent 65%)}
+.hero-mini-title{font-family:"Cormorant Garamond", Georgia, serif; font-size:2rem; color:var(--coffee); letter-spacing:-.03em; margin:0}
+.hero-mini-sub{color:var(--muted); margin-top:6px; font-size:.96rem}
+.action-soft{background:#fff; border:1px solid var(--line); color:var(--coffee); box-shadow:var(--shadow-xs)}
+.action-soft:hover{background:#faf4ef; color:var(--coffee)}
+.kpi-card.compact{border-radius:20px; overflow:hidden; position:relative}
+.kpi-card.compact:before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--accent)}
+.kpi-icon{box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)}
+.kpi-card.compact.kpi-patients{background:linear-gradient(135deg,#fff 0%, #fff6f2 100%)}
+.kpi-card.compact.kpi-patients:before{background:var(--rose)}
+.kpi-card.compact.kpi-patients .kpi-icon{background:linear-gradient(135deg,#fbe8ea 0%, #f8d8dc 100%); color:#8d4950}
+.kpi-card.compact.kpi-agenda{background:linear-gradient(135deg,#fff 0%, #f2f8ff 100%)}
+.kpi-card.compact.kpi-agenda:before{background:var(--sky)}
+.kpi-card.compact.kpi-agenda .kpi-icon{background:linear-gradient(135deg,#e8f1fb 0%, #d7e8fb 100%); color:#50709a}
+.kpi-card.compact.kpi-pendencias{background:linear-gradient(135deg,#fff 0%, #fff8ef 100%)}
+.kpi-card.compact.kpi-pendencias:before{background:var(--peach)}
+.kpi-card.compact.kpi-pendencias .kpi-icon{background:linear-gradient(135deg,#fdeedc 0%, #f8dfc3 100%); color:#9a6436}
+.kpi-card.compact.kpi-financeiro{background:linear-gradient(135deg,#fff 0%, #f2faf4 100%)}
+.kpi-card.compact.kpi-financeiro:before{background:var(--sage)}
+.kpi-card.compact.kpi-financeiro .kpi-icon{background:linear-gradient(135deg,#e7f3ea 0%, #d5ebdc 100%); color:#4a7860}
+.quick-pill{border-radius:14px; background:linear-gradient(180deg,#fff 0%, #fffcfa 100%)}
+.quick-pill.pill-patients i{color:#8d4950}.quick-pill.pill-patients{border-color:#eed6d8}
+.quick-pill.pill-retornos i{color:#50709a}.quick-pill.pill-retornos{border-color:#d9e5f6}
+.quick-pill.pill-financeiro i{color:#4a7860}.quick-pill.pill-financeiro{border-color:#d7eadc}
+.quick-pill.pill-aniversarios i{color:#9a6436}.quick-pill.pill-aniversarios{border-color:#f0dec7}
+.panel-card{border-radius:20px}
+.crm-mini{border-radius:14px; background:linear-gradient(180deg,#fff 0%, #fffdfb 100%)}
+.row-time{background:linear-gradient(135deg,#fff4eb 0%, #fff9f4 100%)}
+.info-card{background:linear-gradient(135deg,#fff 0%, #fffbf7 100%); border-radius:20px}
