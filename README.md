@@ -1,4 +1,4 @@
-# Eduarda Imbelloni Clínica Especializada - Premium V3
+# Eduarda Imbelloni Clínica Especializada - Premium V4
 
 Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.
 
@@ -32,7 +32,7 @@ O banco e uploads ficam em `/data`.
 
 ```env
 SECRET_KEY=coloque-uma-chave-grande-aqui
-DB_PATH=/data/eduarda_imbelloni_premium_v3.db
+DB_PATH=/data/eduarda_imbelloni_premium_v4.db
 UPLOAD_FOLDER=/data/uploads
 FINANCE_PASSWORD=eduarda2026
 ASAAS_ENV=sandbox
@@ -46,7 +46,7 @@ ASAAS_ENV=production
 ASAAS_API_KEY=sua_chave_real
 ```
 
-## Melhorias da versão Premium V3
+## Melhorias da versão Premium V4
 
 - CRM de relacionamento com pacientes
 - Controle de leads e possíveis pacientes
@@ -81,3 +81,8 @@ ASAAS_API_KEY=sua_chave_real
 ## Observação sobre Asaas
 
 O local da integração já está pronto. Sem a chave `ASAAS_API_KEY`, o sistema só avisa que falta configurar. Após colocar a chave no Coolify ou em Configurações, os botões de boleto/Pix tentam gerar a cobrança via Asaas.
+
+
+## Visual Premium V4
+
+Esta versão recebeu um redesenho visual com menu lateral, login premium, cards em vidro suave, cores da identidade Eduarda Imbelloni e polimento mobile/PWA.

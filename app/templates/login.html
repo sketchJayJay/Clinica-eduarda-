@@ -1,31 +1,42 @@
 {% extends "base.html" %}
 {% set title = "Login | Eduarda Imbelloni Clínica" %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-md-5 col-lg-4">
-    <div class="card shadow-sm border-0 login-card-eduarda">
-      <div class="card-body p-4">
-        <div class="text-center mb-3">
+<div class="auth-shell">
+  <div class="login-frame">
+    <section class="login-showcase">
+      <img src="{{ url_for('static', filename='logo.png') }}" class="showcase-logo" alt="Eduarda Imbelloni Clínica Especializada">
+      <h1>Gestão clínica elegante, rápida e segura.</h1>
+      <p class="mt-3 mb-0">Pacientes, agenda, financeiro, repasses, retornos e cobranças organizados em um painel com a identidade da clínica.</p>
+      <div class="login-perks">
+        <div class="login-perk"><span>✓</span><span>Painel do paciente com histórico completo</span></div>
+        <div class="login-perk"><span>✓</span><span>Financeiro protegido e cobranças Asaas</span></div>
+        <div class="login-perk"><span>✓</span><span>Agenda, CRM e lembretes por WhatsApp</span></div>
+      </div>
+    </section>
+    <section class="login-card-eduarda login-panel">
+      <div class="login-panel-inner">
+        <div class="text-center mb-4 d-lg-none">
           <img src="{{ url_for('static', filename='logo.png') }}" class="logo-lg" alt="logo">
-          <h5 class="mt-3 mb-0">Entrar</h5>
-          <div class="brand-title-eduarda small mt-2">Clínica Especializada</div>
         </div>
+        <div class="page-kicker mb-2">Painel privado</div>
+        <h2 class="mb-1">Entrar no sistema</h2>
+        <div class="text-muted mb-4">Acesso exclusivo da equipe da clínica.</div>
         <form method="post">
           <div class="mb-3">
             <label class="form-label">Usuário</label>
-            <input class="form-control" name="username" autocomplete="username" required>
+            <input class="form-control" name="username" autocomplete="username" placeholder="Ex.: admin" required>
           </div>
           <div class="mb-3">
             <label class="form-label">Senha</label>
-            <input class="form-control" name="password" type="password" autocomplete="current-password" required>
+            <input class="form-control" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
           </div>
-          <button class="btn btn-brand w-100" type="submit">Entrar</button>
+          <button class="btn btn-brand w-100" type="submit">Entrar no painel</button>
         </form>
+        <div class="small text-muted mt-4 text-center">
+          Primeiro acesso: <b>admin/admin123</b>. Depois troque em Configurações.
+        </div>
       </div>
-    </div>
-    <div class="text-muted small mt-3 text-center">
-      Primeiro acesso cria <b>admin/admin123</b>. Depois troque a senha em Configurações.
-    </div>
+    </section>
   </div>
 </div>
 {% endblock %}
