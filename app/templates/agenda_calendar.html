@@ -4,21 +4,22 @@
 {% block head_extra %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css">
 <style>
-  .fc { background: #fff; border-radius: 16px; padding: 10px; border: 1px solid rgba(91,27,42,.12); box-shadow: 0 8px 24px rgba(0,0,0,.04); }
-  .fc .fc-toolbar-title{ font-size: 1.2rem; }
-  .fc .fc-button-primary{ background: var(--brand); border-color: var(--brand); }
-  .fc .fc-button-primary:hover{ background: var(--brand2); border-color: var(--brand2); }
+  .fc { background:#fff; border-radius:24px; padding:14px; border:1px solid var(--line); box-shadow:var(--shadow-sm); }
+  .fc .fc-toolbar-title{ font-family:Georgia,"Times New Roman",serif; color:var(--coffee); font-size:1.45rem; }
+  .fc .fc-button-primary{ background:var(--coffee)!important; border-color:var(--coffee)!important; border-radius:12px!important; font-weight:800!important; }
+  .fc .fc-button-primary:hover{ background:var(--terracotta)!important; border-color:var(--terracotta)!important; }
   .fc .fc-button-primary:disabled{ opacity:.55; }
-  .agenda-side{ position: sticky; top: 86px; }
-  .mini-hint{ font-size:.85rem; color:#6c757d; }
+  .agenda-side{ position: sticky; top:24px; }
+  .mini-hint{ font-size:.85rem; color:var(--soft); }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
   <div>
-    <h4 class="mb-0">Agenda</h4>
-    <div class="text-muted small">Calendário com arrastar e soltar (reagendar), clique para editar.</div>
+    <div class="eyebrow mb-1">Calendário clínico</div>
+    <h1 class="page-title mb-1">Agenda</h1>
+    <div class="page-subtitle">Arraste para reagendar, clique para editar e filtre por profissional.</div>
   </div>
   <div class="d-flex gap-2 align-items-center">
     <select id="providerFilter" class="form-select form-select-sm" style="max-width:260px">

@@ -86,3 +86,8 @@ O local da integração já está pronto. Sem a chave `ASAAS_API_KEY`, o sistema
 ## Visual Premium V4
 
 Esta versão recebeu um redesenho visual com menu lateral, login premium, cards em vidro suave, cores da identidade Eduarda Imbelloni e polimento mobile/PWA.
+
+
+## Atualização Visual Luxo V5
+
+Redesign visual completo com layout mais limpo, menu lateral refinado, cards mais leves, tela de login premium, tabelas mais elegantes e ajustes de responsividade. Mantém o mesmo banco/volume, sem apagar dados.

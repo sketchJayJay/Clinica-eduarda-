@@ -8,20 +8,20 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
-  <meta name="theme-color" content="#965B43">
+  <meta name="theme-color" content="#3a241d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Eduarda Clínica">
   <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}">
   {% block head_extra %}{% endblock %}
 </head>
 <body class="{% if g.user %}logged-in{% else %}auth-body{% endif %}">
-<nav class="navbar navbar-expand-lg navbar-dark brand-nav">
+<nav class="navbar navbar-expand-lg brand-nav">
   <div class="container-fluid px-lg-4">
     <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('dashboard.index') }}">
       <img src="{{ url_for('static', filename='logo.png') }}" alt="Eduarda Imbelloni" class="brand-logo">
-      <span class="d-none d-md-inline">Clínica Especializada <span class="badge text-bg-light ms-2">{{ APP_VERSION }}</span></span>
+      <span class="d-none d-md-inline">Painel Clínico <span class="badge text-bg-light ms-2">{{ APP_VERSION }}</span></span>
     </a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Abrir menu">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="nav">
@@ -30,33 +30,29 @@
         <li class="nav-item"><a class="nav-link" href="{{ url_for('dashboard.index') }}">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('patients.list_patients') }}">Pacientes</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('agenda.calendar_view') }}">Agenda</a></li>
-        <li class="nav-item"><a class="nav-link" href="{{ url_for('crm.index') }}">CRM/Retornos</a></li>
+        <li class="nav-item"><a class="nav-link" href="{{ url_for('crm.index') }}">CRM</a></li>
         <li class="nav-item"><a class="nav-link" href="{{ url_for('birthdays.list_birthdays') }}">Aniversários</a></li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Financeiro</a>
           <ul class="dropdown-menu">
             <li><a class="dropdown-item" href="{{ url_for('finance.transactions') }}">Lançamentos</a></li>
             <li><a class="dropdown-item" href="{{ url_for('finance.reports') }}">Relatórios</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('finance.categories_list') }}">Categorias</a></li>
             <li><a class="dropdown-item" href="{{ url_for('finance.caixa') }}">Caixa</a></li>
             <li><a class="dropdown-item" href="{{ url_for('finance.providers_list') }}">Profissionais</a></li>
             <li><a class="dropdown-item" href="{{ url_for('finance.repasses') }}">Repasses</a></li>
             <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item" href="{{ url_for('finance.export_excel') }}">Exportar Excel</a></li>
-            <li><a class="dropdown-item" href="{{ url_for('finance.export_pdf') }}">Exportar PDF</a></li>
-            <li><hr class="dropdown-divider"></li>
             {% if finance_unlocked %}
-              <li><a class="dropdown-item" href="{{ url_for('finance.lock') }}">🔒 Bloquear Financeiro</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('finance.lock') }}">Bloquear financeiro</a></li>
             {% else %}
-              <li><a class="dropdown-item" href="{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}">🔑 Desbloquear Financeiro</a></li>
+              <li><a class="dropdown-item" href="{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}">Desbloquear financeiro</a></li>
             {% endif %}
           </ul>
         </li>
       </ul>
-      <div class="d-flex gap-2 align-items-center">
-        <span class="text-white-50 small">Olá, <b class="text-white">{{ g.user['username'] }}</b></span>
-        <a class="btn btn-sm btn-outline-light" href="{{ url_for('auth.settings') }}">Configurações</a>
-        <a class="btn btn-sm btn-light" href="{{ url_for('auth.logout') }}">Sair</a>
+      <div class="d-flex gap-2 align-items-center flex-wrap">
+        <span class="small text-muted">{{ g.user['username'] }}</span>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('auth.settings') }}">Configurações</a>
+        <a class="btn btn-sm btn-brand" href="{{ url_for('auth.logout') }}">Sair</a>
       </div>
       {% endif %}
     </div>
@@ -68,16 +64,15 @@
   <aside class="app-sidebar">
     <div class="sidebar-inner">
       <div class="sidebar-brand-card">
-        <img src="{{ url_for('static', filename='logo_mark.png') }}" class="sidebar-mark" alt="marca">
+        <img src="{{ url_for('static', filename='logo.png') }}" class="sidebar-mark" alt="Eduarda Imbelloni">
         <div>
           <div class="sidebar-title">Eduarda<br>Imbelloni</div>
-          <div class="sidebar-sub">Gestão clínica</div>
+          <div class="sidebar-sub">Clínica Especializada</div>
         </div>
       </div>
-
       {% set ep = request.endpoint or '' %}
       <div class="sidebar-nav">
-        <a class="{% if ep.startswith('dashboard.') %}active{% endif %}" href="{{ url_for('dashboard.index') }}"><span class="nav-ico">⌂</span><span>Home</span></a>
+        <a class="{% if ep.startswith('dashboard.') %}active{% endif %}" href="{{ url_for('dashboard.index') }}"><span class="nav-ico">⌂</span><span>Dashboard</span></a>
         <a class="{% if ep.startswith('patients.') %}active{% endif %}" href="{{ url_for('patients.list_patients') }}"><span class="nav-ico">P</span><span>Pacientes</span></a>
         <a class="{% if ep.startswith('agenda.') %}active{% endif %}" href="{{ url_for('agenda.calendar_view') }}"><span class="nav-ico">A</span><span>Agenda</span></a>
         <a class="{% if ep.startswith('crm.') %}active{% endif %}" href="{{ url_for('crm.index') }}"><span class="nav-ico">R</span><span>CRM e retornos</span></a>
@@ -87,9 +82,8 @@
         <a class="{% if ep.startswith('finance.') and 'repasses' in ep %}active{% endif %}" href="{% if finance_unlocked %}{{ url_for('finance.repasses') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.repasses')) }}{% endif %}"><span class="nav-ico">%</span><span>Repasses</span></a>
         <a class="{% if ep.startswith('auth.settings') %}active{% endif %}" href="{{ url_for('auth.settings') }}"><span class="nav-ico">⚙</span><span>Configurações</span></a>
       </div>
-
       <div class="sidebar-footer">
-        <div class="small text-muted mb-1">Usuário logado</div>
+        <div class="small text-muted mb-1">Sessão</div>
         <div class="fw-bold">{{ g.user['username'] }}</div>
         <div class="small text-muted mt-1">{{ current_role or 'admin' }} · {{ 'Financeiro liberado' if finance_unlocked else 'Financeiro protegido' }}</div>
       </div>
@@ -98,6 +92,20 @@
   {% endif %}
 
   <main class="container-fluid app-content px-3 px-md-4 py-4">
+    {% if g.user %}
+    <div class="desktop-topline">
+      <div>
+        <div class="topline-title">{{ CLINIC_NAME }}</div>
+        <div class="topline-sub">Sistema interno de gestão clínica · {{ APP_VERSION }}</div>
+      </div>
+      <div class="topline-actions">
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}">Agenda</a>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.list_patients') }}">Buscar paciente</a>
+        <a class="btn btn-sm btn-brand" href="{{ url_for('patients.new_patient') }}">Novo paciente</a>
+      </div>
+    </div>
+    {% endif %}
+
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
         {% for category, message in messages %}
