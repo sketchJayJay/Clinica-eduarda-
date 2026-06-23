@@ -1,56 +1,68 @@
 {% extends "base.html" %}
-{% set title = "Home | Eduarda Imbelloni" %}
+{% set title = "Dashboard | Eduarda Imbelloni" %}
 {% block content %}
-<div class="hero-eduarda mb-4">
-  <div class="row align-items-center g-4">
-    <div class="col-lg-7">
-      <div class="page-kicker mb-3">Painel administrativo</div>
-      <h1 class="mb-3">Eduarda Imbelloni<br>Clínica Especializada</h1>
-      <div class="muted fs-5">Gestão de pacientes, agenda, financeiro, ortodontia, repasses, CRM e cobranças em um painel premium.</div>
-      <div class="hero-actions">
-        <a class="btn btn-light" href="{{ url_for('patients.new_patient') }}">Novo paciente</a>
-        <a class="btn btn-outline-light" href="{{ url_for('agenda.calendar_view') }}">Abrir agenda</a>
-        {% if stats %}
-          <a class="btn btn-outline-light" href="{{ url_for('finance.transactions', status='pending') }}">Pendências</a>
-        {% else %}
-          <a class="btn btn-outline-light" href="{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}">Desbloquear financeiro</a>
-        {% endif %}
+
+<section class="dash-hero mb-4">
+  <div class="dash-hero-inner">
+    <div class="row align-items-center g-4">
+      <div class="col-xl-8">
+        <div class="dash-hero-logo">
+          <img src="{{ url_for('static', filename='logo.png') }}" alt="Eduarda Imbelloni Clínica Especializada">
+        </div>
+        <div class="page-kicker mb-3" style="color:#e9d4b5">Painel da clínica</div>
+        <h1>Gestão elegante para uma rotina mais leve.</h1>
+        <p>Agenda, pacientes, financeiro, retornos, repasses e cobranças em um painel limpo, rápido e com a identidade da clínica.</p>
+        <div class="dash-actions">
+          <a class="btn btn-light" href="{{ url_for('patients.new_patient') }}">Novo paciente</a>
+          <a class="btn btn-outline-light" href="{{ url_for('agenda.calendar_view') }}">Abrir agenda</a>
+          {% if stats %}
+            <a class="btn btn-outline-light" href="{{ url_for('finance.transaction_new') }}">Novo lançamento</a>
+          {% else %}
+            <a class="btn btn-outline-light" href="{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}">Desbloquear financeiro</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="col-xl-4">
+        <div class="hero-side-panel">
+          <div class="mini-stat"><span>Pacientes cadastrados</span><b>{{ ops.patients_total }}</b></div>
+          <div class="mini-stat"><span>Consultas hoje</span><b>{{ ops.agenda_today_count }}</b></div>
+          <div class="mini-stat"><span>Retornos do dia</span><b>{{ ops.tasks_due_count }}</b></div>
+          <div class="mini-stat"><span>Consultas nos próximos 7 dias</span><b>{{ ops.week_appointments }}</b></div>
+        </div>
       </div>
     </div>
-    <div class="col-lg-5 text-lg-end">
-      <div class="hero-logo-card mb-3">
-        <img src="{{ url_for('static', filename='logo.png') }}" alt="Eduarda Imbelloni">
-      </div>
-      <div class="d-flex flex-wrap justify-content-lg-end gap-2">
-        <div class="hero-metric"><strong>{{ ops.patients_total }}</strong><span>Pacientes</span></div>
-        <div class="hero-metric"><strong>{{ ops.agenda_today_count }}</strong><span>Hoje</span></div>
-        <div class="hero-metric"><strong>{{ ops.week_appointments }}</strong><span>7 dias</span></div>
-      </div>
+  </div>
+</section>
+
+<div class="row g-3 kpi-strip mb-4">
+  <div class="col-md-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="d-flex justify-content-between align-items-start"><div class="kpi-label">Pacientes</div><div class="kpi-dot"></div></div>
+      <div class="kpi-value">{{ ops.patients_total }}</div>
+      <div class="kpi-note">Base ativa da clínica</div>
     </div>
   </div>
-</div>
-
-<div class="d-flex align-items-end justify-content-between flex-wrap gap-2 mb-3">
-  <div>
-    <div class="eyebrow mb-1">Resumo operacional</div>
-    <h2 class="page-title mb-1">Visão geral da clínica</h2>
-    <div class="page-subtitle">O que precisa de atenção hoje aparece primeiro, sem garimpar tela por tela.</div>
+  <div class="col-md-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="d-flex justify-content-between align-items-start"><div class="kpi-label">Hoje</div><div class="kpi-dot"></div></div>
+      <div class="kpi-value">{{ ops.agenda_today_count }}</div>
+      <div class="kpi-note">Consultas agendadas</div>
+    </div>
   </div>
-  <div class="d-flex gap-2 flex-wrap">
-    {% if stats %}
-      <a class="btn btn-outline-secondary" href="{{ url_for('finance.reports') }}">Relatórios</a>
-      <a class="btn btn-brand" href="{{ url_for('finance.transaction_new') }}">Novo lançamento</a>
-    {% else %}
-      <a class="btn btn-brand" href="{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}">🔑 Desbloquear Financeiro</a>
-    {% endif %}
+  <div class="col-md-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="d-flex justify-content-between align-items-start"><div class="kpi-label">Retornos</div><div class="kpi-dot"></div></div>
+      <div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div>
+      <div class="kpi-note">Contatos para hoje</div>
+    </div>
   </div>
-</div>
-
-<div class="row g-3 mb-4">
-  <div class="col-md-6 col-xl-3"><div class="card kpi"><div class="card-body"><div class="kpi-label">Pacientes cadastrados</div><div class="kpi-value">{{ ops.patients_total }}</div><div class="kpi-note">Base ativa da clínica</div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="card kpi"><div class="card-body"><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div><div class="kpi-note">Agenda do dia</div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="card kpi"><div class="card-body"><div class="kpi-label">Tarefas do dia</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div><div class="kpi-note">Retornos e contatos</div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="card kpi"><div class="card-body"><div class="kpi-label">Consultas 7 dias</div><div class="kpi-value">{{ ops.week_appointments }}</div><div class="kpi-note">Próximos atendimentos</div></div></div></div>
+  <div class="col-md-6 col-xl-3">
+    <div class="kpi-card">
+      <div class="d-flex justify-content-between align-items-start"><div class="kpi-label">Semana</div><div class="kpi-dot"></div></div>
+      <div class="kpi-value">{{ ops.week_appointments }}</div>
+      <div class="kpi-note">Próximos atendimentos</div>
+    </div>
+  </div>
 </div>
 
 {% if todays_birthdays and todays_birthdays|length > 0 %}
@@ -104,71 +116,135 @@
 </div>
 {% endif %}
 
-<div class="quick-access mb-4">
-  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+<section class="dashboard-section">
+  <div class="section-head">
     <div>
       <div class="eyebrow mb-1">Atalhos</div>
-      <h5 class="section-card-title mb-0">Ações rápidas</h5>
+      <h2>Ações rápidas</h2>
+      <p>Os principais fluxos da recepção em poucos cliques.</p>
     </div>
-    <div class="text-muted small">Fluxo de recepção, clínica e financeiro</div>
   </div>
 
   <div class="quick-grid">
-    <a class="quick-card" href="{{ url_for('patients.list_patients') }}"><div><div class="quick-icon">P</div><div class="quick-title">Pacientes</div><div class="quick-sub">Listar, buscar e abrir painel</div></div></a>
-    <a class="quick-card" href="{{ url_for('agenda.calendar_view') }}"><div><div class="quick-icon">A</div><div class="quick-title">Agenda</div><div class="quick-sub">Calendário geral da clínica</div></div></a>
-    <a class="quick-card" href="{{ url_for('crm.index') }}"><div><div class="quick-icon">R</div><div class="quick-title">CRM/Retornos</div><div class="quick-sub">Tarefas, leads e resgate</div></div>{% if ops.tasks_due_count > 0 %}<span class="quick-badge">{{ ops.tasks_due_count }} hoje</span>{% endif %}</a>
-    <a class="quick-card" href="{{ url_for('birthdays.list_birthdays') }}"><div><div class="quick-icon">B</div><div class="quick-title">Aniversários</div><div class="quick-sub">Lembretes com WhatsApp pronto</div></div></a>
-    <a class="quick-card" href="{{ url_for('patients.new_patient') }}"><div><div class="quick-icon">+</div><div class="quick-title">Novo paciente</div><div class="quick-sub">Cadastro rápido em 1 minuto</div></div></a>
+    <a class="quick-card" href="{{ url_for('patients.list_patients') }}"><div><div class="quick-icon">P</div><div class="quick-title">Pacientes</div><div class="quick-sub">Buscar, cadastrar e abrir painel</div></div></a>
+    <a class="quick-card" href="{{ url_for('agenda.calendar_view') }}"><div><div class="quick-icon">A</div><div class="quick-title">Agenda</div><div class="quick-sub">Calendário da clínica</div></div></a>
+    <a class="quick-card" href="{{ url_for('patients.new_patient') }}"><div><div class="quick-icon">+</div><div class="quick-title">Novo paciente</div><div class="quick-sub">Cadastro rápido</div></div></a>
+    <a class="quick-card" href="{{ url_for('crm.index') }}"><div><div class="quick-icon">R</div><div class="quick-title">Retornos</div><div class="quick-sub">Tarefas, leads e resgate</div></div>{% if ops.tasks_due_count > 0 %}<span class="quick-badge">{{ ops.tasks_due_count }} hoje</span>{% endif %}</a>
     <a class="quick-card" href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}"><div><div class="quick-icon">F</div><div class="quick-title">Financeiro</div><div class="quick-sub">Entradas, saídas e pendências</div></div>{% if not finance_unlocked %}<span class="quick-badge">protegido</span>{% endif %}</a>
-    <a class="quick-card" href="{% if finance_unlocked %}{{ url_for('finance.transaction_new', kind='income') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transaction_new', kind='income')) }}{% endif %}"><div><div class="quick-icon">R$</div><div class="quick-title">Nova entrada</div><div class="quick-sub">Dinheiro, Pix, cartão e boleto</div></div></a>
-    <a class="quick-card" href="{% if finance_unlocked %}{{ url_for('finance.transactions', status='pending') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions', status='pending')) }}{% endif %}"><div><div class="quick-icon">!</div><div class="quick-title">Pendências</div><div class="quick-sub">Receber e pagar em aberto</div></div></a>
-    <a class="quick-card" href="{% if finance_unlocked %}{{ url_for('finance.caixa') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.caixa')) }}{% endif %}"><div><div class="quick-icon">C</div><div class="quick-title">Caixa</div><div class="quick-sub">Abrir, fechar e conferir</div></div></a>
-    <a class="quick-card" href="{% if finance_unlocked %}{{ url_for('finance.repasses') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.repasses')) }}{% endif %}"><div><div class="quick-icon">%</div><div class="quick-title">Repasses</div><div class="quick-sub">Percentual e pagamento</div></div></a>
+    <a class="quick-card" href="{% if finance_unlocked %}{{ url_for('finance.transaction_new', kind='income') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transaction_new', kind='income')) }}{% endif %}"><div><div class="quick-icon">R$</div><div class="quick-title">Nova entrada</div><div class="quick-sub">Pix, cartão, boleto ou dinheiro</div></div></a>
+    <a class="quick-card" href="{{ url_for('birthdays.list_birthdays') }}"><div><div class="quick-icon">B</div><div class="quick-title">Aniversários</div><div class="quick-sub">Lembretes com WhatsApp</div></div></a>
     <a class="quick-card" href="{{ url_for('auth.settings') }}"><div><div class="quick-icon">⚙</div><div class="quick-title">Configurações</div><div class="quick-sub">Clínica, usuários e integrações</div></div></a>
   </div>
-</div>
+</section>
 
-<div class="row g-3 mb-4">
-  <div class="col-xl-7">
-    <div class="card h-100"><div class="card-body p-4">
-      <div class="d-flex justify-content-between align-items-center mb-3"><div><div class="eyebrow mb-1">Hoje</div><h5 class="section-card-title mb-0">Agenda de hoje</h5></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}">Abrir agenda</a></div>
-      <div class="vstack gap-2">
-      {% for a in agenda_today %}
-        <div class="crm-mini d-flex justify-content-between align-items-center gap-2 flex-wrap">
-          <div><b>{{ a.start_at[11:16] if a.start_at|length>=16 else a.start_at }}</b> · {{ a.patient_name }}<div class="text-muted small">{{ a.provider_name or 'Profissional não informado' }} · {{ a.title }} · {{ a.status or 'agendada' }}</div></div>
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='agenda') }}">Abrir</a>
+<section class="dashboard-section">
+  <div class="row g-3">
+    <div class="col-xl-7">
+      <div class="panel-card h-100">
+        <div class="card-body p-4">
+          <div class="section-head mb-3">
+            <div><div class="eyebrow mb-1">Hoje</div><h2>Agenda de hoje</h2></div>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}">Abrir agenda</a>
+          </div>
+          <div class="vstack">
+          {% for a in agenda_today %}
+            <div class="list-row">
+              <div class="d-flex align-items-center gap-3">
+                <div class="row-time">{{ a.start_at[11:16] if a.start_at|length>=16 else a.start_at }}</div>
+                <div>
+                  <b>{{ a.patient_name }}</b>
+                  <div class="text-muted small">{{ a.provider_name or 'Profissional não informado' }} · {{ a.title }} · {{ a.status or 'agendada' }}</div>
+                </div>
+              </div>
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='agenda') }}">Abrir</a>
+            </div>
+          {% else %}
+            <div class="text-muted py-4">Nenhuma consulta para hoje.</div>
+          {% endfor %}
+          </div>
         </div>
-      {% else %}<div class="text-muted">Nenhuma consulta para hoje.</div>{% endfor %}
       </div>
-    </div></div>
-  </div>
-  <div class="col-xl-5">
-    <div class="card h-100"><div class="card-body p-4">
-      <div class="d-flex justify-content-between align-items-center mb-3"><div><div class="eyebrow mb-1">Contato</div><h5 class="section-card-title mb-0">Tarefas e leads</h5></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('crm.index') }}">Abrir CRM</a></div>
-      <div class="row g-3">
-        <div class="col-md-6"><div class="small text-muted mb-2 fw-bold">Tarefas</div>{% for t in tasks_due[:5] %}<div class="crm-mini mb-2"><b>{{ t.title }}</b><div class="text-muted small">{{ t.patient_name or 'Sem paciente' }} · {{ t.due_date or 'sem data' }}</div></div>{% else %}<div class="text-muted small">Sem tarefas pendentes.</div>{% endfor %}</div>
-        <div class="col-md-6"><div class="small text-muted mb-2 fw-bold">Leads</div>{% for l in leads_due[:5] %}<div class="crm-mini mb-2"><b>{{ l.name }}</b><div class="text-muted small">{{ l.interest or 'interesse não informado' }} · {{ l.next_contact_date or 'sem data' }}</div></div>{% else %}<div class="text-muted small">Sem leads pendentes.</div>{% endfor %}</div>
+    </div>
+    <div class="col-xl-5">
+      <div class="panel-card h-100">
+        <div class="card-body p-4">
+          <div class="section-head mb-3">
+            <div><div class="eyebrow mb-1">Relacionamento</div><h2>Tarefas e leads</h2></div>
+            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('crm.index') }}">Abrir CRM</a>
+          </div>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="small text-muted mb-2 fw-bold">Tarefas</div>
+              {% for t in tasks_due[:5] %}
+                <div class="crm-mini mb-2"><b>{{ t.title }}</b><div class="text-muted small">{{ t.patient_name or 'Sem paciente' }} · {{ t.due_date or 'sem data' }}</div></div>
+              {% else %}
+                <div class="text-muted small">Sem tarefas pendentes.</div>
+              {% endfor %}
+            </div>
+            <div class="col-md-6">
+              <div class="small text-muted mb-2 fw-bold">Leads</div>
+              {% for l in leads_due[:5] %}
+                <div class="crm-mini mb-2"><b>{{ l.name }}</b><div class="text-muted small">{{ l.interest or 'interesse não informado' }} · {{ l.next_contact_date or 'sem data' }}</div></div>
+              {% else %}
+                <div class="text-muted small">Sem leads pendentes.</div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
       </div>
-    </div></div>
+    </div>
   </div>
-</div>
+</section>
 
 {% if open_budgets and open_budgets|length > 0 %}
-<div class="card mb-4"><div class="card-body p-4"><div class="d-flex justify-content-between align-items-center mb-3"><div><div class="eyebrow mb-1">Comercial</div><h5 class="section-card-title mb-0">Orçamentos abertos</h5></div><span class="badge text-bg-light">{{ open_budgets|length }} recentes</span></div><div class="table-responsive"><table class="table table-hover align-middle mb-0"><thead class="table-light"><tr><th>Paciente</th><th>Descrição</th><th class="text-end">Valor</th><th></th></tr></thead><tbody>{% for b in open_budgets %}<tr><td>{{ b.patient_name }}</td><td>{{ b.description }}</td><td class="text-end">R$ {{ '%0.2f'|format((b.amount_cents or 0)/100)|replace('.', ',') }}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=b.patient_id, tab='orcamentos') }}">Abrir</a></td></tr>{% endfor %}</tbody></table></div></div></div>
+<section class="dashboard-section">
+  <div class="panel-card">
+    <div class="card-body p-4">
+      <div class="section-head mb-3">
+        <div><div class="eyebrow mb-1">Comercial</div><h2>Orçamentos abertos</h2></div>
+        <span class="badge text-bg-light">{{ open_budgets|length }} recentes</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Paciente</th><th>Descrição</th><th class="text-end">Valor</th><th></th></tr></thead>
+          <tbody>
+            {% for b in open_budgets %}
+            <tr>
+              <td>{{ b.patient_name }}</td>
+              <td>{{ b.description }}</td>
+              <td class="text-end">R$ {{ '%0.2f'|format((b.amount_cents or 0)/100)|replace('.', ',') }}</td>
+              <td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=b.patient_id, tab='orcamentos') }}">Abrir</a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
 {% endif %}
 
+<section class="dashboard-section">
 {% if stats %}
-<div class="row g-3">
-  <div class="col-md-6 col-xl-3"><div class="card kpi"><div class="card-body"><div class="kpi-label">Entradas hoje</div><div class="kpi-value text-success">R$ {{ stats.income_today }}</div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="card kpi"><div class="card-body"><div class="kpi-label">Saídas hoje</div><div class="kpi-value text-danger">R$ {{ stats.expense_today }}</div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="card kpi"><div class="card-body"><div class="kpi-label">Entradas mês</div><div class="kpi-value">R$ {{ stats.income_month }}</div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="card kpi"><div class="card-body"><div class="kpi-label">Saídas mês</div><div class="kpi-value">R$ {{ stats.expense_month }}</div></div></div></div>
-  <div class="col-lg-6"><div class="card"><div class="card-body p-4"><div class="eyebrow mb-1">Alertas</div><h5 class="section-card-title mb-3">Pendências financeiras</h5><div class="d-flex align-items-center justify-content-between"><div><div class="text-muted small">Recebimentos em aberto</div><div class="fs-3 fw-bold">R$ {{ stats.pending_receivables }}</div></div><a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', kind='income', status='pending') }}">Abrir</a></div><hr><div class="d-flex align-items-center justify-content-between"><div><div class="text-muted small">Pagamentos em aberto</div><div class="fs-3 fw-bold">R$ {{ stats.pending_payables }}</div></div><a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', kind='expense', status='pending') }}">Abrir</a></div></div></div></div>
-  <div class="col-lg-6"><div class="card"><div class="card-body p-4"><div class="eyebrow mb-1">Caixa</div><h5 class="section-card-title mb-3">Controle do dia</h5>{% if stats.cash_open %}<div class="text-muted small">Caixa aberto agora</div><div class="fs-2 fw-bold">R$ {{ stats.cash_total }}</div><div class="mt-3"><a class="btn btn-outline-secondary" href="{{ url_for('finance.caixa') }}">Ver caixa</a></div>{% else %}<div class="text-muted small">Caixa fechado</div><div>Abra o caixa para controlar entradas e saídas em dinheiro.</div><div class="mt-3"><a class="btn btn-brand" href="{{ url_for('finance.caixa') }}">Abrir caixa</a></div>{% endif %}</div></div></div>
-</div>
+  <div class="row g-3">
+    <div class="col-md-6 col-xl-3"><div class="kpi-card"><div class="kpi-label">Entradas hoje</div><div class="kpi-value text-success">R$ {{ stats.income_today }}</div></div></div>
+    <div class="col-md-6 col-xl-3"><div class="kpi-card"><div class="kpi-label">Saídas hoje</div><div class="kpi-value text-danger">R$ {{ stats.expense_today }}</div></div></div>
+    <div class="col-md-6 col-xl-3"><div class="kpi-card"><div class="kpi-label">Entradas mês</div><div class="kpi-value">R$ {{ stats.income_month }}</div></div></div>
+    <div class="col-md-6 col-xl-3"><div class="kpi-card"><div class="kpi-label">Saídas mês</div><div class="kpi-value">R$ {{ stats.expense_month }}</div></div></div>
+    <div class="col-lg-6"><div class="panel-card h-100"><div class="card-body p-4"><div class="eyebrow mb-1">Alertas</div><h2 class="section-card-title mb-3">Pendências financeiras</h2><div class="d-flex align-items-center justify-content-between"><div><div class="text-muted small">Recebimentos em aberto</div><div class="fs-3 fw-bold">R$ {{ stats.pending_receivables }}</div></div><a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', kind='income', status='pending') }}">Abrir</a></div><hr><div class="d-flex align-items-center justify-content-between"><div><div class="text-muted small">Pagamentos em aberto</div><div class="fs-3 fw-bold">R$ {{ stats.pending_payables }}</div></div><a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', kind='expense', status='pending') }}">Abrir</a></div></div></div></div>
+    <div class="col-lg-6"><div class="panel-card h-100"><div class="card-body p-4"><div class="eyebrow mb-1">Caixa</div><h2 class="section-card-title mb-3">Controle do dia</h2>{% if stats.cash_open %}<div class="text-muted small">Caixa aberto agora</div><div class="fs-2 fw-bold">R$ {{ stats.cash_total }}</div><div class="mt-3"><a class="btn btn-outline-secondary" href="{{ url_for('finance.caixa') }}">Ver caixa</a></div>{% else %}<div class="text-muted small">Caixa fechado</div><div>Abra o caixa para controlar entradas e saídas em dinheiro.</div><div class="mt-3"><a class="btn btn-brand" href="{{ url_for('finance.caixa') }}">Abrir caixa</a></div>{% endif %}</div></div></div>
+  </div>
 {% else %}
-<div class="card"><div class="card-body p-4"><div class="eyebrow mb-1">Privacidade</div><h5 class="section-card-title mb-1">Financeiro protegido</h5><div class="text-muted">O resumo financeiro fica escondido na Home. Para acessar, clique em Financeiro e digite a senha.</div><div class="mt-3"><a class="btn btn-brand" href="{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}">Entrar no Financeiro</a></div></div></div>
+  <div class="panel-card">
+    <div class="card-body p-4">
+      <div class="eyebrow mb-1">Privacidade</div>
+      <h2 class="section-card-title mb-1">Financeiro protegido</h2>
+      <div class="text-muted">O resumo financeiro fica escondido na Home. Para acessar, clique em Financeiro e digite a senha.</div>
+      <div class="mt-3"><a class="btn btn-brand" href="{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}">Entrar no Financeiro</a></div>
+    </div>
+  </div>
 {% endif %}
+</section>
 {% endblock %}
 
 {% block scripts %}

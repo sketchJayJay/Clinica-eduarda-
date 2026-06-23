@@ -2,62 +2,23 @@
 {% set title = p.name %}
 {% block content %}
 
-<!-- Painel do Paciente (modo clássico) -->
+<!-- Painel do Paciente (visual Eduarda V6) -->
 <style>
-  :root{
-    --bg:#f6f7fb; --card:#ffffff; --text:#111111; --muted:#6b7280;
-    --primary:#2563eb; --primary-contrast:#ffffff; --border:#e5e7eb;
-    --danger:#dc2626; --shadow:0 6px 20px rgba(0,0,0,.08);
+  main.container{max-width:1280px}
+  .ph-header{
+    display:flex;align-items:center;justify-content:space-between;gap:14px;
+    border-radius:30px!important;padding:22px!important;
+    background:linear-gradient(135deg,#fff 0%,#fff5ec 100%)!important;
+    border:1px solid var(--line)!important;box-shadow:var(--shadow-xs)!important;
   }
-  html{ color-scheme: light !important; }
-  body{ background:var(--bg) !important; color:var(--text) !important; }
-  main.container{ max-width: 1200px; }
-
-  .card{
-    background:var(--card) !important; color:var(--text) !important;
-    border:1px solid var(--border) !important; border-radius:14px !important; padding:14px !important;
-    box-shadow:var(--shadow) !important;
-  }
-  .section-title{ font-weight:600; font-size:18px; color:var(--text); margin:6px 0 10px 0; }
-  .muted{ color:var(--muted); }
-  .btn{
-    display:inline-flex; align-items:center; justify-content:center; gap:6px;
-    padding:8px 12px; border-radius:10px; border:1px solid transparent;
-    background:var(--primary); color:var(--primary-contrast); text-decoration:none; cursor:pointer;
-  }
-  .btn.small{ padding:6px 10px; font-size:13px; }
-  .btn.tiny{ padding:4px 8px; font-size:12px; }
-  .btn.primary{ background:var(--primary); }
-  .btn.danger{ background:var(--danger); }
-  .btn.active{ filter:brightness(0.95); }
-
-  .field{
-    background:#fff; color:var(--text); border:1px solid var(--border);
-    border-radius:8px; padding:8px 10px; min-height:36px;
-  }
-  .table{ width:100%; border-collapse:collapse; }
-  .table th, .table td{ border-bottom:1px solid var(--border); padding:10px; text-align:left; vertical-align:top; }
-  .table th{ background:#f9fafb; color:#111; font-weight:600; }
-  .badge{ background:#eef2ff; color:#1d4ed8; padding:4px 8px; border-radius:999px; font-size:12px; }
-
-  .ph-header{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
-  .tabs{ display:flex; gap:8px; margin:10px 0 14px; flex-wrap:wrap; }
-  .avatar-xl{
-    width:52px;height:52px;border-radius:50%;
-    background:#e5edff;color:#1d4ed8;display:flex;align-items:center;justify-content:center;
-    font-weight:700;font-size:22px;
-  }
-
-  .grid2{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
-  @media(max-width:980px){ .grid2{ grid-template-columns:1fr; } }
-  .flex{ display:flex; }
-  .gap{ gap:10px }
-
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border-bottom:1px solid var(--line);padding:12px;text-align:left;vertical-align:top}
+  .table th{background:#fbf5ee;color:var(--coffee);font-weight:900}
   @media print{
-    nav, .navbar, .tabs, .btn, .alert { display:none !important; }
-    #odontograma-wrap { page-break-inside: avoid; }
-    body { background:#fff !important; }
-    .card { border:none !important; box-shadow:none !important; }
+    nav,.navbar,.app-sidebar,.desktop-topline,.tabs,.btn,.alert,.mobile-dock{display:none!important}
+    #odontograma-wrap{page-break-inside:avoid}
+    body{background:#fff!important}
+    .card{border:none!important;box-shadow:none!important}
   }
 </style>
 
