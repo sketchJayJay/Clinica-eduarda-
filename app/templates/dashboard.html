@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% set title = "Dashboard | Eduarda Imbelloni" %}
 {% block content %}
-<div class="hero-slim mb-4 reveal reveal-delay-1">
+<div class="hero-slim mb-4 reveal reveal-delay-1 animate-pop animate-pop-1">
   <div class="row align-items-center g-3 position-relative" style="z-index:1">
     <div class="col-xl-7">
-      <div class="eyebrow mb-2">Painel da clínica</div>
+      <div class="eyebrow mb-2"><span class="pulse-dot me-2"></span>Painel da clínica</div>
       <h2 class="hero-mini-title">Eduarda Imbelloni Clínica Especializada</h2>
       
     </div>
@@ -16,18 +16,18 @@
     </div>
   </div>
   <div class="quick-row mt-3 position-relative" style="z-index:1">
-    <a class="quick-pill pill-patients" href="{{ url_for('patients.list_patients') }}"><i class="bi bi-people"></i>Pacientes</a>
-    <a class="quick-pill pill-retornos" href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat"></i>Retornos</a>
-    <a class="quick-pill pill-financeiro" href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}"><i class="bi bi-cash-stack"></i>Financeiro</a>
-    <a class="quick-pill pill-aniversarios" href="{{ url_for('birthdays.list_birthdays') }}"><i class="bi bi-gift"></i>Aniversários</a>
+    <a class="quick-pill pill-patients animate-pop animate-pop-2" href="{{ url_for('patients.list_patients') }}"><i class="bi bi-people"></i>Pacientes</a>
+    <a class="quick-pill pill-retornos animate-pop animate-pop-3" href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat"></i>Retornos</a>
+    <a class="quick-pill pill-financeiro animate-pop animate-pop-4" href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}"><i class="bi bi-cash-stack"></i>Financeiro</a>
+    <a class="quick-pill pill-aniversarios animate-pop animate-pop-5" href="{{ url_for('birthdays.list_birthdays') }}"><i class="bi bi-gift"></i>Aniversários</a>
   </div>
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-patients reveal reveal-delay-2"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-people"></i></div><div><div class="kpi-label">Pacientes</div><div class="kpi-value">{{ ops.patients_total }}</div><div class="kpi-note">Base cadastrada</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-agenda reveal reveal-delay-3"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-calendar-check"></i></div><div><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div><div class="kpi-note">Atendimentos do dia</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-pendencias reveal reveal-delay-4"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-bell"></i></div><div><div class="kpi-label">Pendências</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div><div class="kpi-note">Retornos e tarefas</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-financeiro reveal reveal-delay-5"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-currency-dollar"></i></div><div><div class="kpi-label">Financeiro do dia</div><div class="kpi-value">{% if stats %}R$ {{ stats.income_today }}{% else %}—{% endif %}</div><div class="kpi-note">{% if stats %}Entradas registradas{% else %}Protegido por senha{% endif %}</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-patients reveal reveal-delay-2 animate-pop animate-pop-2"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-people"></i></div><div><div class="kpi-label">Pacientes</div><div class="kpi-value">{{ ops.patients_total }}</div><div class="kpi-note">Base cadastrada</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-agenda reveal reveal-delay-3 animate-pop animate-pop-3"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-calendar-check"></i></div><div><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div><div class="kpi-note">Atendimentos do dia</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-pendencias reveal reveal-delay-4 animate-pop animate-pop-4"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-bell"></i></div><div><div class="kpi-label">Pendências</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div><div class="kpi-note">Retornos e tarefas</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-financeiro reveal reveal-delay-5 animate-pop animate-pop-5 float-soft"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-currency-dollar"></i></div><div><div class="kpi-label">Financeiro do dia</div><div class="kpi-value">{% if stats %}R$ {{ stats.income_today }}{% else %}—{% endif %}</div><div class="kpi-note">{% if stats %}Entradas registradas{% else %}Protegido por senha{% endif %}</div></div></div></div></div>
 </div>
 
 {% if todays_birthdays and todays_birthdays|length > 0 %}
@@ -48,15 +48,15 @@
 
 <div class="row g-3">
   <div class="col-xl-7">
-    <div class="panel-card h-100 reveal reveal-delay-3"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Hoje</div><h2>Agenda do dia</h2><p>O que está programado para o atendimento.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar3 me-1"></i>Agenda</a></div><div class="vstack">{% for a in agenda_today %}<div class="list-row"><div class="d-flex align-items-center gap-3"><div class="row-time">{{ a.start_at[11:16] if a.start_at|length>=16 else a.start_at }}</div><div><b>{{ a.patient_name }}</b><div class="text-muted small">{{ a.provider_name or 'Profissional não informado' }} · {{ a.title }} · {{ a.status or 'agendada' }}</div></div></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='agenda') }}">Abrir</a></div>{% else %}<div class="text-muted py-4">Nenhuma consulta para hoje.</div>{% endfor %}</div></div></div>
+    <div class="panel-card h-100 reveal reveal-delay-3 animate-pop animate-pop-3"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Hoje</div><h2>Agenda do dia</h2><p>O que está programado para o atendimento.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar3 me-1"></i>Agenda</a></div><div class="vstack">{% for a in agenda_today %}<div class="list-row"><div class="d-flex align-items-center gap-3"><div class="row-time">{{ a.start_at[11:16] if a.start_at|length>=16 else a.start_at }}</div><div><b>{{ a.patient_name }}</b><div class="text-muted small">{{ a.provider_name or 'Profissional não informado' }} · {{ a.title }} · {{ a.status or 'agendada' }}</div></div></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='agenda') }}">Abrir</a></div>{% else %}<div class="text-muted py-4">Nenhuma consulta para hoje.</div>{% endfor %}</div></div></div>
   </div>
   <div class="col-xl-5">
-    <div class="panel-card h-100 reveal reveal-delay-4"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Pendências</div><h2>Retornos e tarefas</h2><p>Contatos e acompanhamentos que precisam de atenção.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat me-1"></i>CRM</a></div><div class="vstack gap-2">{% for t in tasks_due[:6] %}<div class="crm-mini"><b>{{ t.title }}</b><div class="text-muted small">{{ t.patient_name or 'Sem paciente' }} · {{ t.due_date or 'sem data' }}</div></div>{% else %}<div class="text-muted py-4">Sem tarefas pendentes.</div>{% endfor %}</div></div></div>
+    <div class="panel-card h-100 reveal reveal-delay-4 animate-pop animate-pop-4"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Pendências</div><h2>Retornos e tarefas</h2><p>Contatos e acompanhamentos que precisam de atenção.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat me-1"></i>CRM</a></div><div class="vstack gap-2">{% for t in tasks_due[:6] %}<div class="crm-mini"><b>{{ t.title }}</b><div class="text-muted small">{{ t.patient_name or 'Sem paciente' }} · {{ t.due_date or 'sem data' }}</div></div>{% else %}<div class="text-muted py-4">Sem tarefas pendentes.</div>{% endfor %}</div></div></div>
   </div>
 </div>
 
 {% if stats %}
-<div class="info-card mt-4 reveal reveal-delay-5 card-openable" data-open-card>
+<div class="info-card mt-4 reveal reveal-delay-5 animate-pop animate-pop-5 card-openable" data-open-card>
   <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
     <div>
       <div class="eyebrow mb-1">Financeiro</div>
@@ -78,7 +78,7 @@
   </div>
 </div>
 {% else %}
-<div class="info-card mt-4 reveal reveal-delay-5 d-flex align-items-center justify-content-between flex-wrap gap-3">
+<div class="info-card mt-4 reveal reveal-delay-5 animate-pop animate-pop-5 d-flex align-items-center justify-content-between flex-wrap gap-3">
   <div>
     <div class="eyebrow mb-1">Financeiro</div>
     <div class="fw-bold" style="font-size:1.15rem;color:var(--coffee)">Resumo protegido</div>
