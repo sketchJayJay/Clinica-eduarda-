@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 {% set title = "Dashboard | Eduarda Imbelloni" %}
 {% block content %}
-<div class="hero-slim mb-4">
+<div class="hero-slim mb-4 reveal reveal-delay-1">
   <div class="row align-items-center g-3 position-relative" style="z-index:1">
     <div class="col-xl-7">
       <div class="eyebrow mb-2">Painel da clínica</div>
       <h2 class="hero-mini-title">Eduarda Imbelloni Clínica Especializada</h2>
-      <div class="hero-mini-sub">Resumo do dia, com visual mais leve e mais cor.</div>
+      
     </div>
     <div class="col-xl-5">
       <div class="d-flex gap-2 flex-wrap justify-content-xl-end">
@@ -24,10 +24,10 @@
 </div>
 
 <div class="row g-3 mb-4">
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-patients"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-people"></i></div><div><div class="kpi-label">Pacientes</div><div class="kpi-value">{{ ops.patients_total }}</div><div class="kpi-note">Base cadastrada</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-agenda"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-calendar-check"></i></div><div><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div><div class="kpi-note">Atendimentos do dia</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-pendencias"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-bell"></i></div><div><div class="kpi-label">Pendências</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div><div class="kpi-note">Retornos e tarefas</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-financeiro"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-currency-dollar"></i></div><div><div class="kpi-label">Financeiro do dia</div><div class="kpi-value">{% if stats %}R$ {{ stats.income_today }}{% else %}—{% endif %}</div><div class="kpi-note">{% if stats %}Entradas registradas{% else %}Protegido por senha{% endif %}</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-patients reveal reveal-delay-2"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-people"></i></div><div><div class="kpi-label">Pacientes</div><div class="kpi-value">{{ ops.patients_total }}</div><div class="kpi-note">Base cadastrada</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-agenda reveal reveal-delay-3"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-calendar-check"></i></div><div><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div><div class="kpi-note">Atendimentos do dia</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-pendencias reveal reveal-delay-4"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-bell"></i></div><div><div class="kpi-label">Pendências</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div><div class="kpi-note">Retornos e tarefas</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-financeiro reveal reveal-delay-5"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-currency-dollar"></i></div><div><div class="kpi-label">Financeiro do dia</div><div class="kpi-value">{% if stats %}R$ {{ stats.income_today }}{% else %}—{% endif %}</div><div class="kpi-note">{% if stats %}Entradas registradas{% else %}Protegido por senha{% endif %}</div></div></div></div></div>
 </div>
 
 {% if todays_birthdays and todays_birthdays|length > 0 %}
@@ -48,27 +48,37 @@
 
 <div class="row g-3">
   <div class="col-xl-7">
-    <div class="panel-card h-100"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Hoje</div><h2>Agenda do dia</h2><p>O que está programado para o atendimento.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar3 me-1"></i>Agenda</a></div><div class="vstack">{% for a in agenda_today %}<div class="list-row"><div class="d-flex align-items-center gap-3"><div class="row-time">{{ a.start_at[11:16] if a.start_at|length>=16 else a.start_at }}</div><div><b>{{ a.patient_name }}</b><div class="text-muted small">{{ a.provider_name or 'Profissional não informado' }} · {{ a.title }} · {{ a.status or 'agendada' }}</div></div></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='agenda') }}">Abrir</a></div>{% else %}<div class="text-muted py-4">Nenhuma consulta para hoje.</div>{% endfor %}</div></div></div>
+    <div class="panel-card h-100 reveal reveal-delay-3"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Hoje</div><h2>Agenda do dia</h2><p>O que está programado para o atendimento.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar3 me-1"></i>Agenda</a></div><div class="vstack">{% for a in agenda_today %}<div class="list-row"><div class="d-flex align-items-center gap-3"><div class="row-time">{{ a.start_at[11:16] if a.start_at|length>=16 else a.start_at }}</div><div><b>{{ a.patient_name }}</b><div class="text-muted small">{{ a.provider_name or 'Profissional não informado' }} · {{ a.title }} · {{ a.status or 'agendada' }}</div></div></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='agenda') }}">Abrir</a></div>{% else %}<div class="text-muted py-4">Nenhuma consulta para hoje.</div>{% endfor %}</div></div></div>
   </div>
   <div class="col-xl-5">
-    <div class="panel-card h-100"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Pendências</div><h2>Retornos e tarefas</h2><p>Contatos e acompanhamentos que precisam de atenção.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat me-1"></i>CRM</a></div><div class="vstack gap-2">{% for t in tasks_due[:6] %}<div class="crm-mini"><b>{{ t.title }}</b><div class="text-muted small">{{ t.patient_name or 'Sem paciente' }} · {{ t.due_date or 'sem data' }}</div></div>{% else %}<div class="text-muted py-4">Sem tarefas pendentes.</div>{% endfor %}</div></div></div>
+    <div class="panel-card h-100 reveal reveal-delay-4"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Pendências</div><h2>Retornos e tarefas</h2><p>Contatos e acompanhamentos que precisam de atenção.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat me-1"></i>CRM</a></div><div class="vstack gap-2">{% for t in tasks_due[:6] %}<div class="crm-mini"><b>{{ t.title }}</b><div class="text-muted small">{{ t.patient_name or 'Sem paciente' }} · {{ t.due_date or 'sem data' }}</div></div>{% else %}<div class="text-muted py-4">Sem tarefas pendentes.</div>{% endfor %}</div></div></div>
   </div>
 </div>
 
 {% if stats %}
-<div class="info-card mt-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
-  <div>
-    <div class="eyebrow mb-1">Financeiro</div>
-    <div class="fw-bold" style="font-size:1.15rem;color:var(--coffee)">Resumo rápido</div>
-    <div class="text-muted small">Entradas hoje: <b>R$ {{ stats.income_today }}</b> · Pendências: <b>R$ {{ stats.pending_receivables }}</b></div>
+<div class="info-card mt-4 reveal reveal-delay-5 card-openable" data-open-card>
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+      <div class="eyebrow mb-1">Financeiro</div>
+      <div class="fw-bold" style="font-size:1.15rem;color:var(--coffee)">Resumo rápido</div>
+      <div class="text-muted small">Entradas hoje: <b>R$ {{ stats.income_today }}</b> · Pendências: <b>R$ {{ stats.pending_receivables }}</b></div>
+    </div>
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', kind='income', status='pending') }}"><i class="bi bi-exclamation-circle me-1"></i>Pendências</a>
+      <a class="btn btn-brand" href="{{ url_for('finance.transactions') }}"><i class="bi bi-cash-stack me-1"></i>Ver financeiro</a>
+      <button type="button" class="btn action-soft expand-indicator" data-open-toggle aria-label="Expandir resumo financeiro"><i class="bi bi-chevron-down"></i></button>
+    </div>
   </div>
-  <div class="d-flex gap-2 flex-wrap">
-    <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', kind='income', status='pending') }}"><i class="bi bi-exclamation-circle me-1"></i>Pendências</a>
-    <a class="btn btn-brand" href="{{ url_for('finance.transactions') }}"><i class="bi bi-cash-stack me-1"></i>Ver financeiro</a>
+  <div class="expand-body">
+    <div class="row g-3 mt-1">
+      <div class="col-md-4"><div class="crm-mini"><div class="small text-muted">Saídas hoje</div><b>R$ {{ stats.expense_today }}</b></div></div>
+      <div class="col-md-4"><div class="crm-mini"><div class="small text-muted">Entradas no mês</div><b>R$ {{ stats.income_month }}</b></div></div>
+      <div class="col-md-4"><div class="crm-mini"><div class="small text-muted">Saídas no mês</div><b>R$ {{ stats.expense_month }}</b></div></div>
+    </div>
   </div>
 </div>
 {% else %}
-<div class="info-card mt-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+<div class="info-card mt-4 reveal reveal-delay-5 d-flex align-items-center justify-content-between flex-wrap gap-3">
   <div>
     <div class="eyebrow mb-1">Financeiro</div>
     <div class="fw-bold" style="font-size:1.15rem;color:var(--coffee)">Resumo protegido</div>
@@ -89,6 +99,18 @@ async function markBdaySent(patientId, message){
   }catch(e){ console.error(e); alert("Falha ao marcar como enviado."); }
 }
 document.addEventListener("DOMContentLoaded", () => {
+  const openCards = document.querySelectorAll('[data-open-card]');
+  openCards.forEach((card) => {
+    const btn = card.querySelector('[data-open-toggle]');
+    if(btn){
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        card.classList.toggle('is-open');
+      });
+    }
+  });
+
   const hasBirthdays = {{ (todays_birthdays|length) if todays_birthdays else 0 }};
   if(!hasBirthdays) return;
   const key = "bdayModalShown-" + new Date().toLocaleDateString('sv-SE');

@@ -135,3 +135,56 @@ a{text-decoration:none;color:var(--coffee)} a:hover{color:var(--coffee-2)}
 .crm-mini{border-radius:14px; background:linear-gradient(180deg,#fff 0%, #fffdfb 100%)}
 .row-time{background:linear-gradient(135deg,#fff4eb 0%, #fff9f4 100%)}
 .info-card{background:linear-gradient(135deg,#fff 0%, #fffbf7 100%); border-radius:20px}
+
+
+/* V10 - mais cor e microinterações */
+:root{
+  --coral:#d9776c;
+  --pink:#d98b95;
+  --mint:#7eb297;
+  --blue:#7f9fc6;
+  --gold:#d6a15d;
+  --violet:#ae95d8;
+}
+.hero-slim{background:linear-gradient(135deg,#fff7f3 0%, #fffdfb 42%, #f5f8ff 100%)}
+.hero-slim .quick-row{gap:12px}
+.quick-pill{
+  transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease;
+}
+.quick-pill:hover{transform:translateY(-2px) scale(1.01); box-shadow:0 10px 22px rgba(74,48,39,.10)}
+.quick-pill:active{transform:translateY(0) scale(.99)}
+.kpi-card, .panel-card, .info-card, .crm-mini, .list-row, .quick-pill{
+  transition:transform .22s ease, box-shadow .22s ease, border-color .22s ease, background .22s ease;
+}
+.kpi-card:hover, .panel-card:hover, .info-card:hover{transform:translateY(-3px); box-shadow:0 14px 30px rgba(74,48,39,.10)}
+.crm-mini:hover{transform:translateY(-2px); box-shadow:0 10px 18px rgba(74,48,39,.07); border-color:#e6cbbb}
+.list-row:hover{background:linear-gradient(90deg, rgba(255,245,237,.8), rgba(255,255,255,.96)); border-radius:14px; padding-left:8px; padding-right:8px}
+.kpi-card.compact .kpi-value{transition:transform .24s ease, color .24s ease}
+.kpi-card.compact:hover .kpi-value{transform:scale(1.03)}
+.kpi-card.compact.kpi-patients{background:linear-gradient(135deg,#fff 0%, #fff1f3 100%)}
+.kpi-card.compact.kpi-patients:before{background:linear-gradient(180deg,var(--pink), #f0b4bc)}
+.kpi-card.compact.kpi-patients .kpi-icon{background:linear-gradient(135deg,#fce7ea 0%, #f6cfd5 100%); color:#9b5058}
+.kpi-card.compact.kpi-agenda{background:linear-gradient(135deg,#fff 0%, #edf5ff 100%)}
+.kpi-card.compact.kpi-agenda:before{background:linear-gradient(180deg,var(--blue), #b8cdea)}
+.kpi-card.compact.kpi-agenda .kpi-icon{background:linear-gradient(135deg,#e8f1ff 0%, #d2e4fb 100%); color:#4f6f98}
+.kpi-card.compact.kpi-pendencias{background:linear-gradient(135deg,#fff 0%, #fff4e8 100%)}
+.kpi-card.compact.kpi-pendencias:before{background:linear-gradient(180deg,var(--gold), #efc48f)}
+.kpi-card.compact.kpi-pendencias .kpi-icon{background:linear-gradient(135deg,#fff0db 0%, #f8dfbb 100%); color:#9f6c2e}
+.kpi-card.compact.kpi-financeiro{background:linear-gradient(135deg,#fff 0%, #eef9f0 100%)}
+.kpi-card.compact.kpi-financeiro:before{background:linear-gradient(180deg,var(--mint), #b3d8c1)}
+.kpi-card.compact.kpi-financeiro .kpi-icon{background:linear-gradient(135deg,#e8f6ed 0%, #d2eadb 100%); color:#4c7a61}
+.section-head h2{position:relative}
+.section-head h2:after{content:""; position:absolute; left:0; bottom:-6px; width:38px; height:3px; border-radius:999px; background:linear-gradient(90deg,var(--accent), transparent)}
+.btn, .nav-ico, .row-time{transition:transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease}
+.btn:hover{box-shadow:0 10px 18px rgba(74,48,39,.10)}
+.nav-ico{box-shadow:inset 0 0 0 1px rgba(255,255,255,.45)}
+.sidebar-nav a:hover .nav-ico{transform:scale(1.07)}
+.row-time{box-shadow:inset 0 0 0 1px rgba(255,255,255,.55)}
+.reveal{opacity:0; transform:translateY(16px); animation:fadeRise .5s ease forwards}
+.reveal-delay-1{animation-delay:.05s}.reveal-delay-2{animation-delay:.12s}.reveal-delay-3{animation-delay:.18s}.reveal-delay-4{animation-delay:.24s}.reveal-delay-5{animation-delay:.30s}.reveal-delay-6{animation-delay:.36s}
+@keyframes fadeRise{to{opacity:1; transform:translateY(0)}}
+.card-openable{cursor:pointer}
+.card-openable .expand-indicator{transition:transform .22s ease}
+.card-openable.is-open .expand-indicator{transform:rotate(180deg)}
+.expand-body{max-height:0; overflow:hidden; transition:max-height .28s ease, margin-top .28s ease, opacity .28s ease; opacity:0}
+.card-openable.is-open .expand-body{max-height:180px; opacity:1; margin-top:10px}
