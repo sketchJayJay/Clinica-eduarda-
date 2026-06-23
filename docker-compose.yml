@@ -6,7 +6,7 @@ services:
     restart: unless-stopped
     environment:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
-      DB_PATH: ${DB_PATH:-/data/eduarda_imbelloni_premium.db}
+      DB_PATH: ${DB_PATH:-/data/eduarda_imbelloni_premium_v3.db}
       UPLOAD_FOLDER: ${UPLOAD_FOLDER:-/data/uploads}
       CLINIC_NAME: ${CLINIC_NAME:-Eduarda Imbelloni Clínica Especializada}
       ASAAS_API_KEY: ${ASAAS_API_KEY:-}

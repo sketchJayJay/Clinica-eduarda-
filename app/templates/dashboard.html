@@ -29,6 +29,13 @@
   </div>
 </div>
 
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Pacientes cadastrados</div><div class="kpi-value">{{ ops.patients_total }}</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Tarefas do dia</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Consultas 7 dias</div><div class="kpi-value">{{ ops.week_appointments }}</div></div></div></div>
+</div>
+
 {% if todays_birthdays and todays_birthdays|length > 0 %}
 <div class="alert alert-warning border shadow-sm d-flex align-items-center justify-content-between flex-wrap gap-2">
   <div>
@@ -106,6 +113,13 @@
       <div class="quick-sub">Calendário geral (arrastar e soltar)</div>
     </a>
 
+    <a class="quick-card" href="{{ url_for('crm.index') }}">
+      <div class="quick-icon">◎</div>
+      <div class="quick-title">CRM/Retornos</div>
+      <div class="quick-sub">Tarefas, leads e resgate</div>
+      {% if ops.tasks_due_count > 0 %}<span class="quick-badge">{{ ops.tasks_due_count }} hoje</span>{% endif %}
+    </a>
+
     <a class="quick-card" href="{{ url_for('birthdays.list_birthdays') }}">
       <div class="quick-icon">🎂</div>
       <div class="quick-title">Aniversários</div>
@@ -162,6 +176,28 @@
     </a>
   </div>
 </div>
+
+<div class="row g-3 mb-4">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h6 class="mb-0">Agenda de hoje</h6><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}">Abrir agenda</a></div>
+      <div class="vstack gap-2">
+      {% for a in agenda_today %}<div class="crm-mini d-flex justify-content-between gap-2"><div><b>{{ a.start_at[11:16] if a.start_at|length>=16 else a.start_at }}</b> · {{ a.patient_name }}<div class="text-muted small">{{ a.provider_name or '—' }} · {{ a.title }} · {{ a.status or 'agendada' }}</div></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='agenda') }}">Abrir</a></div>{% else %}<div class="text-muted">Nenhuma consulta para hoje.</div>{% endfor %}
+      </div>
+    </div></div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-3"><h6 class="mb-0">Tarefas e leads para contato</h6><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('crm.index') }}">Abrir CRM</a></div>
+      <div class="row g-3">
+        <div class="col-md-6"><div class="small text-muted mb-2">Tarefas</div>{% for t in tasks_due[:5] %}<div class="crm-mini mb-2"><b>{{ t.title }}</b><div class="text-muted small">{{ t.patient_name or 'Sem paciente' }} · {{ t.due_date or 'sem data' }}</div></div>{% else %}<div class="text-muted small">Sem tarefas pendentes.</div>{% endfor %}</div>
+        <div class="col-md-6"><div class="small text-muted mb-2">Leads</div>{% for l in leads_due[:5] %}<div class="crm-mini mb-2"><b>{{ l.name }}</b><div class="text-muted small">{{ l.interest or 'interesse não informado' }} · {{ l.next_contact_date or 'sem data' }}</div></div>{% else %}<div class="text-muted small">Sem leads pendentes.</div>{% endfor %}</div>
+      </div>
+    </div></div>
+  </div>
+</div>
+
+{% if open_budgets and open_budgets|length > 0 %}
+<div class="card border-0 shadow-sm mb-4"><div class="card-body"><div class="d-flex justify-content-between align-items-center mb-2"><h6 class="mb-0">Orçamentos abertos</h6><span class="badge text-bg-light border">{{ open_budgets|length }} recentes</span></div><div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Paciente</th><th>Descrição</th><th class="text-end">Valor</th><th></th></tr></thead><tbody>{% for b in open_budgets %}<tr><td>{{ b.patient_name }}</td><td>{{ b.description }}</td><td class="text-end">R$ {{ '%0.2f'|format((b.amount_cents or 0)/100)|replace('.', ',') }}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=b.patient_id, tab='orcamentos') }}">Abrir</a></td></tr>{% endfor %}</tbody></table></div></div></div>
+{% endif %}
 
 {% if stats %}
 <div class="row g-3">

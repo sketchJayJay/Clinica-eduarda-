@@ -14,7 +14,7 @@ from .utils import cents_to_brl, parse_brl_to_cents
 
 bp = Blueprint("patients", __name__, url_prefix="/patients")
 
-TABS = {"resumo", "orcamentos", "plano_ficha", "anamnese", "agenda", "odontograma", "fotos", "timeline"}
+TABS = {"resumo", "orcamentos", "plano_ficha", "anamnese", "agenda", "odontograma", "fotos", "retornos", "timeline"}
 
 
 def _dtlocal_to_sql(dtlocal: str | None) -> str | None:
@@ -132,6 +132,7 @@ def view_patient(pid: int):
         return redirect(url_for("patients.list_patients"))
 
     providers = db.execute("SELECT * FROM providers WHERE active=1 ORDER BY name ASC").fetchall()
+    procedures = db.execute("SELECT * FROM procedure_catalog WHERE active=1 ORDER BY name COLLATE NOCASE").fetchall()
     budgets = db.execute("SELECT * FROM budgets WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall()
 
     plan_rows = db.execute("SELECT * FROM plan_items WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall()
@@ -197,7 +198,12 @@ def view_patient(pid: int):
         (pid,),
     ).fetchall() if tab in {"fotos", "resumo", "timeline"} else []
 
-    # Linha do tempo misturando clínica, agenda, orçamento, financeiro e fotos
+    tasks = db.execute(
+        "SELECT * FROM patient_tasks WHERE patient_id=? ORDER BY CASE status WHEN 'aberta' THEN 0 ELSE 1 END, COALESCE(due_date,'9999-12-31') ASC, id DESC",
+        (pid,),
+    ).fetchall() if tab in {"retornos", "resumo", "timeline"} else []
+
+    # Linha do tempo misturando clínica, agenda, orçamento, financeiro, fotos e retornos
     timeline = []
     for b in budgets[:8]:
         timeline.append({"date": b["created_at"], "icon": "🧾", "title": "Orçamento", "text": f"{b['description']} • R$ {cents_to_brl(b['amount_cents'])} • {b['status']}"})
@@ -209,6 +215,8 @@ def view_patient(pid: int):
         timeline.append({"date": t["created_at"] or t["date"], "icon": "💰", "title": "Financeiro", "text": f"{t['description'] or 'Lançamento'} • R$ {cents_to_brl(t['final_amount_cents'] or t['amount_cents'])} • {t['status']}"})
     for ph in photos[:8]:
         timeline.append({"date": ph["created_at"], "icon": "📸", "title": "Foto do tratamento", "text": ph["caption"] or ph["original_name"] or "Foto adicionada"})
+    for task in tasks[:8]:
+        timeline.append({"date": task["due_date"] or task["created_at"], "icon": "◎", "title": "Retorno/CRM", "text": f"{task['title']} • {task['priority']} • {task['status']}"})
     timeline.sort(key=lambda x: (x.get("date") or ""), reverse=True)
     timeline = timeline[:18]
 
@@ -228,6 +236,7 @@ def view_patient(pid: int):
         patient=patient,
         tab=tab,
         providers=providers,
+        procedures=procedures,
         budgets=budgets,
         plan=plan,
         records=records,
@@ -237,6 +246,7 @@ def view_patient(pid: int):
         mapa=mapa,
         tx=tx,
         photos=photos,
+        tasks=tasks,
         timeline=timeline,
         finance_summary=finance_summary,
         plan_summary=plan_summary,
@@ -246,6 +256,54 @@ def view_patient(pid: int):
         sql_to_br=_sql_to_br,
         phone_to_whatsapp=_phone_to_whatsapp,
     )
+
+
+@bp.post("/<int:pid>/tasks/add")
+@login_required
+def task_add(pid: int):
+    title = (request.form.get("title") or "").strip()
+    due_date = (request.form.get("due_date") or "").strip() or None
+    priority = (request.form.get("priority") or "normal").strip()
+    note = (request.form.get("note") or "").strip() or None
+    if priority not in {"baixa", "normal", "alta", "urgente"}:
+        priority = "normal"
+    if not title:
+        flash("Informe a tarefa/retorno.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="retornos"))
+    db = get_db()
+    db.execute(
+        "INSERT INTO patient_tasks(patient_id, title, due_date, priority, note) VALUES(?,?,?,?,?)",
+        (pid, title, due_date, priority, note),
+    )
+    db.commit()
+    flash("Retorno/tarefa salvo ✅", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="retornos"))
+
+
+@bp.post("/<int:pid>/tasks/<int:tid>/toggle")
+@login_required
+def task_toggle(pid: int, tid: int):
+    db = get_db()
+    task = db.execute("SELECT * FROM patient_tasks WHERE id=? AND patient_id=?", (tid, pid)).fetchone()
+    if not task:
+        flash("Tarefa não encontrada.", "warning")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="retornos"))
+    if task["status"] == "feito":
+        db.execute("UPDATE patient_tasks SET status='aberta', done_at=NULL WHERE id=? AND patient_id=?", (tid, pid))
+    else:
+        db.execute("UPDATE patient_tasks SET status='feito', done_at=datetime('now') WHERE id=? AND patient_id=?", (tid, pid))
+    db.commit()
+    return redirect(url_for("patients.view_patient", pid=pid, tab="retornos"))
+
+
+@bp.post("/<int:pid>/tasks/<int:tid>/delete")
+@login_required
+def task_delete(pid: int, tid: int):
+    db = get_db()
+    db.execute("DELETE FROM patient_tasks WHERE id=? AND patient_id=?", (tid, pid))
+    db.commit()
+    flash("Tarefa removida.", "info")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="retornos"))
 
 @bp.route("/<int:pid>/edit", methods=["GET", "POST"])
 @login_required

@@ -1,31 +1,19 @@
-EDUARDA IMBELLONI CLÍNICA ESPECIALIZADA - PREMIUM V2
+Eduarda Imbelloni Clínica Especializada - Premium V3
 
-LOGIN INICIAL
+LOGIN INICIAL:
 Usuário: admin
 Senha: admin123
 Senha do financeiro: eduarda2026
 
-COOLIFY
+COOLIFY:
 Porta interna: 8000
 Volume persistente: /data
+Banco recomendado: /data/eduarda_imbelloni_premium_v3.db
 
-VARIÁVEIS
-SECRET_KEY=coloque-uma-chave-grande-aqui
-DB_PATH=/data/eduarda_imbelloni_premium.db
-UPLOAD_FOLDER=/data/uploads
-FINANCE_PASSWORD=eduarda2026
-ASAAS_ENV=sandbox
-ASAAS_API_KEY=
+ASAAS:
+O botão/lugar da cobrança já está pronto.
+Para emitir real, configure ASAAS_API_KEY e ASAAS_ENV=production.
+Para testes, use ASAAS_ENV=sandbox.
 
-MELHORIAS
-- Painel premium do paciente
-- Linha do tempo
-- Fotos do tratamento
-- Agenda com status
-- WhatsApp para lembrete e cobrança
-- Asaas com boleto/Pix preparado
-- Backup pelo painel
-- Usuários e permissões
-- Configurações da clínica editáveis
-
-Depois de publicar, acesse Configurações para trocar senhas, cadastrar dados da clínica e, quando tiver, inserir a chave do Asaas.
+NOVIDADES V3:
+CRM, leads, retornos, tarefas, resgate de pacientes, painel inicial mais completo, menu mobile e PWA instalável.

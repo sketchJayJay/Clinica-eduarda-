@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% set title = "CRM e Retornos" %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <div class="eyebrow">Central de relacionamento</div>
+    <h3 class="mb-1">CRM, retornos e tarefas</h3>
+    <div class="text-muted">Aqui a recepção vê quem precisa de contato, consulta, cobrança e retorno. Sem virar caça ao tesouro.</div>
+  </div>
+  <a class="btn btn-brand" href="{{ url_for('patients.new_patient') }}">Novo paciente</a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-6 col-xl-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Tarefas abertas</div><div class="kpi-value">{{ stats.tasks_open }}</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Tarefas vencidas</div><div class="kpi-value text-danger">{{ stats.tasks_overdue }}</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Leads em aberto</div><div class="kpi-value">{{ stats.leads_open }}</div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Consultas 7 dias</div><div class="kpi-value">{{ stats.appointments_week }}</div></div></div></div>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h6 class="mb-3">Nova tarefa / retorno</h6>
+        <form method="post" action="{{ url_for('crm.task_add') }}" class="row g-2">
+          <div class="col-12"><input class="form-control" name="title" placeholder="Ex.: Ligar para confirmar manutenção" required></div>
+          <div class="col-md-6"><select class="form-select" name="patient_id"><option value="">Sem paciente vinculado</option>{% for p in patients %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></div>
+          <div class="col-md-3"><input class="form-control" type="date" name="due_date" value="{{ today }}"></div>
+          <div class="col-md-3"><select class="form-select" name="priority"><option value="normal">Normal</option><option value="alta">Alta</option><option value="urgente">Urgente</option><option value="baixa">Baixa</option></select></div>
+          <div class="col-12"><input class="form-control" name="note" placeholder="Observação rápida"></div>
+          <div class="col-12 d-grid"><button class="btn btn-brand">Salvar tarefa</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+          <h6 class="mb-0">Tarefas</h6>
+          <div class="btn-group btn-group-sm">
+            <a class="btn btn-outline-secondary {{ 'active' if task_filter=='aberta' else '' }}" href="{{ url_for('crm.index', task_status='aberta') }}">Abertas</a>
+            <a class="btn btn-outline-secondary {{ 'active' if task_filter=='feito' else '' }}" href="{{ url_for('crm.index', task_status='feito') }}">Feitas</a>
+            <a class="btn btn-outline-secondary {{ 'active' if task_filter=='todos' else '' }}" href="{{ url_for('crm.index', task_status='todos') }}">Todas</a>
+          </div>
+        </div>
+        <div class="vstack gap-2">
+          {% for t in tasks %}
+          <div class="crm-item {{ 'crm-done' if t.status=='feito' else '' }}">
+            <div class="d-flex justify-content-between gap-2">
+              <div>
+                <div class="fw-semibold">{{ t.title }}</div>
+                <div class="text-muted small">
+                  {% if t.patient_name %}<a href="{{ url_for('patients.view_patient', pid=t.patient_id, tab='retornos') }}">{{ t.patient_name }}</a> · {% endif %}
+                  {{ t.due_date or 'Sem data' }} · prioridade {{ t.priority }}
+                </div>
+                {% if t.note %}<div class="small mt-1">{{ t.note }}</div>{% endif %}
+              </div>
+              <div class="d-flex gap-1 flex-wrap justify-content-end">
+                {% if t.patient_phone %}<a class="btn btn-sm btn-outline-success" target="_blank" href="{{ wa(t.patient_phone, 'Olá, ' ~ t.patient_name ~ '! Aqui é da ' ~ clinic ~ '.') }}">WhatsApp</a>{% endif %}
+                <form method="post" action="{{ url_for('crm.task_toggle', tid=t.id) }}"><button class="btn btn-sm {{ 'btn-outline-secondary' if t.status=='feito' else 'btn-outline-success' }}">{{ 'Reabrir' if t.status=='feito' else 'Concluir' }}</button></form>
+                <form method="post" action="{{ url_for('crm.task_delete', tid=t.id) }}" onsubmit="return confirm('Remover tarefa?')"><button class="btn btn-sm btn-outline-danger">Excluir</button></form>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="text-muted text-center py-3">Nenhuma tarefa nessa lista.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h6 class="mb-3">Novo lead / possível paciente</h6>
+        <form method="post" action="{{ url_for('crm.lead_add') }}" class="row g-2">
+          <div class="col-md-4"><input class="form-control" name="name" placeholder="Nome" required></div>
+          <div class="col-md-3"><input class="form-control" name="phone" placeholder="Telefone"></div>
+          <div class="col-md-3"><input class="form-control" name="interest" placeholder="Interesse"></div>
+          <div class="col-md-2"><input class="form-control" type="date" name="next_contact_date"></div>
+          <div class="col-md-4"><input class="form-control" name="source" placeholder="Origem: Instagram, indicação..."></div>
+          <div class="col-md-8"><input class="form-control" name="notes" placeholder="Observação"></div>
+          <div class="col-12 d-grid"><button class="btn btn-brand">Salvar lead</button></div>
+        </form>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-3">
+      <div class="card-body">
+        <h6 class="mb-3">Leads e oportunidades</h6>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead class="table-light"><tr><th>Nome</th><th>Interesse</th><th>Próximo contato</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+            {% for l in leads %}
+              <tr>
+                <td><b>{{ l.name }}</b><div class="text-muted small">{{ l.phone or '' }}{% if l.source %} · {{ l.source }}{% endif %}</div>{% if l.notes %}<div class="small">{{ l.notes }}</div>{% endif %}</td>
+                <td>{{ l.interest or '—' }}</td>
+                <td>{{ l.next_contact_date or '—' }}</td>
+                <td><form method="post" action="{{ url_for('crm.lead_status', lid=l.id) }}"><select class="form-select form-select-sm" name="status" onchange="this.form.submit()">{% for st in ['novo','contato','orçamento','agendado','convertido','perdido'] %}<option value="{{ st }}" {% if l.status==st %}selected{% endif %}>{{ st }}</option>{% endfor %}</select></form></td>
+                <td class="text-end">
+                  {% if l.phone %}<a class="btn btn-sm btn-outline-success" target="_blank" href="{{ wa(l.phone, 'Olá, ' ~ l.name ~ '! Aqui é da ' ~ clinic ~ '. Vi seu interesse e gostaria de te ajudar com o agendamento.') }}">WhatsApp</a>{% endif %}
+                  <form method="post" class="d-inline" action="{{ url_for('crm.lead_delete', lid=l.id) }}" onsubmit="return confirm('Remover lead?')"><button class="btn btn-sm btn-outline-danger">Excluir</button></form>
+                </td>
+              </tr>
+            {% else %}
+              <tr><td colspan="5" class="text-center text-muted py-3">Nenhum lead cadastrado.</td></tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-xl-6">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body"><h6 class="mb-3">Consultas dos próximos 7 dias</h6>
+          <div class="vstack gap-2">{% for a in upcoming %}<div class="crm-mini"><b>{{ a.patient_name }}</b><div class="text-muted small">{{ a.start_at[:16].replace('T',' ') }} · {{ a.provider_name or '—' }} · {{ a.status or 'agendada' }}</div></div>{% else %}<div class="text-muted">Sem consultas próximas.</div>{% endfor %}</div>
+        </div></div>
+      </div>
+      <div class="col-xl-6">
+        <div class="card border-0 shadow-sm h-100"><div class="card-body"><h6 class="mb-3">Pacientes para resgatar</h6>
+          <div class="vstack gap-2">{% for p in no_return %}<div class="crm-mini d-flex justify-content-between gap-2"><div><b>{{ p.name }}</b><div class="text-muted small">Última visita: {{ p.last_visit or 'sem agenda' }}</div></div>{% if p.phone %}<a class="btn btn-sm btn-outline-success" target="_blank" href="{{ wa(p.phone, 'Olá, ' ~ p.name ~ '! Aqui é da ' ~ clinic ~ '. Estamos passando para lembrar do seu retorno/revisão.') }}">WhatsApp</a>{% endif %}</div>{% else %}<div class="text-muted">Nenhum paciente parado encontrado.</div>{% endfor %}</div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mt-3"><div class="card-body"><h6 class="mb-3">Cobranças vencidas</h6>
+      <div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Paciente</th><th>Descrição</th><th>Vencimento</th><th class="text-end">Saldo</th><th></th></tr></thead><tbody>
+      {% for t in overdue_receivables %}<tr><td>{{ t.patient_name or '—' }}</td><td>{{ t.description or '' }}</td><td>{{ t.due_date or t.date }}</td><td class="text-end">R$ {{ cents_to_brl(t.balance_cents or t.amount_cents or 0) }}</td><td class="text-end">{% if t.patient_phone %}<a class="btn btn-sm btn-outline-success" target="_blank" href="{{ wa(t.patient_phone, 'Olá! Aqui é da ' ~ clinic ~ '. Estou entrando em contato sobre uma pendência financeira. Podemos te ajudar?') }}">Cobrar</a>{% endif %}</td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-3">Nenhuma cobrança vencida.</td></tr>{% endfor %}
+      </tbody></table></div>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

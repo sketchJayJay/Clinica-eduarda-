@@ -144,6 +144,46 @@ def _ensure_premium_migrations(db: sqlite3.Connection) -> None:
         title TEXT NOT NULL,
         body TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS patient_tasks(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER,
+        title TEXT NOT NULL,
+        due_date TEXT,
+        priority TEXT NOT NULL DEFAULT 'normal',
+        status TEXT NOT NULL DEFAULT 'aberta',
+        note TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        done_at TEXT,
+        FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_tasks_due ON patient_tasks(due_date);
+    CREATE INDEX IF NOT EXISTS idx_tasks_status ON patient_tasks(status);
+    CREATE INDEX IF NOT EXISTS idx_tasks_patient ON patient_tasks(patient_id);
+
+    CREATE TABLE IF NOT EXISTS leads(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        phone TEXT,
+        source TEXT,
+        interest TEXT,
+        status TEXT NOT NULL DEFAULT 'novo',
+        next_contact_date TEXT,
+        notes TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
+    CREATE INDEX IF NOT EXISTS idx_leads_next_contact ON leads(next_contact_date);
+
+    CREATE TABLE IF NOT EXISTS procedure_catalog(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL UNIQUE,
+        default_price_cents INTEGER NOT NULL DEFAULT 0,
+        category TEXT,
+        active INTEGER NOT NULL DEFAULT 1,
+        created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_procedure_catalog_active ON procedure_catalog(active);
     """)
 
 
@@ -388,6 +428,9 @@ def ensure_seed_data():
         "finance_password": "eduarda2026",
         "asaas_env": "sandbox",
         "asaas_api_key": "",
+        "patient_portal_enabled": "0",
+        "clinic_primary_color": "#965B43",
+        "clinic_accent_color": "#CFA66D",
     }
     for key, value in default_settings.items():
         db.execute("INSERT OR IGNORE INTO app_settings(key, value) VALUES(?, ?)", (key, value))
@@ -400,6 +443,17 @@ def ensure_seed_data():
     ]
     for key, title, body in default_templates:
         db.execute("INSERT OR IGNORE INTO message_templates(key, title, body) VALUES(?,?,?)", (key, title, body))
+
+    default_procedures = [
+        ("Consulta avaliação", 0, "Consulta"),
+        ("Clareamento", 0, "Estética"),
+        ("Restauração", 0, "Clínico"),
+        ("Limpeza / Profilaxia", 0, "Preventivo"),
+        ("Manutenção ortodôntica", 0, "Ortodontia"),
+        ("Extração", 0, "Cirúrgico"),
+    ]
+    for name, price, category in default_procedures:
+        db.execute("INSERT OR IGNORE INTO procedure_catalog(name, default_price_cents, category) VALUES(?,?,?)", (name, price, category))
     db.commit()
 
 def get_open_cash_session_id() -> int | None:

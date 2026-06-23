@@ -10,6 +10,7 @@ from .patients import bp as patients_bp
 from .finance import bp as finance_bp
 from .agenda import bp as agenda_bp
 from .birthdays import bp as birthdays_bp
+from .crm import bp as crm_bp
 
 def create_app() -> Flask:
     app = Flask(__name__, instance_relative_config=True)
@@ -27,7 +28,7 @@ def create_app() -> Flask:
     app.config["ASAAS_API_KEY"] = os.environ.get("ASAAS_API_KEY", "")
     app.config["ASAAS_ENV"] = os.environ.get("ASAAS_ENV", "sandbox")
     app.config["UPLOAD_FOLDER"] = os.environ.get("UPLOAD_FOLDER", "/data/uploads")
-    app.config["APP_VERSION"] = "Premium V2"
+    app.config["APP_VERSION"] = "Premium V3"
 
     # Proteção extra do Financeiro (senha separada do login)
     # Pode alterar via variável de ambiente FINANCE_PASSWORD (ou FINANCE_PASS)
@@ -70,7 +71,7 @@ def create_app() -> Flask:
             "CLINIC_RESPONSIBLE": pick("CLINIC_RESPONSIBLE", "clinic_responsible", ""),
             "CLINIC_CNPJ": pick("CLINIC_CNPJ", "clinic_cnpj", ""),
             "ASAAS_ENV": app.config.get("ASAAS_ENV") or settings.get("asaas_env", "sandbox"),
-            "APP_VERSION": app.config.get("APP_VERSION", "Premium V2"),
+            "APP_VERSION": app.config.get("APP_VERSION", "Premium V3"),
             "current_role": role,
         }
 
@@ -81,6 +82,7 @@ def create_app() -> Flask:
     app.register_blueprint(finance_bp)
     app.register_blueprint(agenda_bp)
     app.register_blueprint(birthdays_bp)
+    app.register_blueprint(crm_bp)
 
     # DB teardown
     app.teardown_appcontext(close_db)

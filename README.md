@@ -1,4 +1,4 @@
-# Eduarda Imbelloni Clínica Especializada - Premium V2
+# Eduarda Imbelloni Clínica Especializada - Premium V3
 
 Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.
 
@@ -32,7 +32,7 @@ O banco e uploads ficam em `/data`.
 
 ```env
 SECRET_KEY=coloque-uma-chave-grande-aqui
-DB_PATH=/data/eduarda_imbelloni_premium.db
+DB_PATH=/data/eduarda_imbelloni_premium_v3.db
 UPLOAD_FOLDER=/data/uploads
 FINANCE_PASSWORD=eduarda2026
 ASAAS_ENV=sandbox
@@ -46,7 +46,21 @@ ASAAS_ENV=production
 ASAAS_API_KEY=sua_chave_real
 ```
 
-## Melhorias da versão Premium V2
+## Melhorias da versão Premium V3
+
+- CRM de relacionamento com pacientes
+- Controle de leads e possíveis pacientes
+- Tarefas e retornos por paciente
+- Pacientes para resgatar automaticamente, sem retorno há muito tempo
+- Painel inicial com agenda do dia, tarefas do dia, leads e orçamentos abertos
+- Menu inferior no celular, com cara de aplicativo
+- PWA preparado: pode instalar no celular como app pelo navegador
+- Catálogo inicial de procedimentos para agilizar orçamentos
+- Cobranças vencidas visíveis no CRM com botão WhatsApp
+- Cards operacionais para recepção trabalhar mais rápido
+- Dashboard mais completo e mais comercial
+
+## Já vinha da versão Premium V2
 
 - Painel do paciente com resumo premium
 - Linha do tempo do paciente

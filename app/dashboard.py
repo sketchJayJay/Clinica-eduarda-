@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from urllib.parse import quote
 from flask import current_app
 from flask import Blueprint, render_template, request, session
@@ -105,4 +105,65 @@ def index():
             "sent": int(r["id"]) in sent_today,
         })
 
-    return render_template("dashboard.html", stats=stats, todays_birthdays=todays_birthdays)
+    # Premium V3: operacional do dia, consultas próximas, tarefas e leads
+    week_end = (date.today() + timedelta(days=7)).isoformat()
+    agenda_today = db.execute(
+        """
+        SELECT a.*, p.name AS patient_name, p.phone AS patient_phone, pr.name AS provider_name
+        FROM appointments a
+        JOIN patients p ON p.id=a.patient_id
+        LEFT JOIN providers pr ON pr.id=a.provider_id
+        WHERE substr(a.start_at,1,10)=?
+        ORDER BY a.start_at ASC
+        LIMIT 12
+        """,
+        (today,),
+    ).fetchall()
+    tasks_due = db.execute(
+        """
+        SELECT t.*, p.name AS patient_name, p.phone AS patient_phone
+        FROM patient_tasks t
+        LEFT JOIN patients p ON p.id=t.patient_id
+        WHERE t.status='aberta' AND (t.due_date IS NULL OR t.due_date<=?)
+        ORDER BY COALESCE(t.due_date,'9999-12-31') ASC,
+          CASE t.priority WHEN 'urgente' THEN 0 WHEN 'alta' THEN 1 WHEN 'normal' THEN 2 ELSE 3 END,
+          t.id DESC
+        LIMIT 10
+        """,
+        (today,),
+    ).fetchall()
+    leads_due = db.execute(
+        """
+        SELECT * FROM leads
+        WHERE status NOT IN ('convertido','perdido') AND (next_contact_date IS NULL OR next_contact_date<=?)
+        ORDER BY COALESCE(next_contact_date,'9999-12-31') ASC, id DESC
+        LIMIT 10
+        """,
+        (today,),
+    ).fetchall()
+    open_budgets = db.execute(
+        """
+        SELECT b.*, p.name AS patient_name
+        FROM budgets b JOIN patients p ON p.id=b.patient_id
+        WHERE b.status='aberto'
+        ORDER BY b.id DESC LIMIT 10
+        """
+    ).fetchall()
+    ops = {
+        "patients_total": db.execute("SELECT COUNT(*) c FROM patients").fetchone()["c"],
+        "agenda_today_count": len(agenda_today),
+        "tasks_due_count": len(tasks_due),
+        "leads_due_count": len(leads_due),
+        "week_appointments": db.execute("SELECT COUNT(*) c FROM appointments WHERE substr(start_at,1,10) BETWEEN ? AND ?", (today, week_end)).fetchone()["c"],
+    }
+
+    return render_template(
+        "dashboard.html",
+        stats=stats,
+        todays_birthdays=todays_birthdays,
+        agenda_today=agenda_today,
+        tasks_due=tasks_due,
+        leads_due=leads_due,
+        open_budgets=open_budgets,
+        ops=ops,
+    )
