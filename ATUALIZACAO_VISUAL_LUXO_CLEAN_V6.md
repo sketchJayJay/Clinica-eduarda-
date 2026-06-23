@@ -1,4 +1,4 @@
-# Atualização Visual Luxo Clean V6
+# Atualização Visual Luxo Clean V7
 
 Redesign feito para corrigir o visual anterior e deixar o sistema com aparência mais sofisticada, leve e alinhada à marca Eduarda Imbelloni Clínica Especializada.
 

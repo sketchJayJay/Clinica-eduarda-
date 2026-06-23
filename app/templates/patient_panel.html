@@ -2,24 +2,15 @@
 {% set title = p.name %}
 {% block content %}
 
-<!-- Painel do Paciente (visual Eduarda V6) -->
+<!-- Painel do Paciente (visual Eduarda V7) -->
 <style>
   main.container{max-width:1280px}
-  .ph-header{
-    display:flex;align-items:center;justify-content:space-between;gap:14px;
-    border-radius:30px!important;padding:22px!important;
-    background:linear-gradient(135deg,#fff 0%,#fff5ec 100%)!important;
-    border:1px solid var(--line)!important;box-shadow:var(--shadow-xs)!important;
-  }
+  .ph-header{display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:20px!important;padding:20px!important;background:#fff!important;border:1px solid var(--line)!important;box-shadow:var(--shadow-xs)!important}
+  .ph-header .btn{background:#fff;border:1px solid var(--line-2);color:var(--coffee)}
   .table{width:100%;border-collapse:collapse}
   .table th,.table td{border-bottom:1px solid var(--line);padding:12px;text-align:left;vertical-align:top}
-  .table th{background:#fbf5ee;color:var(--coffee);font-weight:900}
-  @media print{
-    nav,.navbar,.app-sidebar,.desktop-topline,.tabs,.btn,.alert,.mobile-dock{display:none!important}
-    #odontograma-wrap{page-break-inside:avoid}
-    body{background:#fff!important}
-    .card{border:none!important;box-shadow:none!important}
-  }
+  .table th{background:#fbf6f0;color:var(--coffee);font-weight:900}
+  @media print{nav,.navbar,.app-sidebar,.desktop-topline,.tabs,.btn,.alert,.mobile-dock{display:none!important}#odontograma-wrap{page-break-inside:avoid}body{background:#fff!important}.card{border:none!important;box-shadow:none!important}}
 </style>
 
 <div class="card ph-header">
@@ -49,7 +40,7 @@
     <form method="post" action="{{ url_for('patients.budget_add', pid=p.id) }}" class="grid2" style="align-items:end">
       <input class="field" name="description" placeholder="Descrição do procedimento" required>
       <input class="field" name="amount" type="text" step="0.01" placeholder="Valor (R$)" required inputmode="decimal" pattern="[0-9.,]+">
-      <button class="btn primary" style="grid-column: 1 / -1">Adicionar</button>
+      <button class="btn btn-brand" style="grid-column: 1 / -1">Adicionar</button>
     </form>
   </div>
 
@@ -187,7 +178,7 @@
           <textarea class="field" name="conduta"></textarea>
         </label>
       </div>
-      <button class="btn primary" style="margin-top:10px">Salvar Ficha</button>
+      <button class="btn btn-brand" style="margin-top:10px">Salvar Ficha</button>
     </form>
   </div>
 
@@ -285,7 +276,7 @@
         <textarea class="field" name="observacoes"></textarea>
       </label>
 
-      <button class="btn primary" style="grid-column: 1 / -1">Salvar Anamnese</button>
+      <button class="btn btn-brand" style="grid-column: 1 / -1">Salvar Anamnese</button>
     </form>
   </div>
 
@@ -339,7 +330,7 @@
       </div>
 
       <div style="display:flex;align-items:flex-end;gap:8px; grid-column: 1 / -1;">
-        <button class="btn primary" style="margin-top:6px">Salvar agendamento</button>
+        <button class="btn btn-brand" style="margin-top:6px">Salvar agendamento</button>
       </div>
     </form>
   </div>

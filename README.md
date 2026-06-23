@@ -1,4 +1,4 @@
-# Eduarda Imbelloni Clínica Especializada - Luxo Clean V6
+# Eduarda Imbelloni Clínica Especializada - Luxo Clean V7
 
 Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.
 
@@ -46,7 +46,7 @@ ASAAS_ENV=production
 ASAAS_API_KEY=sua_chave_real
 ```
 
-## Melhorias da versão Luxo Clean V6
+## Melhorias da versão Luxo Clean V7
 
 - CRM de relacionamento com pacientes
 - Controle de leads e possíveis pacientes
@@ -60,7 +60,7 @@ ASAAS_API_KEY=sua_chave_real
 - Cards operacionais para recepção trabalhar mais rápido
 - Dashboard mais completo e mais comercial
 
-## Já vinha da versão Luxo Clean V6
+## Já vinha da versão Luxo Clean V7
 
 - Painel do paciente com resumo premium
 - Linha do tempo do paciente
@@ -83,16 +83,21 @@ ASAAS_API_KEY=sua_chave_real
 O local da integração já está pronto. Sem a chave `ASAAS_API_KEY`, o sistema só avisa que falta configurar. Após colocar a chave no Coolify ou em Configurações, os botões de boleto/Pix tentam gerar a cobrança via Asaas.
 
 
-## Visual Luxo Clean V6
+## Visual Luxo Clean V7
 
 Esta versão recebeu um redesenho visual com menu lateral, login premium, cards em vidro suave, cores da identidade Eduarda Imbelloni e polimento mobile/PWA.
 
 
-## Atualização Visual Luxo Clean V6
+## Atualização Visual Luxo Clean V7
 
 Redesign visual completo com layout mais limpo, menu lateral refinado, cards mais leves, tela de login premium, tabelas mais elegantes e ajustes de responsividade. Mantém o mesmo banco/volume, sem apagar dados.
 
 
-## Atualização Visual Luxo Clean V6
+## Atualização Visual Luxo Clean V7
 
 Redesign completo do layout para um visual mais limpo, sofisticado e alinhado à identidade visual da Eduarda Imbelloni Clínica Especializada. Inclui sidebar compacta, dashboard premium, cards refinados, tabelas mais modernas, login elegante e ajustes de responsividade.
+
+
+## Atualização Visual Luxo Clean V7
+
+Refino visual geral do sistema com foco em leveza, sofisticação e aspecto de clínica premium. Nova sidebar clara, dashboard mais enxuto, formulários e tabelas mais elegantes, login minimalista e hierarquia visual mais fina.
