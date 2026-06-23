@@ -70,3 +70,23 @@ a{text-decoration:none;color:var(--coffee)} a:hover{color:var(--coffee-2)}
 @media(max-width:991px){body{padding-bottom:78px}.app-content{padding-bottom:96px!important}.desktop-topline{display:none!important}.login-frame{grid-template-columns:1fr}.login-showcase{display:none}.login-panel{min-height:100vh}.quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.hero-panel{border-left:0;border-top:1px solid var(--line)}}
 @media(max-width:575px){.quick-grid{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.page-title{font-size:2rem}.hero-actions .btn{width:100%;justify-content:center}}
 @media print{nav,.app-sidebar,.desktop-topline,.mobile-dock,.btn,.alert,.tabs,.patient-tabs{display:none!important}body{background:#fff!important}.app-content{margin:0!important;width:100%!important;padding:0!important}.card,.panel-card{box-shadow:none!important;border:1px solid #ddd!important}}
+
+
+/* V8 simplificado */
+.nav-ico i{font-size:.95rem;line-height:1} 
+.mobile-dock i{font-size:1.05rem;line-height:1}
+.hero-slim{padding:22px 24px;background:linear-gradient(180deg,#fffdfb 0%, #f9f3ec 100%);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow-xs)}
+.hero-slim .hero-title{font-size:clamp(2.4rem,4vw,4rem)}
+.hero-slim .hero-copy{max-width:620px}
+.kpi-compact{display:flex;align-items:center;gap:14px} 
+.kpi-icon{width:42px;height:42px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#f8efe6;color:var(--coffee);font-size:1.05rem;flex:0 0 42px} 
+.kpi-card.compact{padding:16px} 
+.kpi-card.compact .kpi-label{margin-bottom:4px} 
+.quick-row{display:flex;gap:10px;flex-wrap:wrap} 
+.quick-pill{display:inline-flex;align-items:center;gap:9px;padding:.66rem .9rem;border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--coffee);font-weight:800;box-shadow:var(--shadow-xs)}
+.quick-pill i{font-size:.95rem} 
+.quick-pill:hover{background:#faf4ed;color:var(--coffee)}
+.section-slim .section-head{margin-bottom:10px}
+.list-row .btn{white-space:nowrap}
+.info-card{padding:18px 20px;border-radius:18px;background:#fff;border:1px solid var(--line);box-shadow:var(--shadow-xs)}
+@media(max-width:575px){.quick-row{display:grid;grid-template-columns:1fr 1fr}.quick-pill{justify-content:center}}

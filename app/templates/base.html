@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ title }}</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
   <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}">
   <meta name="theme-color" content="#3a241d">
@@ -19,7 +20,7 @@
   <div class="container-fluid px-lg-4">
     <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('dashboard.index') }}">
       <img src="{{ url_for('static', filename='logo.png') }}" alt="Eduarda Imbelloni" class="brand-logo">
-      <span class="d-none d-md-inline">Painel Clínico <span class="badge text-bg-light ms-2">V7</span></span>
+      <span class="d-none d-md-inline">Painel Clínico <span class="badge text-bg-light ms-2">V8</span></span>
     </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav" aria-label="Abrir menu">
       <span class="navbar-toggler-icon"></span>
@@ -72,15 +73,15 @@
       </div>
       {% set ep = request.endpoint or '' %}
       <div class="sidebar-nav">
-        <a class="{% if ep.startswith('dashboard.') %}active{% endif %}" href="{{ url_for('dashboard.index') }}"><span class="nav-ico">⌂</span><span>Início</span></a>
-        <a class="{% if ep.startswith('patients.') %}active{% endif %}" href="{{ url_for('patients.list_patients') }}"><span class="nav-ico">P</span><span>Pacientes</span></a>
-        <a class="{% if ep.startswith('agenda.') %}active{% endif %}" href="{{ url_for('agenda.calendar_view') }}"><span class="nav-ico">A</span><span>Agenda</span></a>
-        <a class="{% if ep.startswith('crm.') %}active{% endif %}" href="{{ url_for('crm.index') }}"><span class="nav-ico">R</span><span>Retornos</span></a>
-        <a class="{% if ep.startswith('birthdays.') %}active{% endif %}" href="{{ url_for('birthdays.list_birthdays') }}"><span class="nav-ico">B</span><span>Aniversários</span></a>
-        <a class="{% if ep.startswith('finance.') and 'transactions' in ep %}active{% endif %}" href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}"><span class="nav-ico">F</span><span>Financeiro</span></a>
-        <a class="{% if ep.startswith('finance.') and 'caixa' in ep %}active{% endif %}" href="{% if finance_unlocked %}{{ url_for('finance.caixa') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.caixa')) }}{% endif %}"><span class="nav-ico">C</span><span>Caixa</span></a>
-        <a class="{% if ep.startswith('finance.') and 'repasses' in ep %}active{% endif %}" href="{% if finance_unlocked %}{{ url_for('finance.repasses') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.repasses')) }}{% endif %}"><span class="nav-ico">%</span><span>Repasses</span></a>
-        <a class="{% if ep.startswith('auth.settings') %}active{% endif %}" href="{{ url_for('auth.settings') }}"><span class="nav-ico">⚙</span><span>Configurações</span></a>
+        <a class="{% if ep.startswith('dashboard.') %}active{% endif %}" href="{{ url_for('dashboard.index') }}"><span class="nav-ico"><i class="bi bi-house-door"></i></span><span>Início</span></a>
+        <a class="{% if ep.startswith('patients.') %}active{% endif %}" href="{{ url_for('patients.list_patients') }}"><span class="nav-ico"><i class="bi bi-people"></i></span><span>Pacientes</span></a>
+        <a class="{% if ep.startswith('agenda.') %}active{% endif %}" href="{{ url_for('agenda.calendar_view') }}"><span class="nav-ico"><i class="bi bi-calendar3"></i></span><span>Agenda</span></a>
+        <a class="{% if ep.startswith('crm.') %}active{% endif %}" href="{{ url_for('crm.index') }}"><span class="nav-ico"><i class="bi bi-arrow-repeat"></i></span><span>Retornos</span></a>
+        <a class="{% if ep.startswith('birthdays.') %}active{% endif %}" href="{{ url_for('birthdays.list_birthdays') }}"><span class="nav-ico"><i class="bi bi-gift"></i></span><span>Aniversários</span></a>
+        <a class="{% if ep.startswith('finance.') and 'transactions' in ep %}active{% endif %}" href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}"><span class="nav-ico"><i class="bi bi-cash-stack"></i></span><span>Financeiro</span></a>
+        <a class="{% if ep.startswith('finance.') and 'caixa' in ep %}active{% endif %}" href="{% if finance_unlocked %}{{ url_for('finance.caixa') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.caixa')) }}{% endif %}"><span class="nav-ico"><i class="bi bi-wallet2"></i></span><span>Caixa</span></a>
+        <a class="{% if ep.startswith('finance.') and 'repasses' in ep %}active{% endif %}" href="{% if finance_unlocked %}{{ url_for('finance.repasses') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.repasses')) }}{% endif %}"><span class="nav-ico"><i class="bi bi-percent"></i></span><span>Repasses</span></a>
+        <a class="{% if ep.startswith('auth.settings') %}active{% endif %}" href="{{ url_for('auth.settings') }}"><span class="nav-ico"><i class="bi bi-gear"></i></span><span>Configurações</span></a>
       </div>
       <div class="sidebar-footer">
         <div class="small text-muted mb-1">Sessão</div>
@@ -96,7 +97,7 @@
     <div class="desktop-topline">
       <div>
         <div class="topline-title">{{ CLINIC_NAME }}</div>
-        <div class="topline-sub">Luxo Clean · V7</div>
+        <div class="topline-sub">Luxo Clean · V8</div>
       </div>
       <div class="topline-actions">
         <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}">Agenda</a>
@@ -123,11 +124,11 @@
 
 {% if g.user %}
 <nav class="mobile-dock">
-  <a href="{{ url_for('dashboard.index') }}">⌂<span>Home</span></a>
-  <a href="{{ url_for('patients.list_patients') }}">P<span>Pacientes</span></a>
-  <a href="{{ url_for('agenda.calendar_view') }}">A<span>Agenda</span></a>
-  <a href="{{ url_for('crm.index') }}">R<span>CRM</span></a>
-  <a href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}">F<span>Fin.</span></a>
+  <a href="{{ url_for('dashboard.index') }}"><i class="bi bi-house-door"></i><span>Home</span></a>
+  <a href="{{ url_for('patients.list_patients') }}"><i class="bi bi-people"></i><span>Pacientes</span></a>
+  <a href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar3"></i><span>Agenda</span></a>
+  <a href="{{ url_for('crm.index') }}"><i class="bi bi-arrow-repeat"></i><span>CRM</span></a>
+  <a href="{% if finance_unlocked %}{{ url_for('finance.transactions') }}{% else %}{{ url_for('finance.unlock', next=url_for('finance.transactions')) }}{% endif %}"><i class="bi bi-cash-stack"></i><span>Fin.</span></a>
 </nav>
 {% endif %}
 
