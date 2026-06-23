@@ -253,3 +253,247 @@ body{animation:pageFade .45s ease}
 .card-openable.is-open .expand-body{transform:translateY(0)}
 .pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--mint-strong);box-shadow:0 0 0 rgba(118,176,142,.55);animation:pulseDot 1.8s infinite}
 @keyframes pulseDot{0%{box-shadow:0 0 0 0 rgba(118,176,142,.55)}70%{box-shadow:0 0 0 10px rgba(118,176,142,0)}100%{box-shadow:0 0 0 0 rgba(118,176,142,0)}}
+
+
+/* V12 - App Premium: animações de página, abas, modais e cards */
+:root{
+  --app-pink:#df8ea0;
+  --app-blue:#7ea6d6;
+  --app-green:#7dbb94;
+  --app-orange:#e2a365;
+  --app-purple:#ad96da;
+}
+
+body{
+  transition:opacity .22s ease, filter .22s ease;
+}
+
+.app-content{
+  animation:pageSlideIn .42s cubic-bezier(.2,.8,.2,1) both;
+}
+
+@keyframes pageSlideIn{
+  from{opacity:0; transform:translateY(12px) scale(.992)}
+  to{opacity:1; transform:translateY(0) scale(1)}
+}
+
+@keyframes softGlow{
+  0%,100%{box-shadow:0 12px 28px rgba(74,48,39,.06)}
+  50%{box-shadow:0 16px 34px rgba(126,166,214,.14)}
+}
+
+@keyframes iconFloat{
+  0%,100%{transform:translateY(0) rotate(0deg)}
+  50%{transform:translateY(-3px) rotate(-2deg)}
+}
+
+@keyframes shimmerLine{
+  0%{transform:translateX(-120%)}
+  100%{transform:translateX(120%)}
+}
+
+@keyframes modalPop{
+  from{opacity:0; transform:translateY(14px) scale(.985)}
+  to{opacity:1; transform:translateY(0) scale(1)}
+}
+
+/* efeito premium nos cards */
+.kpi-card.compact,
+.panel-card,
+.info-card,
+.card:not(.ph-header){
+  will-change:transform, box-shadow;
+}
+
+.kpi-card.compact:hover .kpi-icon,
+.quick-pill:hover i,
+.btn:hover i,
+.sidebar-nav a:hover .nav-ico i{
+  animation:iconFloat .55s ease;
+}
+
+.kpi-card.compact:hover{
+  animation:softGlow 1.2s ease infinite;
+}
+
+/* brilho passando nos cards */
+.kpi-card.compact:after,
+.panel-card:after,
+.info-card:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(110deg, transparent 0%, rgba(255,255,255,.34) 45%, transparent 70%);
+  transform:translateX(-130%);
+  transition:transform .7s ease;
+}
+.kpi-card.compact:hover:after,
+.panel-card:hover:after,
+.info-card:hover:after{
+  transform:translateX(130%);
+}
+
+.panel-card,
+.info-card{
+  position:relative;
+  overflow:hidden;
+}
+
+/* cards clicáveis com sensação de app */
+.quick-pill,
+.btn,
+.sidebar-nav a,
+.mobile-dock a{
+  -webkit-tap-highlight-color:transparent;
+}
+
+.btn:active,
+.quick-pill:active,
+.sidebar-nav a:active,
+.mobile-dock a:active{
+  transform:scale(.98);
+}
+
+/* animação de modais bootstrap */
+.modal.fade .modal-dialog{
+  transform:translateY(18px) scale(.985);
+  transition:transform .26s cubic-bezier(.2,.8,.2,1), opacity .26s ease;
+}
+.modal.show .modal-dialog{
+  transform:translateY(0) scale(1);
+}
+.modal-content{
+  animation:modalPop .28s cubic-bezier(.2,.8,.2,1) both;
+}
+
+/* abas do painel do paciente com cara de aplicativo */
+.tabs,
+.patient-tabs{
+  padding:6px;
+  background:rgba(255,255,255,.78);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:var(--shadow-xs);
+}
+.tabs .btn,
+.patient-tabs .btn{
+  border-radius:12px;
+  position:relative;
+  overflow:hidden;
+}
+.tabs .btn:before,
+.patient-tabs .btn:before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  width:0;
+  height:0;
+  border-radius:999px;
+  background:rgba(255,255,255,.25);
+  transform:translate(-50%,-50%);
+  transition:width .28s ease, height .28s ease;
+}
+.tabs .btn:hover:before,
+.patient-tabs .btn:hover:before{
+  width:130%;
+  height:160%;
+}
+
+/* inputs com feedback suave */
+.form-control:hover,
+.form-select:hover{
+  border-color:#d9bca7;
+  box-shadow:0 8px 18px rgba(74,48,39,.035);
+}
+.form-control:focus,
+.form-select:focus{
+  transform:translateY(-2px);
+}
+
+/* tabelas mais vivas */
+.table tbody tr{
+  position:relative;
+}
+.table tbody tr:hover{
+  background:linear-gradient(90deg,#fff7f1 0%, #f7fbff 100%);
+  box-shadow:inset 3px 0 0 var(--accent);
+}
+
+/* botões com brilho discreto */
+.btn-brand{
+  position:relative;
+  overflow:hidden;
+}
+.btn-brand:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(110deg, transparent 0%, rgba(255,255,255,.25) 50%, transparent 72%);
+  transform:translateX(-130%);
+}
+.btn-brand:hover:after{
+  animation:shimmerLine .75s ease;
+}
+
+/* page loader fino */
+.page-loader{
+  position:fixed;
+  left:0;
+  top:0;
+  height:3px;
+  width:0;
+  z-index:9999;
+  background:linear-gradient(90deg,var(--app-pink),var(--app-blue),var(--app-green),var(--app-orange));
+  box-shadow:0 0 12px rgba(126,166,214,.45);
+  transition:width .32s ease, opacity .22s ease;
+}
+body.is-leaving .page-loader{
+  width:78%;
+}
+body.is-loaded .page-loader{
+  width:100%;
+  opacity:0;
+}
+
+/* toast visual */
+.app-toast{
+  position:fixed;
+  right:18px;
+  bottom:18px;
+  z-index:9998;
+  background:rgba(255,255,255,.96);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:12px 14px;
+  box-shadow:0 16px 38px rgba(74,48,39,.13);
+  color:var(--coffee);
+  font-weight:800;
+  opacity:0;
+  transform:translateY(12px);
+  pointer-events:none;
+  transition:opacity .22s ease, transform .22s ease;
+}
+.app-toast.show{
+  opacity:1;
+  transform:translateY(0);
+}
+
+/* cards de agenda e tarefas mais coloridos */
+.panel-card .section-head .eyebrow:before{
+  background:linear-gradient(90deg,var(--app-blue),var(--app-pink),transparent);
+}
+.crm-mini:nth-child(4n+1){border-left:4px solid var(--app-blue)}
+.crm-mini:nth-child(4n+2){border-left:4px solid var(--app-green)}
+.crm-mini:nth-child(4n+3){border-left:4px solid var(--app-orange)}
+.crm-mini:nth-child(4n+4){border-left:4px solid var(--app-pink)}
+
+/* modo reduzido para quem prefere menos animação */
+@media (prefers-reduced-motion: reduce){
+  *, *:before, *:after{
+    animation:none!important;
+    transition:none!important;
+    scroll-behavior:auto!important;
+  }
+}
