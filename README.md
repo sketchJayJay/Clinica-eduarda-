@@ -1,54 +1,69 @@
-# Eduarda Imbelloni Clínica Especializada - Sistema Completo
+# Eduarda Imbelloni Clínica Especializada - Premium V2
 
-Sistema baseado no painel completo da Eduarda Imbelloni, personalizado para a identidade visual da Eduarda Imbelloni.
+Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.
 
-## Módulos inclusos
+## Login inicial
 
-- Dashboard/painel principal
-- Cadastro e busca de pacientes
-- Painel individual do paciente
-- Agenda
-- Anamnese
-- Plano/ficha clínica
-- Odontograma
-- Orçamentos e impressões
-- Financeiro completo
-- Caixa
-- Categorias
-- Profissionais
-- Repasses
-- Aniversários com atalho para WhatsApp
-- Botão preparado para cobrança Asaas no financeiro
+- Usuário: `admin`
+- Senha: `admin123`
+- Senha do financeiro: `eduarda2026`
 
-## Coolify
+Troque as senhas em **Configurações** depois do primeiro acesso.
 
-Use Dockerfile ou Docker Compose. Porta interna: `5000`.
+## Porta no Coolify
 
-Variáveis recomendadas:
+Use a porta interna:
 
-```env
-FLASK_ENV=production
-SECRET_KEY=troque-por-uma-chave-grande
-DB_PATH=/data/eduarda_imbelloni.db
-CLINIC_NAME=Eduarda Imbelloni Clínica Especializada
-FINANCE_PASSWORD=eduarda2026
-ASAAS_API_KEY=
-ASAAS_ENV=sandbox
+```txt
+8000
 ```
 
-Volume persistente:
+## Volume persistente
+
+Crie um volume persistente para não perder dados:
 
 ```txt
 /data
 ```
 
-## Acesso inicial
+O banco e uploads ficam em `/data`.
 
-Usuário: `admin`
-Senha: `admin123`
+## Variáveis recomendadas no Coolify
 
-Depois altere em Configurações.
+```env
+SECRET_KEY=coloque-uma-chave-grande-aqui
+DB_PATH=/data/eduarda_imbelloni_premium.db
+UPLOAD_FOLDER=/data/uploads
+FINANCE_PASSWORD=eduarda2026
+ASAAS_ENV=sandbox
+ASAAS_API_KEY=
+```
 
-## Asaas
+Quando for usar Asaas real, altere:
 
-O botão **Asaas** aparece em lançamentos de entrada pendentes. Sem `ASAAS_API_KEY`, ele avisa que falta configurar. Com a chave configurada, tenta gerar uma cobrança do tipo boleto no Asaas.
+```env
+ASAAS_ENV=production
+ASAAS_API_KEY=sua_chave_real
+```
+
+## Melhorias da versão Premium V2
+
+- Painel do paciente com resumo premium
+- Linha do tempo do paciente
+- Fotos do tratamento com upload
+- Cadastro completo: CPF, e-mail e endereço
+- Agenda com status: agendada, confirmada, compareceu, faltou e cancelada
+- Botões de WhatsApp para lembrete e cobrança
+- Financeiro com link Asaas salvo no lançamento
+- Botões para gerar cobrança via Boleto ou Pix no Asaas
+- Configurações da clínica dentro do sistema
+- Senha do financeiro editável pelo painel
+- Mensagens padrão de WhatsApp editáveis
+- Usuários com permissões: administrador, recepção, profissional e financeiro
+- Backup do banco e uploads pelo painel
+- Registro de ações importantes
+- Tema visual ajustado para a logo da Eduarda
+
+## Observação sobre Asaas
+
+O local da integração já está pronto. Sem a chave `ASAAS_API_KEY`, o sistema só avisa que falta configurar. Após colocar a chave no Coolify ou em Configurações, os botões de boleto/Pix tentam gerar a cobrança via Asaas.

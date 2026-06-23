@@ -1,69 +1,24 @@
-# Deploy no VPS (sem dor de cabeça) - Eduarda Imbelloni
+# Deploy VPS / Coolify
 
-Este deploy usa **Docker + Nginx + Certbot** (SSL automático).
+Este projeto foi preparado principalmente para Coolify.
 
-## 1) No seu VPS (Ubuntu 22.04/24.04)
-Instale Docker:
-- sudo apt update
-- sudo apt install -y ca-certificates curl gnupg
-- sudo install -m 0755 -d /etc/apt/keyrings
-- curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-- sudo chmod a+r /etc/apt/keyrings/docker.gpg
-- echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo $VERSION_CODENAME) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-- sudo apt update
-- sudo apt install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-- sudo usermod -aG docker $USER
-(saia e entre no SSH novamente)
+## Coolify
 
-## 2) Suba o projeto
-Coloque a pasta `Eduarda_Imbelloni_Clinica_Painel` em `/opt/eduarda-clinica` por SCP/WinSCP.
+- Build Pack: Dockerfile
+- Porta interna: `8000`
+- Volume persistente: `/data`
 
-## 3) Configure domínio e variáveis
-Entre em:
-- cd /opt/eduarda-clinica/Eduarda_Imbelloni_Clinica_Painel/deploy_vps
+Variáveis:
 
-Copie o .env:
-- cp .env.example .env
-Edite o `.env` e troque `SECRET_KEY`.
+```env
+SECRET_KEY=troque_essa_chave_por_uma_bem_grande
+DB_PATH=/data/eduarda_imbelloni_premium.db
+UPLOAD_FOLDER=/data/uploads
+FINANCE_PASSWORD=eduarda2026
+ASAAS_ENV=sandbox
+ASAAS_API_KEY=
+```
 
-Edite o domínio no Nginx:
-- nano nginx/conf.d/eduarda-clinica.conf
-Troque `__DOMINIO__` por exemplo `clinica.seudominio.com`
+## VPS manual
 
-## 4) Primeiro start (HTTP)
-- docker compose up -d --build
-
-## 5) Gerar SSL (Let's Encrypt)
-Crie a pasta do certbot (se não existir):
-- mkdir -p certbot/www certbot/conf
-
-Rode (troque email e domínio):
-- docker compose run --rm certbot certonly --webroot -w /var/www/certbot -d clinica.seudominio.com --email seuemail@dominio.com --agree-tos --no-eff-email
-
-Agora atualize o Nginx para HTTPS:
-1) Abra `nginx/conf.d/eduarda-clinica.conf`
-2) Adicione o bloco HTTPS (exemplo abaixo). Depois:
-- docker compose restart nginx
-
-### Exemplo bloco HTTPS (cole abaixo do server 80):
-server {
-    listen 443 ssl;
-    server_name clinica.seudominio.com;
-
-    ssl_certificate /etc/letsencrypt/live/clinica.seudominio.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/clinica.seudominio.com/privkey.pem;
-
-    location / {
-        proxy_pass http://eduarda-clinica:8000;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-    }
-}
-
-## 6) Backup do banco (recomendado)
-O SQLite fica em:
-- deploy_vps/data/eduarda_imbelloni.db
-
-Faça backup diário dessa pasta (rsync, zip, ou enviar pra nuvem).
+Use o `docker-compose.yml` da raiz ou da pasta `deploy_vps`.

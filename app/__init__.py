@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import os
-from flask import Flask, session
+from flask import Flask, session, g
 from .db import close_db
 from .auth import bp as auth_bp
 from .dashboard import bp as dashboard_bp
@@ -26,6 +26,8 @@ def create_app() -> Flask:
     app.config["CLINIC_CNPJ"] = os.environ.get("CLINIC_CNPJ", "")
     app.config["ASAAS_API_KEY"] = os.environ.get("ASAAS_API_KEY", "")
     app.config["ASAAS_ENV"] = os.environ.get("ASAAS_ENV", "sandbox")
+    app.config["UPLOAD_FOLDER"] = os.environ.get("UPLOAD_FOLDER", "/data/uploads")
+    app.config["APP_VERSION"] = "Premium V2"
 
     # Proteção extra do Financeiro (senha separada do login)
     # Pode alterar via variável de ambiente FINANCE_PASSWORD (ou FINANCE_PASS)
@@ -41,15 +43,35 @@ def create_app() -> Flask:
 
     @app.context_processor
     def inject_clinic_info():
-        # Permite usar {{ CLINIC_NAME }}, {{ CLINIC_PHONE }}, etc. em qualquer template
+        # Permite usar {{ CLINIC_NAME }}, {{ CLINIC_PHONE }}, etc. em qualquer template.
+        # Primeiro usa variáveis do Coolify. Se estiverem vazias, usa Configurações do sistema.
+        settings = {}
+        try:
+            from .db import get_db
+            rows = get_db().execute("SELECT key, value FROM app_settings").fetchall()
+            settings = {r["key"]: (r["value"] or "") for r in rows}
+        except Exception:
+            settings = {}
+
+        def pick(config_key, setting_key, default=""):
+            return app.config.get(config_key) or settings.get(setting_key) or default
+
+        role = ""
+        try:
+            role = g.user["role"] if getattr(g, "user", None) and "role" in g.user.keys() else ""
+        except Exception:
+            role = ""
+
         return {
-            "CLINIC_NAME": app.config.get("CLINIC_NAME", ""),
-            "CLINIC_PHONE": app.config.get("CLINIC_PHONE", ""),
-            "CLINIC_ADDRESS": app.config.get("CLINIC_ADDRESS", ""),
-            "CLINIC_EMAIL": app.config.get("CLINIC_EMAIL", ""),
-            "CLINIC_RESPONSIBLE": app.config.get("CLINIC_RESPONSIBLE", ""),
-            "CLINIC_CNPJ": app.config.get("CLINIC_CNPJ", ""),
-            "ASAAS_ENV": app.config.get("ASAAS_ENV", "sandbox"),
+            "CLINIC_NAME": pick("CLINIC_NAME", "clinic_name", "Eduarda Imbelloni Clínica Especializada"),
+            "CLINIC_PHONE": pick("CLINIC_PHONE", "clinic_phone", ""),
+            "CLINIC_ADDRESS": pick("CLINIC_ADDRESS", "clinic_address", ""),
+            "CLINIC_EMAIL": pick("CLINIC_EMAIL", "clinic_email", ""),
+            "CLINIC_RESPONSIBLE": pick("CLINIC_RESPONSIBLE", "clinic_responsible", ""),
+            "CLINIC_CNPJ": pick("CLINIC_CNPJ", "clinic_cnpj", ""),
+            "ASAAS_ENV": app.config.get("ASAAS_ENV") or settings.get("asaas_env", "sandbox"),
+            "APP_VERSION": app.config.get("APP_VERSION", "Premium V2"),
+            "current_role": role,
         }
 
     # Blueprints

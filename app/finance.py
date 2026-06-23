@@ -32,6 +32,15 @@ PAYMENT_METHODS = [
 PAYMENT_METHOD_KEYS = {k for k, _ in PAYMENT_METHODS}
 
 
+def app_setting(key: str, default: str = "") -> str:
+    try:
+        row = get_db().execute("SELECT value FROM app_settings WHERE key=?", (key,)).fetchone()
+        return (row["value"] if row and row["value"] is not None else default)
+    except Exception:
+        return default
+
+
+
 def finance_required(view):
     """Proteção extra do módulo Financeiro por senha (além do login)."""
 
@@ -261,7 +270,7 @@ def unlock():
     next_url = request.args.get("next") or request.form.get("next") or url_for("finance.transactions")
     if request.method == "POST":
         senha = request.form.get("password", "")
-        expected = current_app.config.get("FINANCE_PASSWORD", "eduarda2026")
+        expected = (current_app.config.get("FINANCE_PASSWORD") or app_setting("finance_password", "eduarda2026") or "eduarda2026")
         if senha == expected:
             session["finance_unlocked"] = True
             flash("Financeiro desbloqueado ✅", "success")
@@ -385,8 +394,8 @@ def transaction_asaas(tid):
         flash("Boleto/ cobrança Asaas é usado apenas para entradas.", "warning")
         return redirect(url_for("finance.transactions"))
 
-    api_key = (current_app.config.get("ASAAS_API_KEY") or os.environ.get("ASAAS_API_KEY") or "").strip()
-    env = (current_app.config.get("ASAAS_ENV") or os.environ.get("ASAAS_ENV") or "sandbox").strip().lower()
+    api_key = (current_app.config.get("ASAAS_API_KEY") or os.environ.get("ASAAS_API_KEY") or app_setting("asaas_api_key", "") or "").strip()
+    env = (current_app.config.get("ASAAS_ENV") or os.environ.get("ASAAS_ENV") or app_setting("asaas_env", "sandbox") or "sandbox").strip().lower()
     if not api_key:
         flash("Lugar do Asaas já está pronto. Falta colocar ASAAS_API_KEY nas variáveis do Coolify para emitir boleto/cobrança.", "info")
         return redirect(url_for("finance.transactions", status="pending"))
@@ -415,9 +424,12 @@ def transaction_asaas(tid):
         if phone:
             customer_payload["mobilePhone"] = phone
         customer = post_json("/customers", customer_payload)
+        billing_type = (request.form.get("billing_type") or "BOLETO").strip().upper()
+        if billing_type not in {"BOLETO", "PIX", "CREDIT_CARD", "UNDEFINED"}:
+            billing_type = "BOLETO"
         payment_payload = {
             "customer": customer.get("id"),
-            "billingType": "BOLETO",
+            "billingType": billing_type,
             "value": round(amount_cents / 100, 2),
             "dueDate": row["due_date"] or row["date"],
             "description": row["description"] or "Tratamento/atendimento clínico",
@@ -425,8 +437,13 @@ def transaction_asaas(tid):
         }
         payment = post_json("/payments", payment_payload)
         link = payment.get("invoiceUrl") or payment.get("bankSlipUrl") or payment.get("transactionReceiptUrl") or ""
+        db.execute(
+            "UPDATE transactions SET asaas_payment_id=?, asaas_invoice_url=?, asaas_status=?, asaas_payload=? WHERE id=?",
+            (payment.get("id"), link, payment.get("status") or "created", json.dumps(payment, ensure_ascii=False)[:5000], tid),
+        )
+        db.commit()
         if link:
-            flash(f"Cobrança Asaas criada. Link: {link}", "success")
+            flash(f"Cobrança Asaas criada e salva no lançamento. Link: {link}", "success")
         else:
             flash("Cobrança Asaas criada com sucesso. Confira no painel do Asaas.", "success")
     except HTTPError as e:

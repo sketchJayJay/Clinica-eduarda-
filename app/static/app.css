@@ -131,3 +131,39 @@ body{
 .kpi .kpi-value{ color:var(--ink); }
 .print-logo{ max-width:260px; height:auto; }
 @media (max-width: 576px){ .brand-logo{ width:116px; height:38px; } }
+
+/* ===== Premium V2 ===== */
+.patient-hero{
+  background:
+    radial-gradient(800px 220px at 5% 0%, rgba(207,166,109,.22), transparent 55%),
+    linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,250,244,.92));
+  border:1px solid rgba(207,166,109,.24)!important;
+}
+.patient-avatar{
+  width:64px;height:64px;border-radius:20px;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--brand),var(--brand2));
+  color:#fff;font-size:30px;font-weight:800;
+  box-shadow:0 16px 30px rgba(150,91,67,.22);
+}
+.premium-tabs .nav-link{ color:var(--brand); border:1px solid rgba(150,91,67,.16); background:rgba(255,255,255,.55); }
+.premium-tabs .nav-link.active{ background:linear-gradient(135deg,var(--brand),var(--brand2)); border-color:transparent; }
+.status-pill{ display:inline-flex; align-items:center; padding:4px 10px; border-radius:999px; font-size:.78rem; font-weight:700; text-transform:capitalize; }
+.status-agendada{ background:#f6eadc; color:#7B442F; }
+.status-confirmada{ background:#d1e7dd; color:#0f5132; }
+.status-compareceu{ background:#cfe2ff; color:#084298; }
+.status-faltou{ background:#f8d7da; color:#842029; }
+.status-cancelada{ background:#e2e3e5; color:#41464b; }
+.timeline-mini{ display:flex; flex-direction:column; gap:12px; }
+.timeline-item{ display:flex; gap:12px; align-items:flex-start; padding:10px 0; border-bottom:1px solid rgba(150,91,67,.10); }
+.timeline-item:last-child{ border-bottom:0; }
+.timeline-large .timeline-item{ padding:14px 0; }
+.tl-icon{ width:34px; height:34px; border-radius:12px; display:flex; align-items:center; justify-content:center; background:rgba(207,166,109,.18); flex:0 0 auto; }
+.photo-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; }
+.photo-card{ overflow:hidden; }
+.photo-card img{ width:100%; height:190px; object-fit:cover; display:block; background:#f8f1ea; }
+.brand-nav .dropdown-menu{ border-radius:16px; border:1px solid rgba(150,91,67,.15); box-shadow:0 14px 36px rgba(59,36,28,.12); }
+@media(max-width:576px){
+  .patient-avatar{ width:52px;height:52px;font-size:24px;border-radius:16px; }
+  .patient-hero .btn{ width:100%; }
+}

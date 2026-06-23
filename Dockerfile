@@ -17,7 +17,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY . /app
 
 # Create data dir inside container (will be mounted as volume in compose)
-RUN mkdir -p /data
+RUN mkdir -p /data/uploads
 
 # Default: gunicorn behind reverse proxy
 ENV PORT=8000

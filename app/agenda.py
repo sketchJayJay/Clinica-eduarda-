@@ -69,7 +69,7 @@ def events():
 
     rows = db.execute(
         f"""
-        SELECT a.id, a.title, a.start_at, a.end_at, a.note,
+        SELECT a.id, a.title, a.start_at, a.end_at, a.note, a.status,
                a.patient_id, p.name AS patient_name, p.phone AS patient_phone,
                a.provider_id, pr.name AS provider_name
           FROM appointments a
@@ -93,11 +93,21 @@ def events():
             except Exception:
                 end_iso = None
 
+        status = r["status"] if "status" in r.keys() and r["status"] else "agendada"
+        status_colors = {
+            "agendada": "#965B43",
+            "confirmada": "#198754",
+            "compareceu": "#0d6efd",
+            "faltou": "#dc3545",
+            "cancelada": "#6c757d",
+        }
         out.append({
             "id": r["id"],
             "title": f"{r['patient_name']} • {r['title']}",
             "start": start_iso,
             "end": end_iso,
+            "backgroundColor": status_colors.get(status, "#965B43"),
+            "borderColor": status_colors.get(status, "#965B43"),
             "extendedProps": {
                 "patient_id": r["patient_id"],
                 "patient_name": r["patient_name"],
@@ -106,6 +116,7 @@ def events():
                 "provider_name": r["provider_name"] or "",
                 "note": r["note"] or "",
                 "raw_title": r["title"] or "Consulta",
+                "status": status,
             }
         })
     return jsonify(out)
@@ -124,14 +135,17 @@ def create_event():
     start_at = _iso_to_sql(request.form.get("start_at"))
     end_at = _iso_to_sql(request.form.get("end_at"))
     note = (request.form.get("note") or "").strip()
+    status = (request.form.get("status") or "agendada").strip()
+    if status not in {"agendada", "confirmada", "compareceu", "faltou", "cancelada"}:
+        status = "agendada"
 
     if not patient_id or not start_at:
         flash("Selecione o paciente e o horário de início.", "danger")
         return redirect(url_for("agenda.calendar_view"))
 
     db.execute(
-        "INSERT INTO appointments(patient_id, provider_id, title, start_at, end_at, note) VALUES(?,?,?,?,?,?)",
-        (patient_id, provider_id, title, start_at, end_at, note),
+        "INSERT INTO appointments(patient_id, provider_id, title, start_at, end_at, note, status) VALUES(?,?,?,?,?,?,?)",
+        (patient_id, provider_id, title, start_at, end_at, note, status),
     )
     db.commit()
     flash("Agendamento criado.", "success")
@@ -151,6 +165,7 @@ def update_event(aid: int):
         s = str(provider_id_raw).strip()
         provider_id = int(s) if s.isdigit() else None
     note = request.form.get("note")
+    status = request.form.get("status")
 
     # Atualização mínima
     if start_at or end_at:
@@ -166,6 +181,11 @@ def update_event(aid: int):
         db.execute("UPDATE appointments SET provider_id=? WHERE id=?", (provider_id, aid))
     if note is not None:
         db.execute("UPDATE appointments SET note=? WHERE id=?", ((note or "").strip(), aid))
+    if status is not None:
+        status = (status or "agendada").strip()
+        if status not in {"agendada", "confirmada", "compareceu", "faltou", "cancelada"}:
+            status = "agendada"
+        db.execute("UPDATE appointments SET status=? WHERE id=?", (status, aid))
 
     db.commit()
     return jsonify({"ok": True})

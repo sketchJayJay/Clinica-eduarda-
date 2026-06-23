@@ -94,6 +94,59 @@ def _ensure_finance_migrations(db: sqlite3.Connection) -> None:
     db.execute("UPDATE transactions SET amount_cents = COALESCE(final_amount_cents, amount_cents, 0)")
 
 
+
+def _ensure_premium_migrations(db: sqlite3.Connection) -> None:
+    """Migrações premium: segurança, agenda, fotos, Asaas e painel do paciente."""
+    # Pacientes mais completos
+    _add_column_if_missing(db, "patients", "email", "TEXT")
+    _add_column_if_missing(db, "patients", "cpf", "TEXT")
+    _add_column_if_missing(db, "patients", "address", "TEXT")
+
+    # Usuários com nível de acesso
+    _add_column_if_missing(db, "users", "role", "TEXT NOT NULL DEFAULT 'admin'")
+
+    # Agenda com status operacional
+    _add_column_if_missing(db, "appointments", "status", "TEXT NOT NULL DEFAULT 'agendada'")
+    _add_column_if_missing(db, "appointments", "whatsapp_sent_at", "TEXT")
+
+    # Cobranças Asaas persistidas
+    _add_column_if_missing(db, "transactions", "asaas_payment_id", "TEXT")
+    _add_column_if_missing(db, "transactions", "asaas_invoice_url", "TEXT")
+    _add_column_if_missing(db, "transactions", "asaas_status", "TEXT")
+    _add_column_if_missing(db, "transactions", "asaas_payload", "TEXT")
+
+    db.executescript("""
+    CREATE TABLE IF NOT EXISTS treatment_photos(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        filename TEXT NOT NULL,
+        original_name TEXT,
+        caption TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_photos_patient ON treatment_photos(patient_id);
+
+    CREATE TABLE IF NOT EXISTS audit_log(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        action TEXT NOT NULL,
+        entity TEXT,
+        entity_id INTEGER,
+        detail TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_log(created_at);
+
+    CREATE TABLE IF NOT EXISTS message_templates(
+        key TEXT PRIMARY KEY,
+        title TEXT NOT NULL,
+        body TEXT NOT NULL
+    );
+    """)
+
+
 def init_db():
     db = get_db()
     db.executescript("""
@@ -305,6 +358,7 @@ def init_db():
 
     """)
     _ensure_finance_migrations(db)
+    _ensure_premium_migrations(db)
     db.commit()
 
 def ensure_seed_data():
@@ -321,13 +375,31 @@ def ensure_seed_data():
     for name, kind in defaults:
         db.execute("INSERT OR IGNORE INTO categories(name, kind) VALUES(?, ?)", (name, kind))
     # Mensagem padrão de aniversário (WhatsApp)
-    db.execute(
-        "INSERT OR IGNORE INTO app_settings(key, value) VALUES(?, ?)",
-        (
-            "birthday_template",
-            "Oi {nome}! 🎉 Hoje é seu aniversário e a {clinica} deseja um dia incrível! Se quiser agendar sua consulta/revisão, é só me chamar por aqui 🙂",
-        ),
-    )
+    default_settings = {
+        "birthday_template": "Oi {nome}! 🎉 Hoje é seu aniversário e a {clinica} deseja um dia incrível! Se quiser agendar sua consulta/revisão, é só me chamar por aqui 🙂",
+        "clinic_name": "Eduarda Imbelloni Clínica Especializada",
+        "clinic_phone": "",
+        "clinic_address": "",
+        "clinic_email": "",
+        "clinic_cnpj": "",
+        "clinic_responsible": "",
+        "whatsapp_reminder_template": "Olá, {paciente}! Passando para lembrar da sua consulta na {clinica} no dia {data} às {hora}. Podemos confirmar?",
+        "whatsapp_charge_template": "Olá, {paciente}! Segue a cobrança referente a {descricao}: {link}",
+        "finance_password": "eduarda2026",
+        "asaas_env": "sandbox",
+        "asaas_api_key": "",
+    }
+    for key, value in default_settings.items():
+        db.execute("INSERT OR IGNORE INTO app_settings(key, value) VALUES(?, ?)", (key, value))
+
+    default_templates = [
+        ("reminder", "Lembrete de consulta", "Olá, {paciente}! Passando para lembrar da sua consulta na {clinica} no dia {data} às {hora}."),
+        ("charge", "Cobrança", "Olá, {paciente}! Segue sua cobrança: {link}"),
+        ("birthday", "Aniversário", "Oi {nome}! 🎉 A {clinica} deseja um dia incrível!"),
+        ("return", "Retorno", "Olá, {paciente}! Está na hora de agendar seu retorno na {clinica}."),
+    ]
+    for key, title, body in default_templates:
+        db.execute("INSERT OR IGNORE INTO message_templates(key, title, body) VALUES(?,?,?)", (key, title, body))
     db.commit()
 
 def get_open_cash_session_id() -> int | None:

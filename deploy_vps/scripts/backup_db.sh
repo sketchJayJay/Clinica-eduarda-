@@ -1,22 +1,13 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
-BASE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DATA_DIR="${BASE_DIR}/data"
-BACKUP_DIR="${BASE_DIR}/backups"
-TS="$(date +%Y-%m-%d_%H%M%S)"
-
-mkdir -p "${BACKUP_DIR}"
-
-if [ ! -f "${DATA_DIR}/eduarda_imbelloni.db" ]; then
-  echo "Banco não encontrado em ${DATA_DIR}/eduarda_imbelloni.db"
+DATA_DIR="${DATA_DIR:-/data}"
+BACKUP_DIR="${BACKUP_DIR:-./backups}"
+DB_FILE="${DB_FILE:-eduarda_imbelloni_premium.db}"
+mkdir -p "$BACKUP_DIR"
+TS="$(date +%Y%m%d_%H%M%S)"
+if [ ! -f "${DATA_DIR}/${DB_FILE}" ]; then
+  echo "Banco não encontrado em ${DATA_DIR}/${DB_FILE}"
   exit 1
 fi
-
-# Backup simples (cópia do DB)
-cp "${DATA_DIR}/eduarda_imbelloni.db" "${BACKUP_DIR}/eduarda_imbelloni_${TS}.db"
-
-# Mantém só os últimos 14 backups
-ls -1t "${BACKUP_DIR}"/eduarda_imbelloni_*.db | tail -n +15 | xargs -r rm -f
-
-echo "Backup ok: ${BACKUP_DIR}/eduarda_imbelloni_${TS}.db"
+cp "${DATA_DIR}/${DB_FILE}" "${BACKUP_DIR}/eduarda_clinica_${TS}.db"
+echo "Backup ok: ${BACKUP_DIR}/eduarda_clinica_${TS}.db"

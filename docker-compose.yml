@@ -1,20 +1,21 @@
 services:
-  eduarda-clinica:
+  eduarda-clinica-premium:
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
     environment:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
-      DB_PATH: ${DB_PATH:-/data/eduarda_imbelloni.db}
+      DB_PATH: ${DB_PATH:-/data/eduarda_imbelloni_premium.db}
+      UPLOAD_FOLDER: ${UPLOAD_FOLDER:-/data/uploads}
       CLINIC_NAME: ${CLINIC_NAME:-Eduarda Imbelloni Clínica Especializada}
       ASAAS_API_KEY: ${ASAAS_API_KEY:-}
       ASAAS_ENV: ${ASAAS_ENV:-sandbox}
       FINANCE_PASSWORD: ${FINANCE_PASSWORD:-eduarda2026}
     volumes:
-      - eduarda-data:/data
+      - eduarda-clinica-premium-data:/data
     expose:
       - "8000"
 
 volumes:
-  eduarda-data:
+  eduarda-clinica-premium-data:

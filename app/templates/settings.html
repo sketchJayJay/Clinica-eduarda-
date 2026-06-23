@@ -1,26 +1,98 @@
 {% extends "base.html" %}
 {% set title = "Configurações" %}
 {% block content %}
-<div class="row justify-content-center">
-  <div class="col-lg-6">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+  <div>
+    <h4 class="mb-0">Configurações</h4>
+    <div class="text-muted small">Dados da clínica, usuários, Asaas, WhatsApp, senha do financeiro e backup.</div>
+  </div>
+  <a class="btn btn-outline-secondary" href="{{ url_for('auth.download_backup') }}">Baixar backup</a>
+</div>
+
+<div class="row g-3">
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body p-4">
+        <h5 class="mb-3">Trocar minha senha</h5>
+        <form method="post">
+          <input type="hidden" name="action" value="password">
+          <div class="mb-3"><label class="form-label">Senha atual</label><input class="form-control" type="password" name="current_password" required></div>
+          <div class="mb-3"><label class="form-label">Nova senha</label><input class="form-control" type="password" name="new_password" required></div>
+          <div class="mb-3"><label class="form-label">Confirmar nova senha</label><input class="form-control" type="password" name="new_password2" required></div>
+          <button class="btn btn-brand" type="submit">Salvar senha</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body p-4">
+        <h5 class="mb-3">Dados da clínica</h5>
+        <form method="post" class="row g-2">
+          <input type="hidden" name="action" value="clinic">
+          <div class="col-md-8"><label class="form-label">Nome da clínica</label><input class="form-control" name="clinic_name" value="{{ settings.clinic_name }}"></div>
+          <div class="col-md-4"><label class="form-label">Telefone</label><input class="form-control" name="clinic_phone" value="{{ settings.clinic_phone }}"></div>
+          <div class="col-md-6"><label class="form-label">E-mail</label><input class="form-control" name="clinic_email" value="{{ settings.clinic_email }}"></div>
+          <div class="col-md-6"><label class="form-label">CNPJ</label><input class="form-control" name="clinic_cnpj" value="{{ settings.clinic_cnpj }}"></div>
+          <div class="col-md-6"><label class="form-label">Responsável</label><input class="form-control" name="clinic_responsible" value="{{ settings.clinic_responsible }}"></div>
+          <div class="col-md-6"><label class="form-label">Endereço</label><input class="form-control" name="clinic_address" value="{{ settings.clinic_address }}"></div>
+          <div class="col-12"><button class="btn btn-brand">Salvar dados da clínica</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-12">
     <div class="card shadow-sm border-0">
       <div class="card-body p-4">
-        <h5 class="mb-3">Trocar senha</h5>
-        <form method="post">
-          <div class="mb-3">
-            <label class="form-label">Senha atual</label>
-            <input class="form-control" type="password" name="current_password" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Nova senha</label>
-            <input class="form-control" type="password" name="new_password" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Confirmar nova senha</label>
-            <input class="form-control" type="password" name="new_password2" required>
-          </div>
-          <button class="btn btn-brand" type="submit">Salvar</button>
+        <h5 class="mb-3">Financeiro, Asaas e mensagens WhatsApp</h5>
+        <form method="post" class="row g-3">
+          <input type="hidden" name="action" value="integrations">
+          <div class="col-md-4"><label class="form-label">Senha do financeiro</label><input class="form-control" name="finance_password" value="{{ settings.finance_password }}"></div>
+          <div class="col-md-4"><label class="form-label">Ambiente Asaas</label><select class="form-select" name="asaas_env"><option value="sandbox" {% if settings.asaas_env!='production' %}selected{% endif %}>sandbox / testes</option><option value="production" {% if settings.asaas_env=='production' %}selected{% endif %}>production / real</option></select></div>
+          <div class="col-md-4"><label class="form-label">ASAAS_API_KEY</label><input class="form-control" type="password" name="asaas_api_key" value="{{ settings.asaas_api_key }}" placeholder="Cole a chave da API aqui"></div>
+          <div class="col-md-6"><label class="form-label">Mensagem lembrete de consulta</label><textarea class="form-control" name="whatsapp_reminder_template" rows="3">{{ settings.whatsapp_reminder_template }}</textarea><div class="form-text">Variáveis: {paciente}, {clinica}, {data}, {hora}</div></div>
+          <div class="col-md-6"><label class="form-label">Mensagem de cobrança</label><textarea class="form-control" name="whatsapp_charge_template" rows="3">{{ settings.whatsapp_charge_template }}</textarea><div class="form-text">Variáveis: {paciente}, {descricao}, {link}, {clinica}</div></div>
+          <div class="col-12"><label class="form-label">Mensagem de aniversário</label><textarea class="form-control" name="birthday_template" rows="2">{{ settings.birthday_template }}</textarea><div class="form-text">Variáveis: {nome}, {clinica}</div></div>
+          <div class="col-12"><button class="btn btn-brand">Salvar integrações</button></div>
         </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body p-4">
+        <h5 class="mb-3">Usuários e permissões</h5>
+        <form method="post" class="row g-2 mb-3">
+          <input type="hidden" name="action" value="new_user">
+          <div class="col-md-4"><input class="form-control" name="username" placeholder="Usuário" required></div>
+          <div class="col-md-4"><input class="form-control" type="password" name="password" placeholder="Senha" required></div>
+          <div class="col-md-4"><select class="form-select" name="role">{% for key,label in role_labels.items() %}<option value="{{ key }}">{{ label }}</option>{% endfor %}</select></div>
+          <div class="col-12"><button class="btn btn-outline-secondary">Adicionar usuário</button></div>
+        </form>
+        <div class="table-responsive">
+          <table class="table table-sm align-middle">
+            <thead class="table-light"><tr><th>Usuário</th><th>Nível</th><th>Criado</th><th></th></tr></thead>
+            <tbody>{% for u in users %}<tr><td>{{ u.username }}</td><td>{{ role_labels.get(u.role, u.role) }}</td><td>{{ u.created_at }}</td><td class="text-end"><form method="post" class="d-inline" onsubmit="return confirm('Remover usuário?')"><input type="hidden" name="action" value="delete_user"><input type="hidden" name="user_id" value="{{ u.id }}"><button class="btn btn-sm btn-outline-danger">Remover</button></form></td></tr>{% endfor %}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body p-4">
+        <h5 class="mb-3">Registro de ações</h5>
+        <div class="timeline-mini">
+          {% for l in recent_logs %}
+            <div class="timeline-item"><div class="tl-icon">🔎</div><div><div class="fw-semibold">{{ l.action }}</div><div class="text-muted small">{{ l.created_at }} · {{ l.username or 'sistema' }}{% if l.detail %} · {{ l.detail }}{% endif %}</div></div></div>
+          {% else %}
+            <div class="text-muted">Nenhuma ação registrada ainda.</div>
+          {% endfor %}
+        </div>
       </div>
     </div>
   </div>

@@ -67,6 +67,16 @@
             <input class="form-control" name="title" value="Consulta">
           </div>
           <div>
+            <label class="form-label small">Status</label>
+            <select class="form-select" name="status">
+              <option value="agendada">Agendada</option>
+              <option value="confirmada">Confirmada</option>
+              <option value="compareceu">Compareceu</option>
+              <option value="faltou">Faltou</option>
+              <option value="cancelada">Cancelada</option>
+            </select>
+          </div>
+          <div>
             <label class="form-label small">Início</label>
             <input class="form-control" type="datetime-local" name="start_at" required>
           </div>
@@ -120,9 +130,19 @@
               </select>
             </div>
 
-            <div class="col-md-6">
+            <div class="col-md-4">
               <label class="form-label">Título</label>
               <input class="form-control" id="title" name="title" value="Consulta">
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Status</label>
+              <select class="form-select" id="status" name="status">
+                <option value="agendada">Agendada</option>
+                <option value="confirmada">Confirmada</option>
+                <option value="compareceu">Compareceu</option>
+                <option value="faltou">Faltou</option>
+                <option value="cancelada">Cancelada</option>
+              </select>
             </div>
             <div class="col-md-3">
               <label class="form-label">Início</label>
@@ -195,6 +215,7 @@
     $('patient_id').value = "";
     $('provider_id').value = "";
     $('title').value = "Consulta";
+    $('status').value = "agendada";
     $('start_at').value = startIso ? toLocalInput(startIso) : "";
     $('end_at').value = endIso ? toLocalInput(endIso) : "";
     $('note').value = "";
@@ -212,6 +233,7 @@
     $('patient_id').value = p.patient_id || "";
     $('provider_id').value = p.provider_id || "";
     $('title').value = p.raw_title || "Consulta";
+    $('status').value = p.status || "agendada";
     $('start_at').value = toLocalInput(ev.startStr);
     $('end_at').value = toLocalInput(ev.endStr);
     $('note').value = p.note || "";
@@ -228,6 +250,7 @@
     const info = [];
     if(p.patient_name) info.push("<b>Paciente:</b> " + p.patient_name);
     if(p.provider_name) info.push("<b>Profissional:</b> " + p.provider_name);
+    if(p.status) info.push("<b>Status:</b> " + p.status);
     if(p.patient_phone) info.push("<b>Telefone:</b> " + p.patient_phone);
     $('patientQuick').innerHTML = info.join(" • ");
     $('patientQuick').style.display = info.length ? "block" : "none";
@@ -256,7 +279,8 @@
       title: $('title').value,
       start_at: $('start_at').value,
       end_at: $('end_at').value,
-      note: $('note').value
+      note: $('note').value,
+      status: $('status').value
     };
 
     try{
