@@ -252,10 +252,10 @@
 
 
 {% elif tab=='documentos' %}
-<div class="row g-3">
+<div class="row g-3 documents-mobile-safe">
   <div class="col-xl-5">
     <div class="card shadow-sm border-0 h-100">
-      <div class="card-body">
+      <div class="card-body pb-4 pb-md-3">
         <h6 class="mb-1">Novo documento</h6>
         <div class="text-muted small mb-3">Gere contrato, termo de consentimento ou autorização para o paciente assinar na tela.</div>
         <form method="post" action="{{ url_for('patients.document_add', pid=patient.id) }}" class="vstack gap-2">

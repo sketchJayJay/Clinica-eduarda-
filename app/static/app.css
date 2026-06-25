@@ -503,3 +503,24 @@ body.is-loaded .page-loader{
 .premium-tabs .nav-link.active{background:linear-gradient(135deg,var(--salmon),var(--coffee-2));border-color:var(--salmon);color:#fff;box-shadow:0 10px 20px rgba(74,48,39,.12)}
 .signature-pad-wrap{animation:fadeRise .35s ease both}
 .document-preview{animation:fadeRise .25s ease both}
+
+
+/* V15 - correção do dock mobile não tampar conteúdo */
+:root{--mobile-dock-space: 150px;}
+.mobile-dock{padding-bottom:calc(8px + env(safe-area-inset-bottom));bottom:calc(10px + env(safe-area-inset-bottom));}
+@media(max-width:991px){
+  body{padding-bottom:calc(var(--mobile-dock-space) + env(safe-area-inset-bottom))}
+  .app-content{padding-bottom:calc(var(--mobile-dock-space) + 42px + env(safe-area-inset-bottom))!important}
+  .premium-tabs{scroll-snap-type:x proximity; overflow-x:auto; flex-wrap:nowrap!important; padding-bottom:4px}
+  .premium-tabs .nav-item{flex:0 0 auto; scroll-snap-align:start}
+  .patient-hero, .patient-hero + .row, .premium-tabs, .tab-content-mobile-safe, .documents-mobile-safe, .card:last-child{scroll-margin-bottom:var(--mobile-dock-space)}
+  .documents-mobile-safe .btn-brand:last-child,
+  .documents-mobile-safe button[type="submit"],
+  .signature-form .btn-brand{margin-bottom:10px}
+}
+@media(max-width:575px){
+  :root{--mobile-dock-space: 165px;}
+  .mobile-dock{left:8px;right:8px;gap:4px;padding:7px 6px calc(7px + env(safe-area-inset-bottom));}
+  .mobile-dock a{min-width:0;padding:6px 4px}
+  .mobile-dock a span{font-size:.64rem}
+}
