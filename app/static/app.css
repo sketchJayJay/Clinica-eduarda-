@@ -524,3 +524,68 @@ body.is-loaded .page-loader{
   .mobile-dock a{min-width:0;padding:6px 4px}
   .mobile-dock a span{font-size:.64rem}
 }
+
+
+/* V16 - correção forte: dock inferior só aparece no celular */
+.mobile-dock{
+  display:none!important;
+}
+
+@media(min-width:992px){
+  .mobile-dock{
+    display:none!important;
+    visibility:hidden!important;
+    pointer-events:none!important;
+  }
+  body{
+    padding-bottom:0!important;
+  }
+  .app-content{
+    padding-bottom:56px!important;
+  }
+}
+
+@media(max-width:991px){
+  :root{
+    --mobile-dock-space: 190px;
+  }
+  .mobile-dock{
+    display:flex!important;
+    visibility:visible!important;
+    pointer-events:auto!important;
+    bottom:calc(10px + env(safe-area-inset-bottom))!important;
+  }
+  body{
+    padding-bottom:calc(var(--mobile-dock-space) + env(safe-area-inset-bottom))!important;
+  }
+  .app-content{
+    padding-bottom:calc(var(--mobile-dock-space) + 80px + env(safe-area-inset-bottom))!important;
+  }
+  main.app-content:after{
+    content:"";
+    display:block;
+    height:150px;
+  }
+}
+
+@media(max-width:575px){
+  :root{
+    --mobile-dock-space: 210px;
+  }
+  main.app-content:after{
+    height:180px;
+  }
+}
+
+/* Documentos: garante que botão final nunca fique atrás do dock */
+.documents-mobile-safe{
+  padding-bottom:24px;
+}
+@media(max-width:991px){
+  .documents-mobile-safe{
+    padding-bottom:180px!important;
+  }
+  .documents-mobile-safe form.vstack{
+    padding-bottom:40px;
+  }
+}
