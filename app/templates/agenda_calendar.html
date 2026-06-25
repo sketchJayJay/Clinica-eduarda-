@@ -11,6 +11,10 @@
   .fc .fc-button-primary:disabled{ opacity:.55; }
   .agenda-side{ position: sticky; top:24px; }
   .mini-hint{ font-size:.85rem; color:var(--soft); }
+  .fc-patient-link{color:#fff!important;font-weight:900;text-decoration:underline;text-underline-offset:2px}
+  .fc-patient-link:hover{opacity:.9}
+  .fc-event-main-frame-premium{line-height:1.15}
+  .fc-event-title-small{font-size:.78rem;opacity:.92;margin-top:1px}
 </style>
 {% endblock %}
 
@@ -347,6 +351,40 @@
     dateClick: function(info){
       // clique simples
       openNew(info.dateStr + "T09:00:00", info.dateStr + "T09:30:00");
+    },
+    eventContent: function(arg){
+      const p = arg.event.extendedProps || {};
+      const wrap = document.createElement("div");
+      wrap.className = "fc-event-main-frame-premium";
+
+      const time = document.createElement("div");
+      time.className = "fc-event-time";
+      time.textContent = arg.timeText || "";
+      if(arg.timeText) wrap.appendChild(time);
+
+      const name = document.createElement("a");
+      name.className = "fc-patient-link";
+      name.textContent = p.patient_name || arg.event.title || "Paciente";
+      if(p.patient_id){
+        name.href = "{{ url_for('patients.view_patient', pid=0, tab='resumo') }}".replace("/0", "/" + p.patient_id);
+        name.addEventListener("click", function(e){
+          e.preventDefault();
+          e.stopPropagation();
+          window.location.href = name.href;
+        });
+      }else{
+        name.href = "#";
+      }
+      wrap.appendChild(name);
+
+      if(p.raw_title){
+        const subtitle = document.createElement("div");
+        subtitle.className = "fc-event-title-small";
+        subtitle.textContent = p.raw_title + (p.provider_name ? " • " + p.provider_name : "");
+        wrap.appendChild(subtitle);
+      }
+
+      return { domNodes: [wrap] };
     },
     eventClick: function(info){
       openEdit(info.event);

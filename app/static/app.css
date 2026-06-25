@@ -589,3 +589,23 @@ body.is-loaded .page-loader{
     padding-bottom:40px;
   }
 }
+
+
+/* V17 - nomes da agenda clicáveis */
+.fc-patient-link{
+  cursor:pointer;
+}
+.fc-event{
+  overflow:hidden;
+}
+.agenda-patient-link,
+.list-row a.fw-bold{
+  color:var(--coffee);
+  text-decoration:none;
+}
+.agenda-patient-link:hover,
+.list-row a.fw-bold:hover{
+  color:var(--accent);
+  text-decoration:underline;
+  text-underline-offset:3px;
+}

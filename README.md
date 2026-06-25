@@ -1,4 +1,4 @@
-# Eduarda Imbelloni Clínica Especializada - Luxo Clean V16
+# Eduarda Imbelloni Clínica Especializada - Luxo Clean V17
 
 Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.
 
@@ -46,7 +46,7 @@ ASAAS_ENV=production
 ASAAS_API_KEY=sua_chave_real
 ```
 
-## Melhorias da versão Luxo Clean V16
+## Melhorias da versão Luxo Clean V17
 
 - CRM de relacionamento com pacientes
 - Controle de leads e possíveis pacientes
@@ -60,7 +60,7 @@ ASAAS_API_KEY=sua_chave_real
 - Cards operacionais para recepção trabalhar mais rápido
 - Dashboard mais completo e mais comercial
 
-## Já vinha da versão Luxo Clean V16
+## Já vinha da versão Luxo Clean V17
 
 - Painel do paciente com resumo premium
 - Linha do tempo do paciente
@@ -83,66 +83,71 @@ ASAAS_API_KEY=sua_chave_real
 O local da integração já está pronto. Sem a chave `ASAAS_API_KEY`, o sistema só avisa que falta configurar. Após colocar a chave no Coolify ou em Configurações, os botões de boleto/Pix tentam gerar a cobrança via Asaas.
 
 
-## Visual Luxo Clean V16
+## Visual Luxo Clean V17
 
 Esta versão recebeu um redesenho visual com menu lateral, login premium, cards em vidro suave, cores da identidade Eduarda Imbelloni e polimento mobile/PWA.
 
 
-## Atualização Visual Luxo Clean V16
+## Atualização Visual Luxo Clean V17
 
 Redesign visual completo com layout mais limpo, menu lateral refinado, cards mais leves, tela de login premium, tabelas mais elegantes e ajustes de responsividade. Mantém o mesmo banco/volume, sem apagar dados.
 
 
-## Atualização Visual Luxo Clean V16
+## Atualização Visual Luxo Clean V17
 
 Redesign completo do layout para um visual mais limpo, sofisticado e alinhado à identidade visual da Eduarda Imbelloni Clínica Especializada. Inclui sidebar compacta, dashboard premium, cards refinados, tabelas mais modernas, login elegante e ajustes de responsividade.
 
 
-## Atualização Visual Luxo Clean V16
+## Atualização Visual Luxo Clean V17
 
 Refino visual geral do sistema com foco em leveza, sofisticação e aspecto de clínica premium. Nova sidebar clara, dashboard mais enxuto, formulários e tabelas mais elegantes, login minimalista e hierarquia visual mais fina.
 
 
-## Atualização Visual Luxo Clean V16
+## Atualização Visual Luxo Clean V17
 
 Home simplificada com menos informação, ícones restaurados no menu e nos atalhos, e visual mais leve.
 
 
-## Atualização Visual Luxo Clean V16
+## Atualização Visual Luxo Clean V17
 
 Topo da home simplificado, com remoção do texto grande e inclusão de mais cor nos elementos do dashboard.
 
 
-## Atualização Visual Luxo Clean V16
+## Atualização Visual Luxo Clean V17
 
 Mensagem da Home removida, reforço de cores no dashboard e inclusão de microinterações/animações suaves.
 
 
-## Atualização Visual Luxo Clean V16
+## Atualização Visual Luxo Clean V17
 
 Refino visual com mais cor e um pacote maior de microanimações no dashboard, botões, cards, menu e listas.
 
 
-## Atualização App Premium V16
+## Atualização App Premium V17
 
 Versão com mais cor e animações: transição de páginas, barra de carregamento, entrada dos cards, hover animado, modais mais suaves e microinterações em botões, menus, tabelas e abas.
 
 
-## V16 - Documentos e Assinatura
+## V17 - Documentos e Assinatura
 
 Adicionada aba Documentos no painel do paciente, com contrato, termo de consentimento, termo de uso de imagem, assinatura digital na tela e impressão/PDF.
 
 
-## V16 - Assinatura manual e digital
+## V17 - Assinatura manual e digital
 
 A aba Documentos agora permite escolher entre imprimir o modelo para assinatura em mãos ou abrir a assinatura digital na tela.
 
 
-## V16 - Correção do menu inferior no mobile
+## V17 - Correção do menu inferior no mobile
 
 Ajustado o espaçamento do conteúdo para o dock inferior do celular não cobrir botões e formulários, especialmente na aba Documentos.
 
 
-## V16 - Correção forte do dock inferior
+## V17 - Correção forte do dock inferior
 
 O menu inferior agora só aparece no celular e não fica mais por cima dos botões em telas maiores. Também foi adicionado espaço extra no final da aba Documentos.
+
+
+## V17 - Nome clicável na agenda
+
+Na agenda, o nome do paciente dentro do evento agora abre diretamente o painel do paciente. Clicar no restante do evento continua abrindo a edição do agendamento.
