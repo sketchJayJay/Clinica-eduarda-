@@ -175,6 +175,24 @@ def _ensure_premium_migrations(db: sqlite3.Connection) -> None:
     CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
     CREATE INDEX IF NOT EXISTS idx_leads_next_contact ON leads(next_contact_date);
 
+
+    CREATE TABLE IF NOT EXISTS patient_documents(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        doc_type TEXT NOT NULL DEFAULT 'contrato',
+        title TEXT NOT NULL,
+        content TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'rascunho',
+        signer_name TEXT,
+        signer_document TEXT,
+        signature_data TEXT,
+        signed_at TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_patient_documents_patient ON patient_documents(patient_id);
+    CREATE INDEX IF NOT EXISTS idx_patient_documents_status ON patient_documents(status);
+
     CREATE TABLE IF NOT EXISTS procedure_catalog(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL UNIQUE,

@@ -4,7 +4,7 @@
 {% set tabs = [
   ('resumo','Resumo'), ('orcamentos','Orçamentos'), ('plano_ficha','Plano/Ficha'),
   ('anamnese','Anamnese'), ('agenda','Agenda'), ('odontograma','Odontograma'),
-  ('fotos','Fotos'), ('retornos','Retornos/CRM'), ('timeline','Linha do tempo')
+  ('fotos','Fotos'), ('retornos','Retornos/CRM'), ('documentos','Documentos'), ('timeline','Linha do tempo')
 ] %}
 
 <div class="patient-hero card border-0 shadow-sm mb-3">
@@ -127,6 +127,16 @@
       </div>
     </div></div>
   </div>
+  <div class="col-lg-5">
+    <div class="card border-0 shadow-sm h-100"><div class="card-body">
+      <div class="d-flex justify-content-between align-items-center mb-2"><h6 class="mb-0">Últimos documentos</h6><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=patient.id, tab='documentos') }}">Abrir</a></div>
+      <div class="vstack gap-2">
+        {% for doc in documents[:4] %}
+          <div class="crm-mini"><b>{{ doc.title }}</b><div class="text-muted small">{{ doc.doc_type }} · {{ doc.status }} · {{ sql_to_br(doc.signed_at or doc.created_at) }}</div></div>
+        {% else %}<div class="text-muted">Nenhum documento criado.</div>{% endfor %}
+      </div>
+    </div></div>
+  </div>
 </div>
 
 {% elif tab=='orcamentos' %}
@@ -239,6 +249,177 @@
 <div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Histórico de retornos e tarefas</h6><div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Tarefa</th><th>Data</th><th>Prioridade</th><th>Status</th><th>Obs.</th><th></th></tr></thead><tbody>
 {% for task in tasks %}<tr><td><b>{{ task.title }}</b></td><td>{{ task.due_date or '—' }}</td><td>{{ task.priority }}</td><td>{% if task.status=='feito' %}<span class="badge text-bg-success">Feito</span>{% else %}<span class="badge text-bg-warning">Aberta</span>{% endif %}</td><td>{{ task.note or '' }}</td><td class="text-end"><form method="post" class="d-inline" action="{{ url_for('patients.task_toggle', pid=patient.id, tid=task.id) }}"><button class="btn btn-sm btn-outline-success">{{ 'Reabrir' if task.status=='feito' else 'Concluir' }}</button></form> <form method="post" class="d-inline" action="{{ url_for('patients.task_delete', pid=patient.id, tid=task.id) }}" onsubmit="return confirm('Remover tarefa?')"><button class="btn btn-sm btn-outline-danger">Excluir</button></form></td></tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-3">Nenhuma tarefa.</td></tr>{% endfor %}
 </tbody></table></div></div></div>
+
+
+{% elif tab=='documentos' %}
+<div class="row g-3">
+  <div class="col-xl-5">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h6 class="mb-1">Novo documento</h6>
+        <div class="text-muted small mb-3">Gere contrato, termo de consentimento ou autorização para o paciente assinar na tela.</div>
+        <form method="post" action="{{ url_for('patients.document_add', pid=patient.id) }}" class="vstack gap-2">
+          <div>
+            <label class="form-label">Tipo</label>
+            <select class="form-select" name="doc_type">
+              <option value="contrato">Contrato de prestação de serviço</option>
+              <option value="consentimento">Termo de consentimento</option>
+              <option value="imagem">Termo de uso de imagem</option>
+              <option value="personalizado">Documento personalizado</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Título</label>
+            <input class="form-control" name="title" placeholder="Ex.: Contrato tratamento ortodôntico">
+          </div>
+          <div>
+            <label class="form-label">Procedimento / tratamento</label>
+            <input class="form-control" name="procedure" placeholder="Ex.: Clareamento, ortodontia, avaliação...">
+          </div>
+          <div>
+            <label class="form-label">Valor / condição combinada</label>
+            <input class="form-control" name="amount" placeholder="Ex.: R$ 1.500,00 à vista ou 5x de R$ 300,00">
+          </div>
+          <div>
+            <label class="form-label">Responsável</label>
+            <input class="form-control" name="responsible" value="{{ CLINIC_RESPONSIBLE }}" placeholder="Responsável técnico">
+          </div>
+          <div>
+            <label class="form-label">Texto personalizado opcional</label>
+            <textarea class="form-control" name="content" rows="5" placeholder="Se preencher, esse texto substitui o modelo automático."></textarea>
+          </div>
+          <button class="btn btn-brand"><i class="bi bi-file-earmark-plus me-1"></i>Criar documento</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-body">
+        <h6 class="mb-3">Documentos do paciente</h6>
+        <div class="vstack gap-3">
+          {% for doc in documents %}
+          <div class="crm-mini">
+            <div class="d-flex justify-content-between align-items-start gap-2 flex-wrap">
+              <div>
+                <div class="fw-bold">{{ doc.title }}</div>
+                <div class="text-muted small">{{ doc.doc_type }} · criado em {{ sql_to_br(doc.created_at) }}{% if doc.signed_at %} · assinado em {{ sql_to_br(doc.signed_at) }}{% endif %}</div>
+                {% if doc.status=='assinado' %}
+                  <span class="badge text-bg-success mt-2">Assinado</span>
+                {% else %}
+                  <span class="badge text-bg-warning mt-2">Aguardando assinatura</span>
+                {% endif %}
+              </div>
+              <div class="d-flex gap-2 flex-wrap">
+                <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.document_print', pid=patient.id, doc_id=doc.id) }}"><i class="bi bi-printer me-1"></i>Imprimir/PDF</a>
+                <form method="post" action="{{ url_for('patients.document_delete', pid=patient.id, doc_id=doc.id) }}" onsubmit="return confirm('Remover este documento?')">
+                  <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash me-1"></i>Excluir</button>
+                </form>
+              </div>
+            </div>
+
+            <details class="mt-3">
+              <summary class="fw-semibold">Ver texto do documento</summary>
+              <pre class="document-preview mt-2">{{ doc.content }}</pre>
+            </details>
+
+            {% if doc.status!='assinado' %}
+            <form method="post" action="{{ url_for('patients.document_sign', pid=patient.id, doc_id=doc.id) }}" class="signature-form mt-3">
+              <div class="row g-2 mb-2">
+                <div class="col-md-6"><input class="form-control" name="signer_name" placeholder="Nome de quem assinou" value="{{ patient.name }}"></div>
+                <div class="col-md-6"><input class="form-control" name="signer_document" placeholder="CPF/documento" value="{{ patient.cpf if patient.cpf is defined else '' }}"></div>
+              </div>
+              <div class="signature-pad-wrap">
+                <canvas class="signature-pad" width="780" height="210"></canvas>
+                <input type="hidden" name="signature_data" class="signature-data">
+              </div>
+              <div class="d-flex gap-2 mt-2 flex-wrap">
+                <button type="button" class="btn btn-sm btn-outline-secondary clear-signature"><i class="bi bi-eraser me-1"></i>Limpar assinatura</button>
+                <button class="btn btn-sm btn-brand"><i class="bi bi-pen me-1"></i>Salvar assinatura</button>
+              </div>
+              <div class="text-muted small mt-1">O paciente pode assinar com o dedo no celular/tablet ou com o mouse no computador.</div>
+            </form>
+            {% else %}
+              {% if doc.signature_data %}
+              <div class="signature-saved mt-3">
+                <div class="text-muted small mb-1">Assinatura salva:</div>
+                <img src="{{ doc.signature_data }}" alt="Assinatura" style="max-width:340px;width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;">
+              </div>
+              {% endif %}
+            {% endif %}
+          </div>
+          {% else %}
+          <div class="text-muted py-4">Nenhum contrato ou termo criado para este paciente.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .document-preview{white-space:pre-wrap;background:#fffdf9;border:1px solid var(--line);border-radius:14px;padding:14px;font-family:inherit;font-size:.92rem;color:var(--ink)}
+  .signature-pad-wrap{background:linear-gradient(135deg,#fff 0%,#fff8f3 100%);border:1px dashed var(--accent);border-radius:16px;padding:10px}
+  .signature-pad{width:100%;height:210px;background:#fff;border-radius:12px;touch-action:none;display:block}
+</style>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".signature-form").forEach((form) => {
+      const canvas = form.querySelector(".signature-pad");
+      const input = form.querySelector(".signature-data");
+      const clearBtn = form.querySelector(".clear-signature");
+      const ctx = canvas.getContext("2d");
+      let drawing = false;
+      let hasInk = false;
+
+      function resizeCanvas(){
+        const ratio = Math.max(window.devicePixelRatio || 1, 1);
+        const rect = canvas.getBoundingClientRect();
+        const data = canvas.toDataURL();
+        canvas.width = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        ctx.lineWidth = 2.4;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.strokeStyle = "#3f2a22";
+      }
+      resizeCanvas();
+
+      function pos(e){
+        const r = canvas.getBoundingClientRect();
+        const p = e.touches ? e.touches[0] : e;
+        return {x:p.clientX-r.left, y:p.clientY-r.top};
+      }
+      function start(e){ e.preventDefault(); drawing = true; hasInk = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }
+      function move(e){ if(!drawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }
+      function end(){ drawing = false; input.value = canvas.toDataURL("image/png"); }
+
+      canvas.addEventListener("mousedown", start);
+      canvas.addEventListener("mousemove", move);
+      window.addEventListener("mouseup", end);
+      canvas.addEventListener("touchstart", start, {passive:false});
+      canvas.addEventListener("touchmove", move, {passive:false});
+      canvas.addEventListener("touchend", end);
+
+      clearBtn.addEventListener("click", () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        input.value = "";
+        hasInk = false;
+      });
+
+      form.addEventListener("submit", (e) => {
+        if(!input.value && hasInk){ input.value = canvas.toDataURL("image/png"); }
+        if(!input.value){
+          e.preventDefault();
+          alert("Peça para o paciente assinar no quadro antes de salvar.");
+        }
+      });
+    });
+  });
+</script>
+
 
 {% elif tab=='timeline' %}
 <div class="card border-0 shadow-sm"><div class="card-body"><h6 class="mb-3">Linha do tempo completa</h6><div class="timeline-mini timeline-large">{% for item in timeline %}<div class="timeline-item"><div class="tl-icon">{{ item.icon }}</div><div><div class="fw-semibold">{{ item.title }}</div><div class="text-muted small">{{ sql_to_br(item.date) }}</div><div>{{ item.text }}</div></div></div>{% else %}<div class="text-muted">Nada registrado ainda.</div>{% endfor %}</div></div></div>

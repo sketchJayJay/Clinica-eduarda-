@@ -497,3 +497,9 @@ body.is-loaded .page-loader{
     scroll-behavior:auto!important;
   }
 }
+
+/* V13 - documentos e assinatura digital */
+.premium-tabs .nav-link{border-radius:999px;background:#fff;border:1px solid var(--line);color:var(--coffee);font-weight:800;transition:all .22s ease}
+.premium-tabs .nav-link.active{background:linear-gradient(135deg,var(--salmon),var(--coffee-2));border-color:var(--salmon);color:#fff;box-shadow:0 10px 20px rgba(74,48,39,.12)}
+.signature-pad-wrap{animation:fadeRise .35s ease both}
+.document-preview{animation:fadeRise .25s ease both}
