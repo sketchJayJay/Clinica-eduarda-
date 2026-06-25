@@ -325,25 +325,50 @@
             </details>
 
             {% if doc.status!='assinado' %}
-            <form method="post" action="{{ url_for('patients.document_sign', pid=patient.id, doc_id=doc.id) }}" class="signature-form mt-3">
-              <div class="row g-2 mb-2">
-                <div class="col-md-6"><input class="form-control" name="signer_name" placeholder="Nome de quem assinou" value="{{ patient.name }}"></div>
-                <div class="col-md-6"><input class="form-control" name="signer_document" placeholder="CPF/documento" value="{{ patient.cpf if patient.cpf is defined else '' }}"></div>
+            <div class="document-sign-options mt-3">
+              <div class="row g-2">
+                <div class="col-md-6">
+                  <a class="doc-option-card" target="_blank" href="{{ url_for('patients.document_print', pid=patient.id, doc_id=doc.id) }}">
+                    <div class="doc-option-icon"><i class="bi bi-printer"></i></div>
+                    <div>
+                      <b>Imprimir para assinar em mãos</b>
+                      <div class="text-muted small">Abre o modelo com linha de assinatura manual. Depois é só imprimir ou salvar em PDF.</div>
+                    </div>
+                  </a>
+                </div>
+                <div class="col-md-6">
+                  <button class="doc-option-card w-100 text-start" type="button" data-bs-toggle="collapse" data-bs-target="#digital-sign-{{ doc.id }}" aria-expanded="false">
+                    <div class="doc-option-icon"><i class="bi bi-pen"></i></div>
+                    <div>
+                      <b>Assinar digitalmente</b>
+                      <div class="text-muted small">Paciente assina na tela com dedo, caneta touch ou mouse.</div>
+                    </div>
+                  </button>
+                </div>
               </div>
-              <div class="signature-pad-wrap">
-                <canvas class="signature-pad" width="780" height="210"></canvas>
-                <input type="hidden" name="signature_data" class="signature-data">
+
+              <div class="collapse mt-3" id="digital-sign-{{ doc.id }}">
+                <form method="post" action="{{ url_for('patients.document_sign', pid=patient.id, doc_id=doc.id) }}" class="signature-form">
+                  <div class="row g-2 mb-2">
+                    <div class="col-md-6"><input class="form-control" name="signer_name" placeholder="Nome de quem assinou" value="{{ patient.name }}"></div>
+                    <div class="col-md-6"><input class="form-control" name="signer_document" placeholder="CPF/documento" value="{{ patient.cpf if patient.cpf is defined else '' }}"></div>
+                  </div>
+                  <div class="signature-pad-wrap">
+                    <canvas class="signature-pad" width="780" height="210"></canvas>
+                    <input type="hidden" name="signature_data" class="signature-data">
+                  </div>
+                  <div class="d-flex gap-2 mt-2 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-secondary clear-signature"><i class="bi bi-eraser me-1"></i>Limpar assinatura</button>
+                    <button class="btn btn-sm btn-brand"><i class="bi bi-check2-circle me-1"></i>Salvar assinatura digital</button>
+                  </div>
+                  <div class="text-muted small mt-1">Essa assinatura fica salva no histórico do paciente e aparece no documento impresso.</div>
+                </form>
               </div>
-              <div class="d-flex gap-2 mt-2 flex-wrap">
-                <button type="button" class="btn btn-sm btn-outline-secondary clear-signature"><i class="bi bi-eraser me-1"></i>Limpar assinatura</button>
-                <button class="btn btn-sm btn-brand"><i class="bi bi-pen me-1"></i>Salvar assinatura</button>
-              </div>
-              <div class="text-muted small mt-1">O paciente pode assinar com o dedo no celular/tablet ou com o mouse no computador.</div>
-            </form>
+            </div>
             {% else %}
               {% if doc.signature_data %}
               <div class="signature-saved mt-3">
-                <div class="text-muted small mb-1">Assinatura salva:</div>
+                <div class="text-muted small mb-1">Assinatura digital salva:</div>
                 <img src="{{ doc.signature_data }}" alt="Assinatura" style="max-width:340px;width:100%;border:1px solid var(--line);border-radius:14px;background:#fff;">
               </div>
               {% endif %}
@@ -362,6 +387,10 @@
   .document-preview{white-space:pre-wrap;background:#fffdf9;border:1px solid var(--line);border-radius:14px;padding:14px;font-family:inherit;font-size:.92rem;color:var(--ink)}
   .signature-pad-wrap{background:linear-gradient(135deg,#fff 0%,#fff8f3 100%);border:1px dashed var(--accent);border-radius:16px;padding:10px}
   .signature-pad{width:100%;height:210px;background:#fff;border-radius:12px;touch-action:none;display:block}
+  .doc-option-card{display:flex;align-items:flex-start;gap:12px;height:100%;padding:14px;border-radius:16px;border:1px solid var(--line);background:linear-gradient(135deg,#fff 0%,#fffaf6 100%);color:var(--coffee);box-shadow:var(--shadow-xs);transition:all .22s ease;text-decoration:none}
+  .doc-option-card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 14px 26px rgba(74,48,39,.09);color:var(--coffee)}
+  button.doc-option-card{border:1px solid var(--line)}
+  .doc-option-icon{width:42px;height:42px;flex:0 0 42px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#f8efe6;color:var(--coffee);font-size:1.1rem}
 </style>
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -386,6 +415,10 @@
         ctx.strokeStyle = "#3f2a22";
       }
       resizeCanvas();
+      const collapse = form.closest(".collapse");
+      if(collapse){
+        collapse.addEventListener("shown.bs.collapse", () => resizeCanvas());
+      }
 
       function pos(e){
         const r = canvas.getBoundingClientRect();
