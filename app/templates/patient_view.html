@@ -281,6 +281,35 @@
             <label class="form-label">Valor / condição combinada</label>
             <input class="form-control" name="amount" placeholder="Ex.: Valor total R$ 1.500,00, à vista ou 5x de R$ 300,00">
           </div>
+
+          <div class="fidelity-options">
+            <div class="d-flex align-items-center gap-2 mb-2">
+              <i class="bi bi-shield-check"></i>
+              <b>Multa do contrato de fidelidade</b>
+            </div>
+            <div class="row g-2">
+              <div class="col-md-4">
+                <label class="form-label">Percentual da multa (%)</label>
+                <input class="form-control" name="penalty_percent" value="20" inputmode="decimal" placeholder="Ex.: 20">
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Calcular multa sobre</label>
+                <select class="form-select" name="penalty_base" id="penalty_base">
+                  <option value="saldo restante">Saldo restante</option>
+                  <option value="valor total">Valor total do tratamento</option>
+                  <option value="valor fixo">Valor fixo</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Valor fixo, se usar</label>
+                <input class="form-control" name="fixed_penalty" placeholder="Ex.: R$ 500,00">
+              </div>
+            </div>
+            <div class="text-muted small mt-2">
+              Esses campos só entram no modelo <b>Contrato de fidelidade / tratamento completo</b>. Nos outros documentos, pode deixar como está.
+            </div>
+          </div>
+
           <div>
             <label class="form-label">Responsável</label>
             <input class="form-control" name="responsible" value="{{ CLINIC_RESPONSIBLE }}" placeholder="Responsável técnico">
@@ -392,6 +421,8 @@
   .doc-option-card:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:0 14px 26px rgba(74,48,39,.09);color:var(--coffee)}
   button.doc-option-card{border:1px solid var(--line)}
   .doc-option-icon{width:42px;height:42px;flex:0 0 42px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:#f8efe6;color:var(--coffee);font-size:1.1rem}
+  .fidelity-options{padding:14px;border-radius:16px;border:1px solid #ead8c9;background:linear-gradient(135deg,#fff8f3 0%,#fff 100%);box-shadow:var(--shadow-xs)}
+  .fidelity-options i{color:var(--accent);font-size:1.1rem}
 </style>
 <script>
   document.addEventListener("DOMContentLoaded", () => {

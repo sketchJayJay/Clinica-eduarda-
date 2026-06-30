@@ -77,7 +77,7 @@ def _audit(db, action: str, entity: str, entity_id: int | None = None, detail: s
 
 
 
-def _document_template(patient, doc_type: str, title: str, procedure: str = "", amount: str = "", responsible: str = "", custom_text: str = "") -> str:
+def _document_template(patient, doc_type: str, title: str, procedure: str = "", amount: str = "", responsible: str = "", custom_text: str = "", penalty_percent: str = "20", penalty_base: str = "saldo restante", fixed_penalty: str = "") -> str:
     """Gera texto-base editável para contratos e termos do paciente."""
     name = patient["name"]
     cpf = patient["cpf"] if "cpf" in patient.keys() and patient["cpf"] else "não informado"
@@ -86,6 +86,17 @@ def _document_template(patient, doc_type: str, title: str, procedure: str = "", 
     procedure = procedure or "tratamento/procedimento odontológico"
     amount = amount or "a combinar"
     responsible = responsible or "responsável técnico da clínica"
+    penalty_percent = (penalty_percent or "20").strip().replace("%", "") or "20"
+    penalty_base = (penalty_base or "saldo restante").strip()
+    fixed_penalty = (fixed_penalty or "").strip()
+    if penalty_base not in {"saldo restante", "valor total", "valor fixo"}:
+        penalty_base = "saldo restante"
+    if penalty_base == "valor fixo" and fixed_penalty:
+        penalty_text = f"multa compensatória fixa no valor de {fixed_penalty}"
+    elif penalty_base == "valor total":
+        penalty_text = f"multa compensatória equivalente a {penalty_percent}% sobre o valor total do tratamento contratado"
+    else:
+        penalty_text = f"multa compensatória equivalente a {penalty_percent}% sobre o saldo restante do tratamento contratado"
 
     if custom_text.strip():
         return custom_text.strip()
@@ -142,7 +153,7 @@ O paciente/responsável se compromete a realizar o acompanhamento do tratamento 
 Será considerada quebra de contrato quando o paciente/responsável interromper o tratamento sem comunicação prévia, abandonar os retornos necessários, deixar de cumprir os pagamentos combinados ou optar por encerrar o tratamento antes da conclusão sem acordo formal com a clínica.
 
 5. MULTA POR QUEBRA DE CONTRATO
-Em caso de quebra de contrato por parte do paciente/responsável, poderá ser aplicada multa compensatória equivalente a 20% sobre o saldo restante do tratamento contratado, sem prejuízo da cobrança de valores já vencidos, procedimentos já realizados, materiais utilizados ou despesas assumidas pela clínica.
+Em caso de quebra de contrato por parte do paciente/responsável, poderá ser aplicada {penalty_text}, sem prejuízo da cobrança de valores já vencidos, procedimentos já realizados, materiais utilizados ou despesas assumidas pela clínica.
 
 A multa poderá ser revista ou dispensada pela clínica mediante acordo entre as partes, desde que registrado por escrito.
 
@@ -448,7 +459,22 @@ def document_add(pid: int):
     responsible = (request.form.get("responsible") or "").strip()
     custom_text = (request.form.get("content") or "").strip()
 
-    content = _document_template(patient, doc_type, title, procedure, amount, responsible, custom_text)
+    penalty_percent = (request.form.get("penalty_percent") or "20").strip()
+    penalty_base = (request.form.get("penalty_base") or "saldo restante").strip()
+    fixed_penalty = (request.form.get("fixed_penalty") or "").strip()
+
+    content = _document_template(
+        patient,
+        doc_type,
+        title,
+        procedure,
+        amount,
+        responsible,
+        custom_text,
+        penalty_percent,
+        penalty_base,
+        fixed_penalty,
+    )
     db.execute(
         "INSERT INTO patient_documents(patient_id, doc_type, title, content, status) VALUES(?,?,?,?, 'rascunho')",
         (pid, doc_type, title, content),

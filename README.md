@@ -1,4 +1,4 @@
-# Eduarda Imbelloni Clínica Especializada - Luxo Clean V18
+# Eduarda Imbelloni Clínica Especializada - Luxo Clean V19
 
 Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.
 
@@ -46,7 +46,7 @@ ASAAS_ENV=production
 ASAAS_API_KEY=sua_chave_real
 ```
 
-## Melhorias da versão Luxo Clean V18
+## Melhorias da versão Luxo Clean V19
 
 - CRM de relacionamento com pacientes
 - Controle de leads e possíveis pacientes
@@ -60,7 +60,7 @@ ASAAS_API_KEY=sua_chave_real
 - Cards operacionais para recepção trabalhar mais rápido
 - Dashboard mais completo e mais comercial
 
-## Já vinha da versão Luxo Clean V18
+## Já vinha da versão Luxo Clean V19
 
 - Painel do paciente com resumo premium
 - Linha do tempo do paciente
@@ -83,76 +83,81 @@ ASAAS_API_KEY=sua_chave_real
 O local da integração já está pronto. Sem a chave `ASAAS_API_KEY`, o sistema só avisa que falta configurar. Após colocar a chave no Coolify ou em Configurações, os botões de boleto/Pix tentam gerar a cobrança via Asaas.
 
 
-## Visual Luxo Clean V18
+## Visual Luxo Clean V19
 
 Esta versão recebeu um redesenho visual com menu lateral, login premium, cards em vidro suave, cores da identidade Eduarda Imbelloni e polimento mobile/PWA.
 
 
-## Atualização Visual Luxo Clean V18
+## Atualização Visual Luxo Clean V19
 
 Redesign visual completo com layout mais limpo, menu lateral refinado, cards mais leves, tela de login premium, tabelas mais elegantes e ajustes de responsividade. Mantém o mesmo banco/volume, sem apagar dados.
 
 
-## Atualização Visual Luxo Clean V18
+## Atualização Visual Luxo Clean V19
 
 Redesign completo do layout para um visual mais limpo, sofisticado e alinhado à identidade visual da Eduarda Imbelloni Clínica Especializada. Inclui sidebar compacta, dashboard premium, cards refinados, tabelas mais modernas, login elegante e ajustes de responsividade.
 
 
-## Atualização Visual Luxo Clean V18
+## Atualização Visual Luxo Clean V19
 
 Refino visual geral do sistema com foco em leveza, sofisticação e aspecto de clínica premium. Nova sidebar clara, dashboard mais enxuto, formulários e tabelas mais elegantes, login minimalista e hierarquia visual mais fina.
 
 
-## Atualização Visual Luxo Clean V18
+## Atualização Visual Luxo Clean V19
 
 Home simplificada com menos informação, ícones restaurados no menu e nos atalhos, e visual mais leve.
 
 
-## Atualização Visual Luxo Clean V18
+## Atualização Visual Luxo Clean V19
 
 Topo da home simplificado, com remoção do texto grande e inclusão de mais cor nos elementos do dashboard.
 
 
-## Atualização Visual Luxo Clean V18
+## Atualização Visual Luxo Clean V19
 
 Mensagem da Home removida, reforço de cores no dashboard e inclusão de microinterações/animações suaves.
 
 
-## Atualização Visual Luxo Clean V18
+## Atualização Visual Luxo Clean V19
 
 Refino visual com mais cor e um pacote maior de microanimações no dashboard, botões, cards, menu e listas.
 
 
-## Atualização App Premium V18
+## Atualização App Premium V19
 
 Versão com mais cor e animações: transição de páginas, barra de carregamento, entrada dos cards, hover animado, modais mais suaves e microinterações em botões, menus, tabelas e abas.
 
 
-## V18 - Documentos e Assinatura
+## V19 - Documentos e Assinatura
 
 Adicionada aba Documentos no painel do paciente, com contrato, termo de consentimento, termo de uso de imagem, assinatura digital na tela e impressão/PDF.
 
 
-## V18 - Assinatura manual e digital
+## V19 - Assinatura manual e digital
 
 A aba Documentos agora permite escolher entre imprimir o modelo para assinatura em mãos ou abrir a assinatura digital na tela.
 
 
-## V18 - Correção do menu inferior no mobile
+## V19 - Correção do menu inferior no mobile
 
 Ajustado o espaçamento do conteúdo para o dock inferior do celular não cobrir botões e formulários, especialmente na aba Documentos.
 
 
-## V18 - Correção forte do dock inferior
+## V19 - Correção forte do dock inferior
 
 O menu inferior agora só aparece no celular e não fica mais por cima dos botões em telas maiores. Também foi adicionado espaço extra no final da aba Documentos.
 
 
-## V18 - Nome clicável na agenda
+## V19 - Nome clicável na agenda
 
 Na agenda, o nome do paciente dentro do evento agora abre diretamente o painel do paciente. Clicar no restante do evento continua abrindo a edição do agendamento.
 
 
-## V18 - Contrato de fidelidade
+## V19 - Contrato de fidelidade
 
 Adicionado modelo de contrato de fidelidade/tratamento completo na aba Documentos, com valor total do tratamento, condições de pagamento e cláusula de multa por quebra de contrato.
+
+
+## V19 - Percentual da multa
+
+Adicionados campos próprios no contrato de fidelidade para percentual da multa, base de cálculo da multa e valor fixo opcional.
