@@ -176,6 +176,7 @@ def get_common_form_data(db):
             "ORDER BY p.name COLLATE NOCASE, pi.created_at DESC, pi.id DESC"
         ).fetchall(),
         "pm": PAYMENT_METHODS,
+        "cents_to_brl": cents_to_brl,
     }
 
 
@@ -506,18 +507,6 @@ def transaction_new():
                 pid = int(item["patient_id"])
             else:
                 plan_iid = None
-        plan_iid = int(plan_item_id) if plan_item_id.isdigit() else None
-
-        if plan_iid and pid:
-            linked = db.execute("SELECT id FROM plan_items WHERE id=? AND patient_id=?", (plan_iid, pid)).fetchone()
-            if not linked:
-                plan_iid = None
-        elif plan_iid:
-            item = db.execute("SELECT patient_id FROM plan_items WHERE id=?", (plan_iid,)).fetchone()
-            if item:
-                pid = int(item["patient_id"])
-            else:
-                plan_iid = None
 
         if repasse_percent == "" and prid is not None:
             r = db.execute("SELECT default_repasse_percent FROM providers WHERE id=?", (prid,)).fetchone()
@@ -660,6 +649,21 @@ def transaction_edit(tid: int):
         pid = int(patient_id) if patient_id.isdigit() else None
         cid = int(category_id) if category_id.isdigit() else None
         prid = int(provider_id) if provider_id.isdigit() else None
+        plan_iid = int(plan_item_id) if plan_item_id.isdigit() else None
+
+        # Garante que o tratamento vinculado pertence ao paciente escolhido.
+        # Se o usuário escolher um tratamento sem escolher paciente, puxa o paciente desse tratamento.
+        if plan_iid and pid:
+            linked = db.execute("SELECT id FROM plan_items WHERE id=? AND patient_id=?", (plan_iid, pid)).fetchone()
+            if not linked:
+                plan_iid = None
+        elif plan_iid:
+            item = db.execute("SELECT patient_id FROM plan_items WHERE id=?", (plan_iid,)).fetchone()
+            if item:
+                pid = int(item["patient_id"])
+            else:
+                plan_iid = None
+
         try:
             repasse_percent_int = max(0, min(100, int(float((repasse_percent or "0").replace(",", ".")))))
         except Exception:
@@ -692,6 +696,8 @@ def transaction_edit(tid: int):
         return redirect(url_for("finance.transactions"))
 
     tx_dict = dict(tx)
+    if "plan_item_id" not in tx_dict:
+        tx_dict["plan_item_id"] = None
     tx_dict["amount_brl"] = cents_to_brl(int(tx["gross_amount_cents"] if tx["gross_amount_cents"] is not None else tx["amount_cents"] or 0))
     tx_dict["discount_cents_brl"] = cents_to_brl(int(tx["discount_cents"] or 0))
     tx_dict["discount_percent_str"] = fmt_percent(tx["discount_percent"])

@@ -91,7 +91,7 @@
               <select class="form-select" name="plan_item_id" id="planItemSelect">
                 <option value="">— Não vincular —</option>
                 {% for item in plan_items %}
-                  <option value="{{ item.id }}" data-patient-id="{{ item.patient_id }}" data-amount="{{ cents_to_brl(item.amount_cents) }}" data-procedure="{{ item.procedure }}" {% if (request.args.get('plan_item_id')|int == item.id and not is_edit) or (tx and tx.plan_item_id is defined and tx.plan_item_id==item.id) %}selected{% endif %}>
+                  <option value="{{ item.id }}" data-patient-id="{{ item.patient_id }}" data-amount="{{ cents_to_brl(item.amount_cents) }}" data-procedure="{{ item.procedure }}" {% if (request.args.get('plan_item_id')|int == item.id and not is_edit) or (tx and tx.get('plan_item_id')==item.id) %}selected{% endif %}>
                     {{ item.patient_name }} • {{ item.procedure }} • R$ {{ cents_to_brl(item.amount_cents) }}{% if item.done %} • feito{% endif %}
                   </option>
                 {% endfor %}
