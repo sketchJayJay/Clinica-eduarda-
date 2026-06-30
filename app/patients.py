@@ -663,6 +663,67 @@ def budget_add(pid: int):
     return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
 
 
+
+@bp.post("/<int:pid>/budgets/<int:bid>/edit")
+@login_required
+def budget_edit(pid: int, bid: int):
+    description = (request.form.get("description") or "").strip()
+    amount_raw = (request.form.get("amount") or "").strip()
+
+    if not description:
+        flash("Informe a descrição do orçamento.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
+
+    cents = parse_brl_to_cents(amount_raw)
+    if cents <= 0:
+        flash("Valor inválido. Ex: 150 ou 150,50.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
+
+    db = get_db()
+    b = db.execute(
+        "SELECT * FROM budgets WHERE id=? AND patient_id=?",
+        (bid, pid),
+    ).fetchone()
+    if not b:
+        flash("Orçamento não encontrado.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
+
+    db.execute(
+        "UPDATE budgets SET description=?, amount_cents=? WHERE id=? AND patient_id=?",
+        (description, cents, bid, pid),
+    )
+
+    # Se o orçamento já foi aprovado, mantém o plano do paciente atualizado também.
+    db.execute(
+        "UPDATE plan_items SET procedure=?, amount_cents=? WHERE budget_id=? AND patient_id=?",
+        (description, cents, bid, pid),
+    )
+
+    db.commit()
+    flash("Orçamento atualizado ✅", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
+
+
+@bp.post("/<int:pid>/budgets/<int:bid>/delete")
+@login_required
+def budget_delete(pid: int, bid: int):
+    db = get_db()
+    b = db.execute(
+        "SELECT * FROM budgets WHERE id=? AND patient_id=?",
+        (bid, pid),
+    ).fetchone()
+    if not b:
+        flash("Orçamento não encontrado.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
+
+    # Se o orçamento tinha sido aprovado, remove também o item que foi criado no plano.
+    db.execute("DELETE FROM plan_items WHERE budget_id=? AND patient_id=?", (bid, pid))
+    db.execute("DELETE FROM budgets WHERE id=? AND patient_id=?", (bid, pid))
+    db.commit()
+    flash("Orçamento excluído.", "info")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
+
+
 @bp.get("/<int:pid>/budgets/<int:bid>/status/<s>")
 @login_required
 def budget_status(pid: int, bid: int, s: str):

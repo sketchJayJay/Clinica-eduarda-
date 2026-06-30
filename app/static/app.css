@@ -609,3 +609,17 @@ body.is-loaded .page-loader{
   text-decoration:underline;
   text-underline-offset:3px;
 }
+
+/* V20 - Orçamentos com edição e explicação */
+.budget-edit-row td{
+  background:linear-gradient(135deg,#fff8f3 0%,#fff 100%);
+  border-top:0!important;
+}
+.budget-table .btn{
+  white-space:nowrap;
+}
+@media(max-width:575px){
+  .budget-table td:last-child .d-flex{
+    justify-content:flex-start!important;
+  }
+}

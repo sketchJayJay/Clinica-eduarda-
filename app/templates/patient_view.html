@@ -140,23 +140,107 @@
 </div>
 
 {% elif tab=='orcamentos' %}
-<div class="card shadow-sm border-0 mb-3"><div class="card-body">
-  <h6 class="mb-3">Novo orçamento</h6>
-  <form method="post" action="{{ url_for('patients.budget_add', pid=patient.id) }}" class="row g-2">
-    <div class="col-lg-7"><input class="form-control" name="description" list="procedures-list" placeholder="Descrição do procedimento" required><datalist id="procedures-list">{% for proc in procedures %}<option value="{{ proc.name }}">{% endfor %}</datalist></div>
-    <div class="col-lg-3"><input class="form-control money" name="amount" placeholder="Valor (R$)" inputmode="decimal" required></div>
-    <div class="col-lg-2 d-grid"><button class="btn btn-brand">Adicionar</button></div>
-  </form>
-  <div class="text-muted small mt-2">Ao aprovar um orçamento, ele entra automaticamente no plano do paciente.</div>
-</div></div>
-<div class="card shadow-sm border-0"><div class="table-responsive"><table class="table table-hover mb-0 align-middle">
-  <thead class="table-light"><tr><th>Descrição</th><th>Data</th><th class="text-end">Valor</th><th>Status</th><th style="width:340px"></th></tr></thead>
-  <tbody>{% for b in budgets %}<tr>
-    <td>{{ b.description }}</td><td>{{ sql_to_br(b.created_at) }}</td><td class="text-end">R$ {{ cents_to_brl(b.amount_cents) }}</td>
-    <td>{% if b.status=='aprovado' %}<span class="badge text-bg-success">Aprovado</span>{% elif b.status=='reprovado' %}<span class="badge text-bg-danger">Reprovado</span>{% else %}<span class="badge text-bg-secondary">Aberto</span>{% endif %}</td>
-    <td class="text-end"><a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.budget_print', pid=patient.id, bid=b.id) }}">Imprimir</a> {% if b.status!='aprovado' %}<a class="btn btn-sm btn-success" href="{{ url_for('patients.budget_status', pid=patient.id, bid=b.id, s='aprovado') }}">Aprovar</a> <a class="btn btn-sm btn-outline-danger" href="{{ url_for('patients.budget_status', pid=patient.id, bid=b.id, s='reprovado') }}">Reprovar</a>{% else %}<span class="small text-muted">já aprovado</span>{% endif %}</td>
-  </tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-4">Nenhum orçamento.</td></tr>{% endfor %}</tbody>
-</table></div></div>
+<div class="card shadow-sm border-0 mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+      <div>
+        <h6 class="mb-1">Novo orçamento</h6>
+        <div class="text-muted small">Registre propostas de tratamento antes de virar plano do paciente.</div>
+      </div>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income') }}">
+        <i class="bi bi-cash-stack me-1"></i>Nova cobrança no financeiro
+      </a>
+    </div>
+
+    <form method="post" action="{{ url_for('patients.budget_add', pid=patient.id) }}" class="row g-2">
+      <div class="col-lg-7">
+        <input class="form-control" name="description" list="procedures-list" placeholder="Descrição do procedimento" required>
+        <datalist id="procedures-list">{% for proc in procedures %}<option value="{{ proc.name }}">{% endfor %}</datalist>
+      </div>
+      <div class="col-lg-3"><input class="form-control money" name="amount" placeholder="Valor (R$)" inputmode="decimal" required></div>
+      <div class="col-lg-2 d-grid"><button class="btn btn-brand">Adicionar</button></div>
+    </form>
+
+    <div class="alert alert-light border mt-3 mb-0 small">
+      <b>Sobre o botão “Aprovar para plano”:</b> ele não lança cobrança no financeiro. Ele serve para transformar o orçamento aprovado em item do <b>Plano/Ficha</b> do paciente, ajudando a acompanhar o tratamento. Para gerar cobrança/recebimento, use o botão <b>Nova cobrança no financeiro</b>.
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle budget-table">
+      <thead class="table-light">
+        <tr>
+          <th>Descrição</th>
+          <th>Data</th>
+          <th class="text-end">Valor</th>
+          <th>Status</th>
+          <th style="width:430px"></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for b in budgets %}
+        <tr>
+          <td>{{ b.description }}</td>
+          <td>{{ sql_to_br(b.created_at) }}</td>
+          <td class="text-end">R$ {{ cents_to_brl(b.amount_cents) }}</td>
+          <td>
+            {% if b.status=='aprovado' %}
+              <span class="badge text-bg-success">Aprovado para plano</span>
+            {% elif b.status=='reprovado' %}
+              <span class="badge text-bg-danger">Reprovado</span>
+            {% else %}
+              <span class="badge text-bg-secondary">Aberto</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <div class="d-flex gap-1 flex-wrap justify-content-end">
+              <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.budget_print', pid=patient.id, bid=b.id) }}">Imprimir</a>
+              <button class="btn btn-sm btn-outline-primary" type="button" data-bs-toggle="collapse" data-bs-target="#edit-budget-{{ b.id }}">
+                Editar
+              </button>
+
+              {% if b.status!='aprovado' %}
+                <a class="btn btn-sm btn-success" href="{{ url_for('patients.budget_status', pid=patient.id, bid=b.id, s='aprovado') }}">Aprovar para plano</a>
+                <a class="btn btn-sm btn-outline-danger" href="{{ url_for('patients.budget_status', pid=patient.id, bid=b.id, s='reprovado') }}">Reprovar</a>
+              {% else %}
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=patient.id, tab='plano_ficha') }}">Ver no plano</a>
+              {% endif %}
+
+              <form method="post" action="{{ url_for('patients.budget_delete', pid=patient.id, bid=b.id) }}" onsubmit="return confirm('Excluir este orçamento? Se ele estiver aprovado, o item criado no plano também será removido.')" class="d-inline">
+                <button class="btn btn-sm btn-outline-danger">Excluir</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        <tr class="collapse budget-edit-row" id="edit-budget-{{ b.id }}">
+          <td colspan="5">
+            <form method="post" action="{{ url_for('patients.budget_edit', pid=patient.id, bid=b.id) }}" class="row g-2 align-items-end">
+              <div class="col-lg-7">
+                <label class="form-label small">Descrição</label>
+                <input class="form-control" name="description" value="{{ b.description }}" required>
+              </div>
+              <div class="col-lg-3">
+                <label class="form-label small">Valor (R$)</label>
+                <input class="form-control money" name="amount" value="{{ cents_to_brl(b.amount_cents) }}" inputmode="decimal" required>
+              </div>
+              <div class="col-lg-2 d-grid">
+                <button class="btn btn-brand">Salvar edição</button>
+              </div>
+              {% if b.status=='aprovado' %}
+                <div class="col-12 text-muted small">Como este orçamento já foi aprovado, a edição também atualiza o item correspondente no Plano/Ficha.</div>
+              {% endif %}
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="text-center text-muted py-4">Nenhum orçamento.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
 
 {% elif tab=='plano_ficha' %}
 <div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-1">Plano do paciente</h6><div class="text-muted small">Controle por procedimento e etapas.</div></div>
