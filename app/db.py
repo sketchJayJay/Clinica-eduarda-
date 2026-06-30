@@ -48,6 +48,7 @@ def _ensure_finance_migrations(db: sqlite3.Connection) -> None:
     _add_column_if_missing(db, "transactions", "installments_total", "INTEGER NOT NULL DEFAULT 1")
     _add_column_if_missing(db, "transactions", "installment_number", "INTEGER NOT NULL DEFAULT 1")
     _add_column_if_missing(db, "transactions", "parent_transaction_id", "INTEGER")
+    _add_column_if_missing(db, "transactions", "plan_item_id", "INTEGER")
     _add_column_if_missing(db, "transactions", "repasse_paid_at", "TEXT")
     _add_column_if_missing(db, "transactions", "repasse_payment_note", "TEXT")
 

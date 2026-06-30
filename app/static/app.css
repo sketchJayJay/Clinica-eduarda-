@@ -623,3 +623,7 @@ body.is-loaded .page-loader{
     justify-content:flex-start!important;
   }
 }
+
+/* V21 - vínculo financeiro com plano/ficha */
+.plan-finance-badge{font-weight:800}
+#planItemSelect option[hidden]{display:none}

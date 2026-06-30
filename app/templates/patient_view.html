@@ -38,8 +38,8 @@
 <div class="row g-3 mb-3">
   <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Tratamento total</div><div class="kpi-value">R$ {{ plan_summary.total }}</div><div class="small text-muted">{{ plan_summary.done_count }}/{{ plan_summary.count }} feitos</div></div></div></div>
   <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Tratamento pendente</div><div class="kpi-value">R$ {{ plan_summary.pending }}</div><div class="small text-muted">procedimentos em aberto</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Recebido</div><div class="kpi-value text-success">R$ {{ finance_summary.income_paid }}</div><div class="small text-muted">histórico do paciente</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">A receber</div><div class="kpi-value {% if finance_summary.overdue != '0,00' %}text-danger{% endif %}">R$ {{ finance_summary.income_pending }}</div><div class="small text-muted">vencido: R$ {{ finance_summary.overdue }}</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Recebido no plano</div><div class="kpi-value text-success">R$ {{ plan_summary.received }}</div><div class="small text-muted">abatido dos tratamentos</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Saldo do plano</div><div class="kpi-value {% if plan_summary.financial_balance != '0,00' %}text-danger{% endif %}">R$ {{ plan_summary.financial_balance }}</div><div class="small text-muted">saldo financeiro vinculado</div></div></div></div>
 </div>
 
 <ul class="nav nav-pills flex-wrap gap-2 mb-3 premium-tabs">
@@ -243,14 +243,23 @@
 </div>
 
 {% elif tab=='plano_ficha' %}
-<div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-1">Plano do paciente</h6><div class="text-muted small">Controle por procedimento e etapas.</div></div>
+<div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-1">Plano do paciente</h6><div class="text-muted small">Controle clínico e financeiro por procedimento. Marcar como feito é status clínico. Para abater valor, lance uma cobrança vinculada ao tratamento.</div></div>
   <div class="table-responsive"><table class="table table-hover mb-0 align-middle">
-    <thead class="table-light"><tr><th>Procedimento</th><th>Dente</th><th class="text-end">Valor</th><th>Criado</th><th>Feito</th><th style="width:160px"></th><th style="min-width:320px">Etapas</th></tr></thead>
+    <thead class="table-light"><tr><th>Procedimento</th><th>Dente</th><th class="text-end">Valor</th><th class="text-end">Recebido</th><th class="text-end">Saldo</th><th>Status clínico</th><th>Status financeiro</th><th style="min-width:320px">Etapas</th></tr></thead>
     <tbody>{% for it in plan %}<tr>
-      <td>{{ it.procedure }}</td><td>{{ it.tooth or '-' }}</td><td class="text-end">R$ {{ cents_to_brl(it.amount_cents) }}</td><td>{{ sql_to_br(it.created_at) }}</td><td>{% if it.done %}{{ sql_to_br(it.done_at) }}{% endif %}</td>
-      <td>{% if it.done %}<span class="badge text-bg-success">Feito</span><br><a class="btn btn-sm btn-outline-secondary mt-2" href="{{ url_for('patients.plan_toggle', pid=patient.id, iid=it.id) }}">Desfazer</a>{% else %}<a class="btn btn-sm btn-brand" href="{{ url_for('patients.plan_toggle', pid=patient.id, iid=it.id) }}">Marcar feito</a>{% endif %}</td>
+      <td>
+        <b>{{ it.procedure }}</b>
+        <div class="small text-muted">{{ sql_to_br(it.created_at) }}</div>
+        <a class="btn btn-sm btn-outline-success mt-2" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=it.id) }}">Lançar cobrança vinculada</a>
+      </td>
+      <td>{{ it.tooth or '-' }}</td>
+      <td class="text-end">R$ {{ cents_to_brl(it.amount_cents) }}</td>
+      <td class="text-end text-success">R$ {{ cents_to_brl(it.paid_cents) }}</td>
+      <td class="text-end {% if it.financial_balance_cents > 0 %}text-danger{% else %}text-success{% endif %}">R$ {{ cents_to_brl(it.financial_balance_cents) }}</td>
+      <td>{% if it.done %}<span class="badge text-bg-success">Feito</span><div class="small text-muted">{{ sql_to_br(it.done_at) }}</div><a class="btn btn-sm btn-outline-secondary mt-2" href="{{ url_for('patients.plan_toggle', pid=patient.id, iid=it.id) }}">Desfazer</a>{% else %}<span class="badge text-bg-warning">Em andamento</span><br><a class="btn btn-sm btn-brand mt-2" href="{{ url_for('patients.plan_toggle', pid=patient.id, iid=it.id) }}">Marcar feito</a>{% endif %}</td>
+      <td>{% if it.financial_status=='quitado' %}<span class="badge text-bg-success">Quitado</span>{% elif it.financial_status=='parcial' %}<span class="badge text-bg-warning">Parcial</span>{% else %}<span class="badge text-bg-secondary">Sem pagamento</span>{% endif %}</td>
       <td><ul class="small mb-2" style="padding-left:18px">{% for st in it.steps %}<li>{% if st.done %}✅{% else %}🔲{% endif %} {{ st.step }} <a class="ms-2" href="{{ url_for('patients.plan_step_toggle', pid=patient.id, sid=st.id) }}">alternar</a></li>{% else %}<li class="text-muted">Sem etapas.</li>{% endfor %}</ul><form method="post" action="{{ url_for('patients.plan_add_step', pid=patient.id, iid=it.id) }}" class="d-flex gap-2"><input class="form-control" name="step" placeholder="Nova etapa" required><button class="btn btn-outline-secondary">+</button></form></td>
-    </tr>{% else %}<tr><td colspan="7" class="text-center text-muted py-4">Nenhum item no plano.</td></tr>{% endfor %}</tbody>
+    </tr>{% else %}<tr><td colspan="8" class="text-center text-muted py-4">Nenhum item no plano.</td></tr>{% endfor %}</tbody>
   </table></div>
 </div>
 <div class="row g-3">

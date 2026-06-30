@@ -310,6 +310,7 @@ def view_patient(pid: int):
     plan_rows = db.execute("SELECT * FROM plan_items WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall()
     plan_ids = [int(r["id"]) for r in plan_rows]
     steps_map: dict[int, list[dict]] = {}
+    plan_pay_map: dict[int, dict] = {}
     if plan_ids:
         placeholders = ",".join(["?"] * len(plan_ids))
         step_rows = db.execute(
@@ -318,7 +319,42 @@ def view_patient(pid: int):
         ).fetchall()
         for st in step_rows:
             steps_map.setdefault(int(st["plan_item_id"]), []).append(dict(st))
-    plan = [dict(r) | {"steps": steps_map.get(int(r["id"]), [])} for r in plan_rows]
+
+        pay_rows = db.execute(
+            f"""
+            SELECT plan_item_id,
+                   COALESCE(SUM(COALESCE(final_amount_cents, amount_cents, 0)),0) AS charged,
+                   COALESCE(SUM(COALESCE(paid_amount_cents, 0)),0) AS paid
+              FROM transactions
+             WHERE patient_id=? AND kind='income' AND plan_item_id IN ({placeholders})
+             GROUP BY plan_item_id
+            """,
+            (pid, *tuple(plan_ids)),
+        ).fetchall()
+        for pr in pay_rows:
+            plan_pay_map[int(pr["plan_item_id"])] = {"charged": int(pr["charged"] or 0), "paid": int(pr["paid"] or 0)}
+
+    plan = []
+    for r in plan_rows:
+        d = dict(r)
+        paid = int(plan_pay_map.get(int(r["id"]), {}).get("paid", 0))
+        charged = int(plan_pay_map.get(int(r["id"]), {}).get("charged", 0))
+        treatment_total = int(r["amount_cents"] or 0)
+        balance = max(treatment_total - paid, 0)
+        if paid <= 0:
+            fin_status = "sem pagamento"
+        elif balance <= 0:
+            fin_status = "quitado"
+        else:
+            fin_status = "parcial"
+        d.update({
+            "steps": steps_map.get(int(r["id"]), []),
+            "paid_cents": paid,
+            "charged_cents": charged,
+            "financial_balance_cents": balance,
+            "financial_status": fin_status,
+        })
+        plan.append(d)
 
     records = db.execute("SELECT * FROM clinical_records WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall()
     anamneses = db.execute("SELECT * FROM anamnesis WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall() if tab == "anamnese" else []
@@ -357,10 +393,14 @@ def view_patient(pid: int):
 
     plan_total = sum(int(r["amount_cents"] or 0) for r in plan_rows)
     plan_done = sum(int(r["amount_cents"] or 0) for r in plan_rows if int(r["done"] or 0) == 1)
+    plan_received = sum(int(it.get("paid_cents", 0)) for it in plan)
+    plan_fin_balance = max(plan_total - plan_received, 0)
     plan_summary = {
         "total": cents_to_brl(plan_total),
         "done": cents_to_brl(plan_done),
         "pending": cents_to_brl(max(plan_total - plan_done, 0)),
+        "received": cents_to_brl(plan_received),
+        "financial_balance": cents_to_brl(plan_fin_balance),
         "count": len(plan_rows),
         "done_count": sum(1 for r in plan_rows if int(r["done"] or 0) == 1),
     }

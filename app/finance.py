@@ -170,6 +170,11 @@ def get_common_form_data(db):
         "patients": db.execute("SELECT id, name FROM patients ORDER BY name ASC").fetchall(),
         "categories": db.execute("SELECT id, name, kind FROM categories WHERE active=1 ORDER BY name ASC").fetchall(),
         "providers": db.execute("SELECT id, name, default_repasse_percent FROM providers WHERE active=1 ORDER BY name ASC").fetchall(),
+        "plan_items": db.execute(
+            "SELECT pi.id, pi.patient_id, pi.procedure, pi.amount_cents, pi.done, p.name AS patient_name "
+            "FROM plan_items pi JOIN patients p ON p.id=pi.patient_id "
+            "ORDER BY p.name COLLATE NOCASE, pi.created_at DESC, pi.id DESC"
+        ).fetchall(),
         "pm": PAYMENT_METHODS,
     }
 
@@ -239,7 +244,7 @@ def build_transactions_query(filters: dict, prefix: str = "t"):
     return (("WHERE " + " AND ".join(where)) if where else ""), params
 
 
-def insert_transaction(db, *, kind, status, date_eff, due_date, gross_amount, discount_percent, discount_fixed, description, pid, cid, prid, repasse_percent_int, payment_method, installments_total=1, installment_number=1, parent_transaction_id=None):
+def insert_transaction(db, *, kind, status, date_eff, due_date, gross_amount, discount_percent, discount_fixed, description, pid, cid, prid, repasse_percent_int, payment_method, installments_total=1, installment_number=1, parent_transaction_id=None, plan_item_id=None):
     final_amount, total_discount = calc_final_amount(gross_amount, discount_percent, discount_fixed)
     cash_session_id = None
     db.execute(
@@ -247,13 +252,13 @@ def insert_transaction(db, *, kind, status, date_eff, due_date, gross_amount, di
         INSERT INTO transactions(
             kind,status,date,due_date,amount_cents,payment_method,description,patient_id,category_id,provider_id,
             repasse_percent,cash_session_id,gross_amount_cents,discount_percent,discount_cents,final_amount_cents,
-            paid_amount_cents,balance_cents,installments_total,installment_number,parent_transaction_id
-        ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            paid_amount_cents,balance_cents,installments_total,installment_number,parent_transaction_id,plan_item_id
+        ) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """,
         (
             kind, "pending", date_eff, due_date, final_amount, payment_method, description, pid, cid, prid,
             repasse_percent_int, cash_session_id, gross_amount, discount_percent, total_discount, final_amount,
-            0, final_amount, installments_total, installment_number, parent_transaction_id,
+            0, final_amount, installments_total, installment_number, parent_transaction_id, plan_item_id,
         ),
     )
     tid = db.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
@@ -295,11 +300,13 @@ def transactions():
     filters = get_filters()
     where_sql, params = build_transactions_query(filters)
     rows = db.execute(
-        "SELECT t.*, p.name AS patient_name, c.name AS category_name, pr.name AS provider_name "
+        "SELECT t.*, p.name AS patient_name, c.name AS category_name, pr.name AS provider_name, "
+        "pi.procedure AS plan_item_name, pi.amount_cents AS plan_item_amount_cents "
         "FROM transactions t "
         "LEFT JOIN patients p ON p.id=t.patient_id "
         "LEFT JOIN categories c ON c.id=t.category_id "
         "LEFT JOIN providers pr ON pr.id=t.provider_id "
+        "LEFT JOIN plan_items pi ON pi.id=t.plan_item_id "
         f"{where_sql} "
         "ORDER BY COALESCE(t.due_date, t.date) DESC, t.id DESC LIMIT 400",
         tuple(params),
@@ -477,6 +484,7 @@ def transaction_new():
         patient_id = request.form.get("patient_id", "").strip()
         category_id = request.form.get("category_id", "").strip()
         provider_id = request.form.get("provider_id", "").strip()
+        plan_item_id = request.form.get("plan_item_id", "").strip()
         repasse_percent = request.form.get("repasse_percent", "").strip()
         installments_total = request.form.get("installments_total", "1").strip()
 
@@ -487,6 +495,29 @@ def transaction_new():
         pid = int(patient_id) if patient_id.isdigit() else None
         cid = int(category_id) if category_id.isdigit() else None
         prid = int(provider_id) if provider_id.isdigit() else None
+        plan_iid = int(plan_item_id) if plan_item_id.isdigit() else None
+        if plan_iid and pid:
+            linked = db.execute("SELECT id FROM plan_items WHERE id=? AND patient_id=?", (plan_iid, pid)).fetchone()
+            if not linked:
+                plan_iid = None
+        elif plan_iid:
+            item = db.execute("SELECT patient_id FROM plan_items WHERE id=?", (plan_iid,)).fetchone()
+            if item:
+                pid = int(item["patient_id"])
+            else:
+                plan_iid = None
+        plan_iid = int(plan_item_id) if plan_item_id.isdigit() else None
+
+        if plan_iid and pid:
+            linked = db.execute("SELECT id FROM plan_items WHERE id=? AND patient_id=?", (plan_iid, pid)).fetchone()
+            if not linked:
+                plan_iid = None
+        elif plan_iid:
+            item = db.execute("SELECT patient_id FROM plan_items WHERE id=?", (plan_iid,)).fetchone()
+            if item:
+                pid = int(item["patient_id"])
+            else:
+                plan_iid = None
 
         if repasse_percent == "" and prid is not None:
             r = db.execute("SELECT default_repasse_percent FROM providers WHERE id=?", (prid,)).fetchone()
@@ -540,6 +571,7 @@ def transaction_new():
                     installments_total=installments_total_int,
                     installment_number=i,
                     parent_transaction_id=parent_id,
+                    plan_item_id=plan_iid,
                 )
                 if parent_id is None:
                     parent_id = tid
@@ -566,6 +598,7 @@ def transaction_new():
             prid=prid,
             repasse_percent_int=repasse_percent_int,
             payment_method=payment_method,
+            plan_item_id=plan_iid,
         )
         db.commit()
         flash("Lançamento salvo ✅", "success")
@@ -579,7 +612,21 @@ def transaction_new():
         "installments_total": 1,
         "discount_percent": 0,
         "discount_cents_brl": "",
+        "patient_id": request.args.get("patient_id", ""),
+        "plan_item_id": request.args.get("plan_item_id", ""),
     }
+
+    # Se vier de um item do Plano/Ficha, já puxa descrição, valor e paciente.
+    plan_item_arg = request.args.get("plan_item_id", "").strip()
+    if plan_item_arg.isdigit():
+        item = db.execute("SELECT * FROM plan_items WHERE id=?", (int(plan_item_arg),)).fetchone()
+        if item:
+            tx_prefill["patient_id"] = item["patient_id"]
+            tx_prefill["plan_item_id"] = item["id"]
+            tx_prefill["description"] = item["procedure"]
+            tx_prefill["amount_brl"] = cents_to_brl(int(item["amount_cents"] or 0))
+            tx_prefill["status"] = "pending"
+
     return render_template("transaction_form.html", tx=tx_prefill, is_edit=False, **data)
 
 
@@ -607,6 +654,7 @@ def transaction_edit(tid: int):
         patient_id = request.form.get("patient_id", "").strip()
         category_id = request.form.get("category_id", "").strip()
         provider_id = request.form.get("provider_id", "").strip()
+        plan_item_id = request.form.get("plan_item_id", "").strip()
         repasse_percent = request.form.get("repasse_percent", "").strip()
 
         pid = int(patient_id) if patient_id.isdigit() else None
@@ -630,10 +678,10 @@ def transaction_edit(tid: int):
             """
             UPDATE transactions
             SET kind=?, date=?, due_date=?, amount_cents=?, payment_method=?, description=?, patient_id=?, category_id=?, provider_id=?,
-                repasse_percent=?, gross_amount_cents=?, discount_percent=?, discount_cents=?, final_amount_cents=?
+                repasse_percent=?, gross_amount_cents=?, discount_percent=?, discount_cents=?, final_amount_cents=?, plan_item_id=?
             WHERE id=?
             """,
-            (kind, date_eff, due_date, final_amount, payment_method, description, pid, cid, prid, repasse_percent_int, gross_amount, discount_percent, total_discount, final_amount, tid),
+            (kind, date_eff, due_date, final_amount, payment_method, description, pid, cid, prid, repasse_percent_int, gross_amount, discount_percent, total_discount, final_amount, plan_iid, tid),
         )
         sync_transaction_payments(db, tid)
         tx2 = db.execute("SELECT * FROM transactions WHERE id=?", (tid,)).fetchone()
