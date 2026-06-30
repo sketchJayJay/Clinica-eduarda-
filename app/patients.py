@@ -115,6 +115,60 @@ Local e data: _______________________________
 Assinatura do paciente/responsável: _______________________________
 """
 
+    if doc_type == "fidelidade":
+        return f"""CONTRATO DE FIDELIDADE, TRATAMENTO COMPLETO E CONDIÇÕES DE PAGAMENTO
+
+Paciente: {name}
+CPF: {cpf}
+Telefone: {phone}
+Endereço: {address}
+
+Tratamento contratado: {procedure}
+Valor total do tratamento: {amount}
+Responsável: {responsible}
+
+1. OBJETO DO CONTRATO
+O presente contrato tem como finalidade registrar a contratação do tratamento odontológico descrito acima, conforme avaliação, planejamento e orientação da clínica.
+
+2. VALOR TOTAL DO TRATAMENTO
+O paciente/responsável declara estar ciente do valor total do tratamento informado neste documento, bem como das condições de pagamento combinadas com a clínica.
+
+O valor informado refere-se ao tratamento descrito, podendo haver alteração caso seja necessário incluir procedimentos não previstos inicialmente, desde que previamente comunicado e autorizado pelo paciente/responsável.
+
+3. COMPROMISSO DE FIDELIDADE
+O paciente/responsável se compromete a realizar o acompanhamento do tratamento com a clínica até a conclusão do plano acordado, respeitando as etapas clínicas, retornos, manutenções e orientações profissionais.
+
+4. QUEBRA DE CONTRATO
+Será considerada quebra de contrato quando o paciente/responsável interromper o tratamento sem comunicação prévia, abandonar os retornos necessários, deixar de cumprir os pagamentos combinados ou optar por encerrar o tratamento antes da conclusão sem acordo formal com a clínica.
+
+5. MULTA POR QUEBRA DE CONTRATO
+Em caso de quebra de contrato por parte do paciente/responsável, poderá ser aplicada multa compensatória equivalente a 20% sobre o saldo restante do tratamento contratado, sem prejuízo da cobrança de valores já vencidos, procedimentos já realizados, materiais utilizados ou despesas assumidas pela clínica.
+
+A multa poderá ser revista ou dispensada pela clínica mediante acordo entre as partes, desde que registrado por escrito.
+
+6. PAGAMENTOS EM ABERTO
+O encerramento antecipado do tratamento não elimina a obrigação de pagamento dos valores referentes aos serviços já executados, parcelas vencidas, materiais utilizados ou compromissos financeiros assumidos.
+
+7. OBRIGAÇÕES DO PACIENTE
+O paciente/responsável se compromete a:
+- Comparecer aos horários agendados;
+- Informar impossibilidade de comparecimento com antecedência;
+- Seguir as orientações clínicas;
+- Manter dados de contato atualizados;
+- Cumprir o plano de pagamento acordado;
+- Comunicar qualquer alteração de saúde, medicação ou intercorrência.
+
+8. OBRIGAÇÕES DA CLÍNICA
+A clínica se compromete a prestar o atendimento conforme avaliação profissional, registrar a evolução do tratamento e orientar o paciente sobre cuidados, retornos e etapas necessárias.
+
+9. DECLARAÇÃO DE CIÊNCIA
+O paciente/responsável declara que leu, compreendeu e aceita as condições deste contrato, incluindo o valor total do tratamento, a forma de pagamento e a possibilidade de multa em caso de quebra contratual.
+
+Local e data: _______________________________
+
+Assinatura do paciente/responsável: _______________________________
+"""
+
     if doc_type == "imagem":
         return f"""TERMO DE AUTORIZAÇÃO DE USO DE IMAGEM
 
@@ -179,6 +233,7 @@ def _doc_type_label(doc_type: str) -> str:
         "contrato": "Contrato",
         "consentimento": "Termo de consentimento",
         "imagem": "Termo de uso de imagem",
+        "fidelidade": "Contrato de fidelidade",
         "personalizado": "Documento personalizado",
     }.get(doc_type or "", "Documento")
 
@@ -384,7 +439,7 @@ def document_add(pid: int):
         return redirect(url_for("patients.list_patients"))
 
     doc_type = (request.form.get("doc_type") or "contrato").strip()
-    if doc_type not in {"contrato", "consentimento", "imagem", "personalizado"}:
+    if doc_type not in {"contrato", "fidelidade", "consentimento", "imagem", "personalizado"}:
         doc_type = "contrato"
 
     title = (request.form.get("title") or _doc_type_label(doc_type)).strip()

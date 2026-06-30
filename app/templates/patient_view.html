@@ -257,12 +257,13 @@
     <div class="card shadow-sm border-0 h-100">
       <div class="card-body pb-4 pb-md-3">
         <h6 class="mb-1">Novo documento</h6>
-        <div class="text-muted small mb-3">Gere contrato, termo de consentimento ou autorização para o paciente assinar na tela.</div>
+        <div class="text-muted small mb-3">Gere contrato, contrato de fidelidade, termo de consentimento ou autorização para o paciente assinar na tela.</div>
         <form method="post" action="{{ url_for('patients.document_add', pid=patient.id) }}" class="vstack gap-2">
           <div>
             <label class="form-label">Tipo</label>
             <select class="form-select" name="doc_type">
               <option value="contrato">Contrato de prestação de serviço</option>
+              <option value="fidelidade">Contrato de fidelidade / tratamento completo</option>
               <option value="consentimento">Termo de consentimento</option>
               <option value="imagem">Termo de uso de imagem</option>
               <option value="personalizado">Documento personalizado</option>
@@ -278,7 +279,7 @@
           </div>
           <div>
             <label class="form-label">Valor / condição combinada</label>
-            <input class="form-control" name="amount" placeholder="Ex.: R$ 1.500,00 à vista ou 5x de R$ 300,00">
+            <input class="form-control" name="amount" placeholder="Ex.: Valor total R$ 1.500,00, à vista ou 5x de R$ 300,00">
           </div>
           <div>
             <label class="form-label">Responsável</label>
