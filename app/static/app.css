@@ -627,3 +627,14 @@ body.is-loaded .page-loader{
 /* V21 - vínculo financeiro com plano/ficha */
 .plan-finance-badge{font-weight:800}
 #planItemSelect option[hidden]{display:none}
+
+/* V23 - ações financeiras mais claras */
+.finance-actions .btn,
+.finance-actions .form-select{
+  white-space:nowrap;
+}
+@media(max-width:575px){
+  .finance-actions{
+    justify-content:flex-start!important;
+  }
+}

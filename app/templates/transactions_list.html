@@ -77,7 +77,7 @@
 <div class="card shadow-sm border-0">
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
-      <thead class="table-light"><tr><th>Data/Venc.</th><th>Tipo</th><th>Status</th><th>Paciente</th><th>Profissional</th><th>Descrição</th><th>Parc.</th><th class="text-end">Final</th><th class="text-end">Pago</th><th class="text-end">Saldo</th><th style="width: 340px"></th></tr></thead>
+      <thead class="table-light"><tr><th>Data/Venc.</th><th>Tipo</th><th>Status</th><th>Paciente</th><th>Profissional</th><th>Descrição</th><th>Parc.</th><th class="text-end">Final</th><th class="text-end">Pago</th><th class="text-end">Saldo</th><th style="width: 430px"></th></tr></thead>
       <tbody>
         {% for r in rows %}
         <tr>
@@ -92,29 +92,42 @@
           <td class="text-end">R$ {{ cents_to_brl(r.paid_amount_cents or 0) }}</td>
           <td class="text-end"><b>R$ {{ cents_to_brl(r.balance_cents or 0) }}</b></td>
           <td class="text-end">
-            {% if r.status=="pending" %}
-              <form method="post" action="{{ url_for('finance.transaction_settle', tid=r.id) }}" class="d-inline">
-                <input type="hidden" name="date" value="{{ r.due_date or r.date }}">
-                <select class="form-select form-select-sm d-inline-block w-auto" name="payment_method"><option value="pix">Pix</option><option value="cash">Dinheiro</option><option value="card_credit">Crédito</option><option value="card_debit">Débito</option><option value="transfer">Transf.</option><option value="other">Outro</option></select>
-                <button class="btn btn-sm btn-outline-success">Baixar</button>
-              </form>
-            {% endif %}
-            <a class="btn btn-sm btn-outline-success" href="{{ url_for('finance.transaction_payments', tid=r.id) }}">Parcial</a>
-            {% if r.kind=="income" and r.status=="pending" %}
-              {% if r.asaas_invoice_url is defined and r.asaas_invoice_url %}
-                <a class="btn btn-sm btn-outline-success" target="_blank" href="{{ r.asaas_invoice_url }}">Link</a>
+            <div class="d-flex gap-1 flex-wrap justify-content-end finance-actions">
+              {% if r.status=="pending" %}
+                <form method="post" action="{{ url_for('finance.transaction_settle', tid=r.id) }}" class="d-inline-flex gap-1 align-items-center" onsubmit="return confirm('Marcar este lançamento como pago?')">
+                  <input type="hidden" name="date" value="{{ today }}">
+                  <select class="form-select form-select-sm w-auto" name="payment_method" title="Forma de pagamento">
+                    <option value="pix">Pix</option>
+                    <option value="cash">Dinheiro</option>
+                    <option value="card_credit">Crédito</option>
+                    <option value="card_debit">Débito</option>
+                    <option value="transfer">Transf.</option>
+                    <option value="other">Outro</option>
+                  </select>
+                  <button class="btn btn-sm btn-success">Marcar pago</button>
+                </form>
+                <a class="btn btn-sm btn-outline-success" href="{{ url_for('finance.transaction_payments', tid=r.id) }}">Pagamento parcial</a>
+              {% else %}
+                <a class="btn btn-sm btn-outline-success" href="{{ url_for('finance.transaction_payments', tid=r.id) }}">Ver pagamentos</a>
               {% endif %}
-              <form method="post" action="{{ url_for('finance.transaction_asaas', tid=r.id) }}" class="d-inline">
-                <input type="hidden" name="billing_type" value="BOLETO">
-                <button class="btn btn-sm btn-outline-brand" title="Gerar boleto/cobrança pelo Asaas">Boleto</button>
-              </form>
-              <form method="post" action="{{ url_for('finance.transaction_asaas', tid=r.id) }}" class="d-inline">
-                <input type="hidden" name="billing_type" value="PIX">
-                <button class="btn btn-sm btn-outline-brand" title="Gerar Pix pelo Asaas">Pix</button>
-              </form>
-            {% endif %}
-            <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_edit', tid=r.id) }}">Editar</a>
-            <form method="post" action="{{ url_for('finance.transaction_delete', tid=r.id) }}" class="d-inline" onsubmit="return confirm('Excluir lançamento?')"><button class="btn btn-sm btn-outline-danger">Excluir</button></form>
+
+              {% if r.kind=="income" and r.status=="pending" %}
+                {% if r.asaas_invoice_url is defined and r.asaas_invoice_url %}
+                  <a class="btn btn-sm btn-outline-success" target="_blank" href="{{ r.asaas_invoice_url }}">Link</a>
+                {% endif %}
+                <form method="post" action="{{ url_for('finance.transaction_asaas', tid=r.id) }}" class="d-inline">
+                  <input type="hidden" name="billing_type" value="BOLETO">
+                  <button class="btn btn-sm btn-outline-brand" title="Gerar boleto/cobrança pelo Asaas">Boleto</button>
+                </form>
+                <form method="post" action="{{ url_for('finance.transaction_asaas', tid=r.id) }}" class="d-inline">
+                  <input type="hidden" name="billing_type" value="PIX">
+                  <button class="btn btn-sm btn-outline-brand" title="Gerar Pix pelo Asaas">Pix</button>
+                </form>
+              {% endif %}
+
+              <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_edit', tid=r.id) }}">Editar</a>
+              <form method="post" action="{{ url_for('finance.transaction_delete', tid=r.id) }}" class="d-inline" onsubmit="return confirm('Excluir lançamento?')"><button class="btn btn-sm btn-outline-danger">Excluir</button></form>
+            </div>
           </td>
         </tr>
         {% else %}<tr><td colspan="11" class="text-center text-muted py-4">Nenhum lançamento no filtro.</td></tr>{% endfor %}
