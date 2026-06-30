@@ -638,3 +638,7 @@ body.is-loaded .page-loader{
     justify-content:flex-start!important;
   }
 }
+
+/* V24 - Primeiro acesso */
+.setup-frame .login-panel-inner{max-width:620px}
+.setup-section-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:var(--coffee);margin-bottom:.55rem}

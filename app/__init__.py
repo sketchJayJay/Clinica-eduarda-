@@ -28,14 +28,13 @@ def create_app() -> Flask:
     app.config["ASAAS_API_KEY"] = os.environ.get("ASAAS_API_KEY", "")
     app.config["ASAAS_ENV"] = os.environ.get("ASAAS_ENV", "sandbox")
     app.config["UPLOAD_FOLDER"] = os.environ.get("UPLOAD_FOLDER", "/data/uploads")
-    app.config["APP_VERSION"] = "App Premium V23"
+    app.config["APP_VERSION"] = "App Premium V24"
 
     # Proteção extra do Financeiro (senha separada do login)
     # Pode alterar via variável de ambiente FINANCE_PASSWORD (ou FINANCE_PASS)
-    app.config["FINANCE_PASSWORD"] = os.environ.get(
-        "FINANCE_PASSWORD",
-        os.environ.get("FINANCE_PASS", "eduarda2026"),
-    )
+    # Se FINANCE_PASSWORD/FINANCE_PASS estiver definido no Coolify, ele tem prioridade.
+    # Se não estiver, usa a senha salva no próprio sistema, escolhida no primeiro acesso.
+    app.config["FINANCE_PASSWORD"] = os.environ.get("FINANCE_PASSWORD") or os.environ.get("FINANCE_PASS") or ""
 
     @app.context_processor
     def inject_flags():
@@ -71,7 +70,7 @@ def create_app() -> Flask:
             "CLINIC_RESPONSIBLE": pick("CLINIC_RESPONSIBLE", "clinic_responsible", ""),
             "CLINIC_CNPJ": pick("CLINIC_CNPJ", "clinic_cnpj", ""),
             "ASAAS_ENV": app.config.get("ASAAS_ENV") or settings.get("asaas_env", "sandbox"),
-            "APP_VERSION": app.config.get("APP_VERSION", "App Premium V23"),
+            "APP_VERSION": app.config.get("APP_VERSION", "App Premium V24"),
             "current_role": role,
         }
 

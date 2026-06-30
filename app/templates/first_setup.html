@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set title = "Primeiro acesso | Eduarda Imbelloni Clínica" %}
+{% block content %}
+<div class="auth-shell">
+  <div class="login-frame setup-frame">
+    <section class="login-showcase">
+      <img src="{{ url_for('static', filename='logo.png') }}" class="showcase-logo" alt="Eduarda Imbelloni Clínica Especializada">
+      <h1>Vamos criar o acesso principal da clínica.</h1>
+      <p class="mt-3 mb-0">Essa tela aparece apenas na primeira abertura do sistema. Depois disso, a clínica entra normalmente com o usuário e a senha escolhidos.</p>
+      <div class="login-perks">
+        <div class="login-perk"><span>✓</span><span>Usuário principal administrador</span></div>
+        <div class="login-perk"><span>✓</span><span>Senha de entrada personalizada</span></div>
+        <div class="login-perk"><span>✓</span><span>Senha separada para o financeiro</span></div>
+      </div>
+    </section>
+
+    <section class="login-card-eduarda login-panel">
+      <div class="login-panel-inner">
+        <div class="text-center mb-4 d-lg-none">
+          <img src="{{ url_for('static', filename='logo.png') }}" class="logo-lg" alt="logo">
+        </div>
+        <div class="page-kicker mb-2">Primeiro acesso</div>
+        <h2 class="mb-1">Configurar login</h2>
+        <div class="text-muted mb-4">Escolha os dados que serão usados para entrar no sistema e desbloquear o financeiro.</div>
+
+        <form method="post" autocomplete="off">
+          <div class="setup-section-title">Entrada do sistema</div>
+          <div class="mb-3">
+            <label class="form-label">Usuário</label>
+            <input class="form-control" name="username" value="{{ username or '' }}" autocomplete="username" placeholder="Ex.: eduarda" required autofocus>
+          </div>
+          <div class="row g-2">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Senha de entrada</label>
+              <input class="form-control" name="password" type="password" autocomplete="new-password" placeholder="Mínimo 6 caracteres" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Confirmar senha</label>
+              <input class="form-control" name="password2" type="password" autocomplete="new-password" placeholder="Repita a senha" required>
+            </div>
+          </div>
+
+          <div class="setup-section-title mt-2">Financeiro</div>
+          <div class="row g-2">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Senha do financeiro</label>
+              <input class="form-control" name="finance_password" type="password" placeholder="Ex.: senha do caixa" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Confirmar senha do financeiro</label>
+              <input class="form-control" name="finance_password2" type="password" placeholder="Repita a senha" required>
+            </div>
+          </div>
+
+          <div class="alert alert-light border small mb-3">
+            A senha de entrada abre o sistema. A senha do financeiro é pedida apenas ao acessar financeiro, caixa e repasses.
+          </div>
+
+          <button class="btn btn-brand w-100" type="submit">Salvar e acessar sistema</button>
+        </form>
+      </div>
+    </section>
+  </div>
+</div>
+{% endblock %}

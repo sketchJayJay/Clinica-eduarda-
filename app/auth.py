@@ -66,6 +66,15 @@ def set_setting(key: str, value: str) -> None:
     )
 
 
+def has_any_user() -> bool:
+    try:
+        db = get_db()
+        row = db.execute("SELECT COUNT(*) AS c FROM users").fetchone()
+        return bool(row and int(row["c"] or 0) > 0)
+    except Exception:
+        return False
+
+
 def log_action(action: str, entity: str | None = None, entity_id: int | None = None, detail: str | None = None) -> None:
     try:
         db = get_db()
@@ -89,19 +98,73 @@ def load_logged_in_user():
             g.user = None
 
 
+@bp.route("/setup", methods=["GET", "POST"])
+def first_setup():
+    """Primeiro acesso: cria o login principal e a senha do financeiro.
+
+    Essa tela só aparece enquanto ainda não existir usuário cadastrado.
+    Depois disso, o sistema volta ao fluxo normal de login.
+    """
+    init_db()
+    ensure_seed_data()
+    db = get_db()
+
+    if has_any_user():
+        return redirect(url_for("auth.login"))
+
+    if request.method == "POST":
+        username = (request.form.get("username") or "").strip()
+        password = request.form.get("password") or ""
+        password2 = request.form.get("password2") or ""
+        finance_password = request.form.get("finance_password") or ""
+        finance_password2 = request.form.get("finance_password2") or ""
+
+        if len(username) < 3:
+            flash("Escolha um usuário com pelo menos 3 caracteres.", "danger")
+            return render_template("first_setup.html", username=username)
+        if len(password) < 6:
+            flash("A senha de entrada precisa ter pelo menos 6 caracteres.", "danger")
+            return render_template("first_setup.html", username=username)
+        if password != password2:
+            flash("As senhas de entrada não conferem.", "danger")
+            return render_template("first_setup.html", username=username)
+        if len(finance_password) < 4:
+            flash("A senha do financeiro precisa ter pelo menos 4 caracteres.", "danger")
+            return render_template("first_setup.html", username=username)
+        if finance_password != finance_password2:
+            flash("As senhas do financeiro não conferem.", "danger")
+            return render_template("first_setup.html", username=username)
+
+        db.execute(
+            "INSERT INTO users(username, password_hash, role) VALUES(?, ?, ?)",
+            (username, generate_password_hash(password), "admin"),
+        )
+        uid = db.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+        set_setting("finance_password", finance_password)
+        set_setting("first_setup_done", "1")
+        db.execute(
+            "INSERT INTO audit_log(user_id, action, entity, entity_id, detail) VALUES(?,?,?,?,?)",
+            (int(uid), "first_setup", "user", int(uid), username),
+        )
+        db.commit()
+
+        session.clear()
+        session["user_id"] = int(uid)
+        flash("Primeiro acesso configurado ✅", "success")
+        return redirect(url_for("dashboard.index"))
+
+    return render_template("first_setup.html")
+
+
 @bp.route("/login", methods=["GET", "POST"])
 def login():
     init_db()
     ensure_seed_data()
     db = get_db()
-    user = db.execute("SELECT * FROM users ORDER BY id ASC LIMIT 1").fetchone()
-    if user is None:
-        db.execute(
-            "INSERT INTO users(username, password_hash, role) VALUES(?, ?, ?)",
-            ("admin", generate_password_hash("admin123"), "admin"),
-        )
-        db.commit()
-        flash("Usuário inicial criado: admin / admin123. Troque a senha em Configurações.", "warning")
+
+    # Primeiro acesso: sem usuário cadastrado, abre a tela para a clínica escolher login e senhas.
+    if not has_any_user():
+        return redirect(url_for("auth.first_setup"))
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()

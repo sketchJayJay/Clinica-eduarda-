@@ -276,7 +276,7 @@ def unlock():
     next_url = request.args.get("next") or request.form.get("next") or url_for("finance.transactions")
     if request.method == "POST":
         senha = request.form.get("password", "")
-        expected = (current_app.config.get("FINANCE_PASSWORD") or app_setting("finance_password", "eduarda2026") or "eduarda2026")
+        expected = (current_app.config.get("FINANCE_PASSWORD") or app_setting("finance_password", "") or "")
         if senha == expected:
             session["finance_unlocked"] = True
             flash("Financeiro desbloqueado ✅", "success")
