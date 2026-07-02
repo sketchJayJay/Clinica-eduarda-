@@ -69,6 +69,22 @@ def _ensure_finance_migrations(db: sqlite3.Connection) -> None:
     CREATE INDEX IF NOT EXISTS idx_txpay_transaction ON transaction_payments(transaction_id);
     CREATE INDEX IF NOT EXISTS idx_txpay_date ON transaction_payments(date);
     CREATE INDEX IF NOT EXISTS idx_txpay_method ON transaction_payments(payment_method);
+
+    CREATE TABLE IF NOT EXISTS charge_log(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        transaction_id INTEGER NOT NULL,
+        patient_id INTEGER,
+        sent_on TEXT NOT NULL,
+        channel TEXT NOT NULL DEFAULT 'whatsapp',
+        message TEXT,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        UNIQUE(transaction_id, sent_on, channel),
+        FOREIGN KEY(transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
+        FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_charge_log_date ON charge_log(sent_on);
+    CREATE INDEX IF NOT EXISTS idx_charge_log_tx ON charge_log(transaction_id);
     """)
 
     # Compatibilidade com lançamentos antigos: amount_cents continua sendo o valor final.

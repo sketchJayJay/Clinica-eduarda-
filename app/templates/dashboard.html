@@ -26,7 +26,7 @@
 <div class="row g-3 mb-4">
   <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-patients reveal reveal-delay-2 animate-pop animate-pop-2"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-people"></i></div><div><div class="kpi-label">Pacientes</div><div class="kpi-value">{{ ops.patients_total }}</div><div class="kpi-note">Base cadastrada</div></div></div></div></div>
   <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-agenda reveal reveal-delay-3 animate-pop animate-pop-3"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-calendar-check"></i></div><div><div class="kpi-label">Consultas hoje</div><div class="kpi-value">{{ ops.agenda_today_count }}</div><div class="kpi-note">Atendimentos do dia</div></div></div></div></div>
-  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-pendencias reveal reveal-delay-4 animate-pop animate-pop-4"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-bell"></i></div><div><div class="kpi-label">Pendências</div><div class="kpi-value {% if ops.tasks_due_count > 0 %}text-warning{% endif %}">{{ ops.tasks_due_count }}</div><div class="kpi-note">Retornos e tarefas</div></div></div></div></div>
+  <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-pendencias reveal reveal-delay-4 animate-pop animate-pop-4"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-bell"></i></div><div><div class="kpi-label">Pendências</div><div class="kpi-value {% if ops.tasks_due_count > 0 or (stats and ops.payments_due_count > 0) %}text-warning{% endif %}">{{ ops.tasks_due_count + (ops.payments_due_count if stats else 0) }}</div><div class="kpi-note">{% if stats and ops.payments_due_count > 0 %}Tarefas e cobranças{% else %}Retornos e tarefas{% endif %}</div></div></div></div></div>
   <div class="col-md-6 col-xl-3"><div class="kpi-card compact kpi-financeiro reveal reveal-delay-5 animate-pop animate-pop-5 float-soft"><div class="kpi-compact"><div class="kpi-icon"><i class="bi bi-currency-dollar"></i></div><div><div class="kpi-label">Financeiro do dia</div><div class="kpi-value">{% if stats %}R$ {{ stats.income_today }}{% else %}—{% endif %}</div><div class="kpi-note">{% if stats %}Entradas registradas{% else %}Protegido por senha{% endif %}</div></div></div></div></div>
 </div>
 
@@ -46,6 +46,72 @@
 </div>
 {% endif %}
 
+{% if stats and payment_reminders and payment_reminders|length > 0 %}
+<div class="alert alert-danger d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+  <div>
+    <b>Cobranças para hoje/vencidas:</b>
+    {% for p in payment_reminders[:5] %}
+      <span class="badge {% if p.overdue %}text-bg-danger{% else %}text-bg-light{% endif %} me-1">{{ p.patient_name }} · R$ {{ p.balance }}</span>
+    {% endfor %}
+    {% if payment_reminders|length > 5 %}<span class="badge text-bg-light">+{{ payment_reminders|length - 5 }}</span>{% endif %}
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transactions', kind='income', status='pending') }}">Ver financeiro</a>
+    <button class="btn btn-sm btn-brand" type="button" data-bs-toggle="modal" data-bs-target="#paymentReminderModal">Abrir cobranças</button>
+  </div>
+</div>
+
+<div class="modal fade" id="paymentReminderModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content border-0 overflow-hidden">
+      <div class="modal-header">
+        <h5 class="modal-title">Cobranças para hoje e vencidas</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-light border small">
+          Aqui aparecem parcelas e pagamentos com vencimento até hoje. Clique em <b>WhatsApp</b> para mandar a mensagem pronta ou em <b>Marcar enviado</b> para registrar que já cobrou.
+        </div>
+        <div class="vstack gap-3">
+          {% for p in payment_reminders %}
+            <div class="crm-mini">
+              <div class="d-flex justify-content-between gap-3 flex-wrap">
+                <div>
+                  <b>{{ p.patient_name }}</b>
+                  <div class="text-muted small">
+                    Vencimento: {{ p.due_date }} · Saldo: R$ {{ p.balance }} · {{ p.description }}
+                    {% if p.overdue %}<span class="badge text-bg-danger ms-1">Vencido</span>{% else %}<span class="badge text-bg-warning ms-1">Vence hoje</span>{% endif %}
+                    {% if p.sent %}<span class="badge text-bg-success ms-1">Cobrado hoje</span>{% endif %}
+                  </div>
+                  <div class="text-muted small">{{ p.phone or 'Sem telefone cadastrado' }}</div>
+                </div>
+                <div class="d-flex gap-2 flex-wrap align-items-start">
+                  {% if p.patient_id %}
+                    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=p.patient_id, tab='plano_ficha') }}">Ficha</a>
+                  {% endif %}
+                  <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_payments', tid=p.id) }}">Dar baixa</a>
+                  {% if p.wa_link %}
+                    <a class="btn btn-sm btn-brand" href="{{ p.wa_link }}" target="_blank">WhatsApp</a>
+                    <button class="btn btn-sm btn-outline-success" onclick="markChargeSent({{ p.id }}, {{ p.message|tojson }})">Marcar enviado</button>
+                  {% else %}
+                    <span class="text-muted small align-self-center">Sem número</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="mt-2 small bg-light border rounded-3 p-2">{{ p.message }}</div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', kind='income', status='pending') }}">Ver todos no financeiro</a>
+        <button type="button" class="btn btn-brand" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
 <div class="row g-3">
   <div class="col-xl-7">
     <div class="panel-card h-100 reveal reveal-delay-3 animate-pop animate-pop-3"><div class="card-body p-4 section-slim"><div class="section-head"><div><div class="eyebrow mb-1">Hoje</div><h2>Agenda do dia</h2><p>O que está programado para o atendimento.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar3 me-1"></i>Agenda</a></div><div class="small text-muted mb-2">Passe o mouse nos itens para destacar. Clique em abrir para ver o paciente.</div><div class="vstack">{% for a in agenda_today %}<div class="list-row"><div class="d-flex align-items-center gap-3"><div class="row-time">{{ a.start_at[11:16] if a.start_at|length>=16 else a.start_at }}</div><div><a class="fw-bold" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='resumo') }}">{{ a.patient_name }}</a><div class="text-muted small">{{ a.provider_name or 'Profissional não informado' }} · {{ a.title }} · {{ a.status or 'agendada' }}</div></div></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=a.patient_id, tab='agenda') }}">Abrir</a></div>{% else %}<div class="text-muted py-4">Nenhuma consulta para hoje.</div>{% endfor %}</div></div></div>
@@ -61,7 +127,7 @@
     <div>
       <div class="eyebrow mb-1">Financeiro</div>
       <div class="fw-bold" style="font-size:1.15rem;color:var(--coffee)">Resumo rápido</div>
-      <div class="text-muted small">Entradas hoje: <b>R$ {{ stats.income_today }}</b> · Pendências: <b>R$ {{ stats.pending_receivables }}</b></div>
+      <div class="text-muted small">Entradas hoje: <b>R$ {{ stats.income_today }}</b> · Pendências: <b>R$ {{ stats.pending_receivables }}</b>{% if ops.payments_due_count > 0 %} · <span class="text-danger fw-bold">{{ ops.payments_due_count }} cobrança(s) para hoje/vencidas</span>{% endif %}</div>
     </div>
     <div class="d-flex align-items-center gap-2 flex-wrap">
       <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', kind='income', status='pending') }}"><i class="bi bi-exclamation-circle me-1"></i>Pendências</a>
@@ -98,6 +164,19 @@ async function markBdaySent(patientId, message){
     if(j.ok){ location.reload(); }else{ alert("Não consegui marcar como enviado."); }
   }catch(e){ console.error(e); alert("Falha ao marcar como enviado."); }
 }
+
+async function markChargeSent(transactionId, message){
+  try{
+    const today = new Date().toLocaleDateString('sv-SE');
+    const res = await fetch("{{ url_for('dashboard.mark_charge_sent') }}", {
+      method:"POST",
+      headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
+      body:new URLSearchParams({transaction_id: transactionId, sent_on: today, message: message})
+    });
+    const j = await res.json();
+    if(j.ok){ location.reload(); }else{ alert("Não consegui marcar como cobrado."); }
+  }catch(e){ console.error(e); alert("Falha ao marcar cobrança."); }
+}
 document.addEventListener("DOMContentLoaded", () => {
   const openCards = document.querySelectorAll('[data-open-card]');
   openCards.forEach((card) => {
@@ -110,6 +189,16 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
   });
+
+  const hasPayments = {{ (payment_reminders|length) if payment_reminders else 0 }};
+  if(hasPayments){
+    const payKey = "paymentReminderModalShown-" + new Date().toLocaleDateString('sv-SE');
+    if(!localStorage.getItem(payKey)){
+      localStorage.setItem(payKey, "1");
+      const payEl = document.getElementById("paymentReminderModal");
+      if(payEl){ new bootstrap.Modal(payEl).show(); return; }
+    }
+  }
 
   const hasBirthdays = {{ (todays_birthdays|length) if todays_birthdays else 0 }};
   if(!hasBirthdays) return;
