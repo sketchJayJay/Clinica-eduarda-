@@ -86,7 +86,7 @@
           <td>{% if r.status=="paid" %}<span class="badge bg-success">Pago</span>{% elif (r.due_date or r.date) < today %}<span class="badge bg-danger">Vencido</span>{% else %}<span class="badge bg-warning text-dark">Pendente</span>{% endif %}</td>
           <td>{{ r.patient_name or "—" }}</td>
           <td>{{ r.provider_name or "—" }}</td>
-          <td><div>{{ r.description or "" }}</div><div class="small text-muted">{{ r.category_name or "—" }} · {{ pm_labels.get(r.payment_method, r.payment_method) }}{% if r.discount_cents %} · Desc. R$ {{ cents_to_brl(r.discount_cents) }}{% endif %}</div>{% if r.plan_item_name is defined and r.plan_item_name %}<div class="small"><span class="badge bg-info-subtle text-info">Vinculado</span> {{ r.plan_item_name }}</div>{% endif %}</td>
+          <td><div>{{ r.description or "" }}</div><div class="small text-muted">{{ r.category_name or "—" }} · {{ pm_labels.get(r.payment_method, r.payment_method) }}{% if r.discount_cents %} · Desc. R$ {{ cents_to_brl(r.discount_cents) }}{% endif %}</div>{% if r.plan_item_id is defined and r.plan_item_id==0 %}<div class="small"><span class="badge bg-info-subtle text-info">Plano completo</span> Tratamento completo do paciente</div>{% elif r.plan_item_name is defined and r.plan_item_name %}<div class="small"><span class="badge bg-info-subtle text-info">Vinculado</span> {{ r.plan_item_name }}</div>{% endif %}</td>
           <td>{{ r.installment_number }}/{{ r.installments_total }}</td>
           <td class="text-end">R$ {{ cents_to_brl(r.final_amount_cents or r.amount_cents) }}</td>
           <td class="text-end">R$ {{ cents_to_brl(r.paid_amount_cents or 0) }}</td>

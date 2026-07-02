@@ -147,9 +147,14 @@
         <h6 class="mb-1">Novo orçamento</h6>
         <div class="text-muted small">Registre propostas de tratamento antes de virar plano do paciente.</div>
       </div>
-      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income') }}">
-        <i class="bi bi-cash-stack me-1"></i>Nova cobrança no financeiro
-      </a>
+      <div class="d-flex gap-2 flex-wrap">
+        <form method="post" action="{{ url_for('patients.budget_approve_all', pid=patient.id) }}" onsubmit="return confirm('Aprovar todos os orçamentos em aberto para o Plano/Ficha?')">
+          <button class="btn btn-sm btn-success"><i class="bi bi-check2-all me-1"></i>Aprovar todos para plano</button>
+        </form>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income') }}">
+          <i class="bi bi-cash-stack me-1"></i>Nova cobrança no financeiro
+        </a>
+      </div>
     </div>
 
     <form method="post" action="{{ url_for('patients.budget_add', pid=patient.id) }}" class="row g-2">
@@ -243,25 +248,109 @@
 </div>
 
 {% elif tab=='plano_ficha' %}
-<div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-1">Plano do paciente</h6><div class="text-muted small">Controle clínico e financeiro por procedimento. Marcar como feito é status clínico. Para abater valor, lance uma cobrança vinculada ao tratamento.</div></div>
+<div class="row g-3 mb-3">
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <h6 class="mb-1">Resumo financeiro do plano</h6>
+            <div class="text-muted small">Use pagamento do plano completo quando o paciente pagar tudo junto. Depois marque os procedimentos como feitos conforme for realizando.</div>
+          </div>
+          {% if plan_summary.status=='quitado' %}<span class="badge text-bg-success">Plano quitado</span>{% elif plan_summary.status=='parcial' %}<span class="badge text-bg-warning">Plano parcial</span>{% else %}<span class="badge text-bg-secondary">Sem pagamento</span>{% endif %}
+        </div>
+        <div class="row g-2 mb-3">
+          <div class="col-md-4"><div class="mini-stat"><div class="text-muted small">Total do plano</div><b>R$ {{ plan_summary.total }}</b></div></div>
+          <div class="col-md-4"><div class="mini-stat"><div class="text-muted small">Recebido</div><b class="text-success">R$ {{ plan_summary.received }}</b></div></div>
+          <div class="col-md-4"><div class="mini-stat"><div class="text-muted small">Saldo</div><b class="{% if plan_summary.financial_balance_cents > 0 %}text-danger{% else %}text-success{% endif %}">R$ {{ plan_summary.financial_balance }}</b></div></div>
+        </div>
+        <form method="post" action="{{ url_for('patients.plan_payment', pid=patient.id) }}" class="row g-2 align-items-end">
+          <div class="col-md-4"><label class="form-label small">Valor</label><input class="form-control money" name="amount" value="{{ plan_summary.financial_balance if plan_summary.financial_balance_cents > 0 else plan_summary.total }}" placeholder="Valor pago"></div>
+          <div class="col-md-4"><label class="form-label small">Status</label><select class="form-select" name="status"><option value="paid">Pago agora / já pago</option><option value="pending">A receber</option></select></div>
+          <div class="col-md-4"><label class="form-label small">Forma</label><select class="form-select" name="payment_method">{% for k,label in payment_methods %}<option value="{{ k }}">{{ label }}</option>{% endfor %}</select></div>
+          <div class="col-md-4"><label class="form-label small">Data que pagou</label><input class="form-control" type="date" name="paid_date" value="{{ today }}"><div class="form-text">Use a data real para não bagunçar o balanço do mês.</div></div>
+          <div class="col-md-4"><label class="form-label small">Vencimento</label><input class="form-control" type="date" name="due_date"><div class="form-text">Para boleto/parcela pendente.</div></div>
+          <div class="col-md-4"><label class="form-label small">Parcelas</label><input class="form-control" type="number" name="installments_total" min="1" max="36" value="1"><div class="form-text">Ex.: 3x com vencimento 05/07.</div></div>
+          <div class="col-md-8"><label class="form-label small">Descrição</label><input class="form-control" name="description" value="Pagamento do tratamento completo"></div>
+          <div class="col-md-4 d-grid"><button class="btn btn-brand">Lançar no plano completo</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <h6 class="mb-2">Como usar</h6>
+        <div class="small text-muted">
+          <b>Pagamento completo:</b> lance aqui uma vez e o plano aparece como pago/quitado.<br>
+          <b>Procedimentos:</b> marque como feito conforme for atendendo.<br>
+          <b>Boleto/parcelas:</b> coloque vencimento e parcelas. Depois dê baixa pelo valor e data que realmente caiu.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-1">Plano do paciente</h6><div class="text-muted small">Parte clínica: acompanhe procedimentos, etapas e marque o que foi feito. O pagamento pode ser do plano completo ou de um procedimento específico.</div></div>
   <div class="table-responsive"><table class="table table-hover mb-0 align-middle">
     <thead class="table-light"><tr><th>Procedimento</th><th>Dente</th><th class="text-end">Valor</th><th class="text-end">Recebido</th><th class="text-end">Saldo</th><th>Status clínico</th><th>Status financeiro</th><th style="min-width:320px">Etapas</th></tr></thead>
     <tbody>{% for it in plan %}<tr>
       <td>
         <b>{{ it.procedure }}</b>
         <div class="small text-muted">{{ sql_to_br(it.created_at) }}</div>
-        <a class="btn btn-sm btn-outline-success mt-2" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=it.id) }}">Lançar cobrança vinculada</a>
+        <a class="btn btn-sm btn-outline-success mt-2" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=it.id) }}">Cobrar só este procedimento</a>
       </td>
       <td>{{ it.tooth or '-' }}</td>
       <td class="text-end">R$ {{ cents_to_brl(it.amount_cents) }}</td>
       <td class="text-end text-success">R$ {{ cents_to_brl(it.paid_cents) }}</td>
       <td class="text-end {% if it.financial_balance_cents > 0 %}text-danger{% else %}text-success{% endif %}">R$ {{ cents_to_brl(it.financial_balance_cents) }}</td>
       <td>{% if it.done %}<span class="badge text-bg-success">Feito</span><div class="small text-muted">{{ sql_to_br(it.done_at) }}</div><a class="btn btn-sm btn-outline-secondary mt-2" href="{{ url_for('patients.plan_toggle', pid=patient.id, iid=it.id) }}">Desfazer</a>{% else %}<span class="badge text-bg-warning">Em andamento</span><br><a class="btn btn-sm btn-brand mt-2" href="{{ url_for('patients.plan_toggle', pid=patient.id, iid=it.id) }}">Marcar feito</a>{% endif %}</td>
-      <td>{% if it.financial_status=='quitado' %}<span class="badge text-bg-success">Quitado</span>{% elif it.financial_status=='parcial' %}<span class="badge text-bg-warning">Parcial</span>{% else %}<span class="badge text-bg-secondary">Sem pagamento</span>{% endif %}</td>
+      <td>{% if it.financial_status=='quitado_plano' %}<span class="badge text-bg-success">Quitado no plano</span>{% elif it.financial_status=='plano_parcial' %}<span class="badge text-bg-warning">Plano parcial</span>{% elif it.financial_status=='quitado' %}<span class="badge text-bg-success">Quitado</span>{% elif it.financial_status=='parcial' %}<span class="badge text-bg-warning">Parcial</span>{% else %}<span class="badge text-bg-secondary">Sem pagamento</span>{% endif %}</td>
       <td><ul class="small mb-2" style="padding-left:18px">{% for st in it.steps %}<li>{% if st.done %}✅{% else %}🔲{% endif %} {{ st.step }} <a class="ms-2" href="{{ url_for('patients.plan_step_toggle', pid=patient.id, sid=st.id) }}">alternar</a></li>{% else %}<li class="text-muted">Sem etapas.</li>{% endfor %}</ul><form method="post" action="{{ url_for('patients.plan_add_step', pid=patient.id, iid=it.id) }}" class="d-flex gap-2"><input class="form-control" name="step" placeholder="Nova etapa" required><button class="btn btn-outline-secondary">+</button></form></td>
     </tr>{% else %}<tr><td colspan="8" class="text-center text-muted py-4">Nenhum item no plano.</td></tr>{% endfor %}</tbody>
   </table></div>
 </div>
+
+<div class="card shadow-sm border-0 mb-3">
+  <div class="card-body">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+      <div><h6 class="mb-1">Parcelas e pagamentos do paciente</h6><div class="text-muted small">Aqui dá para baixar boleto/parcela pelo valor e pela data que realmente caiu.</div></div>
+      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=0, status='pending') }}">Criar pelo financeiro</a>
+    </div>
+    <div class="table-responsive">
+      <table class="table table-sm align-middle mb-0">
+        <thead class="table-light"><tr><th>Vencimento</th><th>Descrição</th><th>Status</th><th class="text-end">Final</th><th class="text-end">Pago</th><th class="text-end">Saldo</th><th style="min-width:360px">Dar baixa</th></tr></thead>
+        <tbody>
+        {% for f in tx %}
+          {% if f.kind=='income' %}
+          <tr>
+            <td>{{ f.due_date or f.date }}</td>
+            <td><b>{{ f.description or 'Lançamento' }}</b><div class="small text-muted">{% if f.plan_item_id is defined and f.plan_item_id==0 %}Plano completo{% elif f.plan_item_name %}{{ f.plan_item_name }}{% else %}Financeiro do paciente{% endif %} · {{ f.installment_number }}/{{ f.installments_total }}</div></td>
+            <td>{% if f.status=='paid' %}<span class="badge text-bg-success">Pago</span>{% elif (f.due_date or f.date) < today %}<span class="badge text-bg-danger">Vencido</span>{% else %}<span class="badge text-bg-warning">Pendente</span>{% endif %}</td>
+            <td class="text-end">R$ {{ cents_to_brl(f.final_amount_cents or f.amount_cents) }}</td>
+            <td class="text-end text-success">R$ {{ cents_to_brl(f.paid_amount_cents or 0) }}</td>
+            <td class="text-end"><b>R$ {{ cents_to_brl(f.balance_cents or 0) }}</b></td>
+            <td>
+              {% if f.status!='paid' and (f.balance_cents or 0) > 0 %}
+              <form method="post" action="{{ url_for('patients.patient_quick_payment', pid=patient.id, tid=f.id) }}" class="row g-1 align-items-end">
+                <div class="col-4"><input class="form-control form-control-sm money" name="amount" value="{{ cents_to_brl(f.balance_cents or 0) }}" placeholder="Valor"></div>
+                <div class="col-4"><input class="form-control form-control-sm" type="date" name="paid_date" value="{{ today }}"></div>
+                <div class="col-3"><select class="form-select form-select-sm" name="payment_method">{% for k,label in payment_methods %}<option value="{{ k }}">{{ label }}</option>{% endfor %}</select></div>
+                <div class="col-1"><button class="btn btn-sm btn-success" title="Dar baixa">✓</button></div>
+              </form>
+              {% else %}<span class="text-muted small">baixado</span>{% endif %}
+            </td>
+          </tr>
+          {% endif %}
+        {% else %}
+          <tr><td colspan="7" class="text-center text-muted py-3">Nenhum lançamento financeiro para este paciente.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div class="row g-3">
   <div class="col-lg-6"><div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Nova ficha clínica</h6>
     <form method="post" action="{{ url_for('patients.record_save', pid=patient.id) }}" class="row g-2">

@@ -7,10 +7,11 @@ from typing import Any
 from urllib.parse import quote
 from uuid import uuid4
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, send_from_directory, abort
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, current_app, send_from_directory, abort, session
 from .auth import login_required
 from .db import get_db
-from .utils import cents_to_brl, parse_brl_to_cents
+from .utils import cents_to_brl, parse_brl_to_cents, today_yyyy_mm_dd
+from .finance import insert_transaction, add_payment, normalize_payment_method, add_months, PAYMENT_METHODS
 
 bp = Blueprint("patients", __name__, url_prefix="/patients")
 
@@ -311,6 +312,23 @@ def view_patient(pid: int):
     plan_ids = [int(r["id"]) for r in plan_rows]
     steps_map: dict[int, list[dict]] = {}
     plan_pay_map: dict[int, dict] = {}
+    general_plan_paid = 0
+    general_plan_charged = 0
+
+    # Pagamentos do plano/tratamento completo ficam com plan_item_id=0.
+    general_row = db.execute(
+        """
+        SELECT COALESCE(SUM(COALESCE(final_amount_cents, amount_cents, 0)),0) AS charged,
+               COALESCE(SUM(COALESCE(paid_amount_cents, 0)),0) AS paid
+          FROM transactions
+         WHERE patient_id=? AND kind='income' AND COALESCE(plan_item_id, -1)=0
+        """,
+        (pid,),
+    ).fetchone()
+    if general_row:
+        general_plan_charged = int(general_row["charged"] or 0)
+        general_plan_paid = int(general_row["paid"] or 0)
+
     if plan_ids:
         placeholders = ",".join(["?"] * len(plan_ids))
         step_rows = db.execute(
@@ -334,23 +352,38 @@ def view_patient(pid: int):
         for pr in pay_rows:
             plan_pay_map[int(pr["plan_item_id"])] = {"charged": int(pr["charged"] or 0), "paid": int(pr["paid"] or 0)}
 
+    plan_total_preview = sum(int(r["amount_cents"] or 0) for r in plan_rows)
+    plan_individual_paid_preview = sum(int(plan_pay_map.get(int(r["id"]), {}).get("paid", 0)) for r in plan_rows)
+    plan_received_preview = general_plan_paid + plan_individual_paid_preview
+    plan_is_fully_paid = bool(plan_total_preview > 0 and plan_received_preview >= plan_total_preview)
+
     plan = []
     for r in plan_rows:
         d = dict(r)
-        paid = int(plan_pay_map.get(int(r["id"]), {}).get("paid", 0))
+        item_paid = int(plan_pay_map.get(int(r["id"]), {}).get("paid", 0))
         charged = int(plan_pay_map.get(int(r["id"]), {}).get("charged", 0))
         treatment_total = int(r["amount_cents"] or 0)
-        balance = max(treatment_total - paid, 0)
-        if paid <= 0:
-            fin_status = "sem pagamento"
-        elif balance <= 0:
-            fin_status = "quitado"
+
+        if plan_is_fully_paid:
+            paid = treatment_total
+            balance = 0
+            fin_status = "quitado_plano"
         else:
-            fin_status = "parcial"
+            paid = item_paid
+            balance = max(treatment_total - item_paid, 0)
+            if item_paid <= 0 and general_plan_paid > 0:
+                fin_status = "plano_parcial"
+            elif item_paid <= 0:
+                fin_status = "sem pagamento"
+            elif balance <= 0:
+                fin_status = "quitado"
+            else:
+                fin_status = "parcial"
         d.update({
             "steps": steps_map.get(int(r["id"]), []),
             "paid_cents": paid,
             "charged_cents": charged,
+            "individual_paid_cents": item_paid,
             "financial_balance_cents": balance,
             "financial_status": fin_status,
         })
@@ -372,9 +405,11 @@ def view_patient(pid: int):
         mapa = {row["tooth"]: row["status"] for row in odontos}
 
     tx = db.execute(
-        "SELECT t.*, c.name AS category_name FROM transactions t "
+        "SELECT t.*, c.name AS category_name, pi.procedure AS plan_item_name "
+        "FROM transactions t "
         "LEFT JOIN categories c ON c.id=t.category_id "
-        "WHERE t.patient_id=? ORDER BY COALESCE(t.due_date,t.date) DESC, t.id DESC LIMIT 10",
+        "LEFT JOIN plan_items pi ON pi.id=t.plan_item_id "
+        "WHERE t.patient_id=? ORDER BY COALESCE(t.due_date,t.date) DESC, t.id DESC LIMIT 50",
         (pid,),
     ).fetchall()
 
@@ -393,14 +428,22 @@ def view_patient(pid: int):
 
     plan_total = sum(int(r["amount_cents"] or 0) for r in plan_rows)
     plan_done = sum(int(r["amount_cents"] or 0) for r in plan_rows if int(r["done"] or 0) == 1)
-    plan_received = sum(int(it.get("paid_cents", 0)) for it in plan)
+    plan_individual_received = sum(int(it.get("individual_paid_cents", 0)) for it in plan)
+    plan_received = min(plan_total, general_plan_paid + plan_individual_received) if plan_total > 0 else (general_plan_paid + plan_individual_received)
     plan_fin_balance = max(plan_total - plan_received, 0)
     plan_summary = {
         "total": cents_to_brl(plan_total),
+        "total_cents": plan_total,
         "done": cents_to_brl(plan_done),
         "pending": cents_to_brl(max(plan_total - plan_done, 0)),
         "received": cents_to_brl(plan_received),
+        "received_cents": plan_received,
+        "general_received": cents_to_brl(general_plan_paid),
+        "general_received_cents": general_plan_paid,
+        "individual_received": cents_to_brl(plan_individual_received),
         "financial_balance": cents_to_brl(plan_fin_balance),
+        "financial_balance_cents": plan_fin_balance,
+        "status": "quitado" if plan_total > 0 and plan_fin_balance <= 0 else ("parcial" if plan_received > 0 else "sem pagamento"),
         "count": len(plan_rows),
         "done_count": sum(1 for r in plan_rows if int(r["done"] or 0) == 1),
     }
@@ -476,6 +519,8 @@ def view_patient(pid: int):
         cents_to_brl=cents_to_brl,
         sql_to_br=_sql_to_br,
         phone_to_whatsapp=_phone_to_whatsapp,
+        payment_methods=PAYMENT_METHODS,
+        today=today_yyyy_mm_dd(),
     )
 
 
@@ -797,6 +842,34 @@ def budget_status(pid: int, bid: int, s: str):
     return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
 
 
+
+
+@bp.post("/<int:pid>/budgets/approve-all")
+@login_required
+def budget_approve_all(pid: int):
+    db = get_db()
+    open_budgets = db.execute(
+        "SELECT * FROM budgets WHERE patient_id=? AND status!='aprovado' ORDER BY id ASC",
+        (pid,),
+    ).fetchall()
+    if not open_budgets:
+        flash("Não há orçamentos em aberto para aprovar.", "info")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
+
+    created = 0
+    for b in open_budgets:
+        db.execute("UPDATE budgets SET status='aprovado' WHERE id=? AND patient_id=?", (b["id"], pid))
+        ex = db.execute("SELECT id FROM plan_items WHERE budget_id=?", (b["id"],)).fetchone()
+        if not ex:
+            db.execute(
+                "INSERT INTO plan_items(patient_id, budget_id, tooth, procedure, amount_cents, done) VALUES (?,?,?,?,?,0)",
+                (pid, b["id"], None, b["description"], int(b["amount_cents"] or 0)),
+            )
+            created += 1
+    db.commit()
+    flash(f"{len(open_budgets)} orçamento(s) aprovados para o plano ✅", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
 @bp.get("/<int:pid>/budgets/<int:bid>/print")
 @login_required
 def budget_print(pid: int, bid: int):
@@ -816,6 +889,135 @@ def budget_print(pid: int, bid: int):
         cents_to_brl=cents_to_brl,
         sql_to_br=_sql_to_br,
     )
+
+
+
+
+# =========================
+# Pagamentos do plano pela ficha
+# =========================
+
+@bp.post("/<int:pid>/plan/payment")
+@login_required
+def plan_payment(pid: int):
+    if not session.get("finance_unlocked"):
+        flash("Desbloqueie o financeiro para lançar pagamentos.", "warning")
+        return redirect(url_for("finance.unlock", next=url_for("patients.view_patient", pid=pid, tab="plano_ficha")))
+
+    db = get_db()
+    patient = db.execute("SELECT * FROM patients WHERE id=?", (pid,)).fetchone()
+    if not patient:
+        flash("Paciente não encontrado.", "danger")
+        return redirect(url_for("patients.list_patients"))
+
+    plan_total = int(db.execute("SELECT COALESCE(SUM(amount_cents),0) AS total FROM plan_items WHERE patient_id=?", (pid,)).fetchone()["total"] or 0)
+    amount = parse_brl_to_cents(request.form.get("amount", ""))
+    if amount <= 0:
+        amount = plan_total
+    if amount <= 0:
+        flash("Informe um valor para lançar no plano.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    status = (request.form.get("status") or "paid").strip()
+    if status not in {"paid", "pending"}:
+        status = "paid"
+    payment_method = normalize_payment_method(request.form.get("payment_method", "pix"))
+    paid_date = (request.form.get("paid_date") or today_yyyy_mm_dd()).strip() or today_yyyy_mm_dd()
+    due_date = (request.form.get("due_date") or "").strip() or None
+    description = (request.form.get("description") or "Pagamento do tratamento completo").strip()
+    installments_raw = (request.form.get("installments_total") or "1").strip()
+    try:
+        installments_total = max(1, min(36, int(installments_raw or 1)))
+    except Exception:
+        installments_total = 1
+
+    parent_id = None
+    if installments_total > 1:
+        base_due = due_date or paid_date
+        each = amount // installments_total
+        remainder = amount % installments_total
+        for i in range(1, installments_total + 1):
+            part_amount = each + (1 if i <= remainder else 0)
+            part_due = add_months(base_due, i - 1)
+            part_status = "pending"
+            part_date = paid_date if status == "paid" and i == 1 else part_due
+            if status == "paid" and i == 1:
+                part_status = "paid"
+            tid = insert_transaction(
+                db,
+                kind="income",
+                status=part_status,
+                date_eff=part_date,
+                due_date=part_due,
+                gross_amount=part_amount,
+                discount_percent=0,
+                discount_fixed=0,
+                description=f"{description} - Parcela {i}/{installments_total}",
+                pid=pid,
+                cid=None,
+                prid=None,
+                repasse_percent_int=0,
+                payment_method=payment_method,
+                installments_total=installments_total,
+                installment_number=i,
+                parent_transaction_id=parent_id,
+                plan_item_id=0,
+            )
+            if parent_id is None:
+                parent_id = tid
+            db.execute("UPDATE transactions SET parent_transaction_id=? WHERE id=?", (parent_id, tid))
+        db.commit()
+        flash(f"Parcelamento do plano criado em {installments_total}x ✅", "success")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    insert_transaction(
+        db,
+        kind="income",
+        status=status,
+        date_eff=paid_date,
+        due_date=due_date,
+        gross_amount=amount,
+        discount_percent=0,
+        discount_fixed=0,
+        description=description,
+        pid=pid,
+        cid=None,
+        prid=None,
+        repasse_percent_int=0,
+        payment_method=payment_method,
+        plan_item_id=0,
+    )
+    db.commit()
+    flash("Pagamento do plano lançado ✅", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+
+@bp.post("/<int:pid>/transactions/<int:tid>/quick-payment")
+@login_required
+def patient_quick_payment(pid: int, tid: int):
+    if not session.get("finance_unlocked"):
+        flash("Desbloqueie o financeiro para dar baixa em pagamentos.", "warning")
+        return redirect(url_for("finance.unlock", next=url_for("patients.view_patient", pid=pid, tab="plano_ficha")))
+
+    db = get_db()
+    tx = db.execute("SELECT * FROM transactions WHERE id=? AND patient_id=? AND kind='income'", (tid, pid)).fetchone()
+    if not tx:
+        flash("Lançamento não encontrado para este paciente.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    amount = parse_brl_to_cents(request.form.get("amount", ""))
+    if amount <= 0:
+        amount = int(tx["balance_cents"] or 0)
+    pay_date = (request.form.get("paid_date") or today_yyyy_mm_dd()).strip() or today_yyyy_mm_dd()
+    payment_method = normalize_payment_method(request.form.get("payment_method", tx["payment_method"] or "pix"))
+    notes = (request.form.get("notes") or "Baixa pela ficha do paciente").strip()
+
+    if add_payment(db, tid, amount, payment_method, pay_date, notes):
+        db.commit()
+        flash("Pagamento baixado na ficha ✅", "success")
+    else:
+        flash("Valor de pagamento inválido.", "danger")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
 
 
 # =========================

@@ -642,3 +642,8 @@ body.is-loaded .page-loader{
 /* V24 - Primeiro acesso */
 .setup-frame .login-panel-inner{max-width:620px}
 .setup-section-title{font-size:.78rem;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:var(--coffee);margin-bottom:.55rem}
+
+/* V26 - plano completo, parcelas e baixa pela ficha */
+.mini-stat{border:1px solid rgba(91,60,50,.12);border-radius:16px;padding:12px 14px;background:#fffaf6;min-height:78px}
+.mini-stat b{font-size:1.25rem}
+@media(max-width:768px){.mini-stat b{font-size:1rem}}

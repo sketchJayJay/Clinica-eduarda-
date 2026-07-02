@@ -29,12 +29,14 @@
               <div class="form-text">No parcelamento, só a 1ª parcela entra como paga se escolher Pago.</div>
             </div>
             <div class="col-md-3">
-              <label class="form-label">Data</label>
+              <label class="form-label">Data do pagamento/lançamento</label>
               <input class="form-control" type="date" name="date" value="{{ (tx.date if tx and tx.date) or '' }}">
+              <div class="form-text">Para fichas antigas, coloque o dia real que foi pago.</div>
             </div>
             <div class="col-md-3">
               <label class="form-label">Vencimento</label>
               <input class="form-control" type="date" name="due_date" value="{{ (tx.due_date if tx and tx.due_date) or '' }}">
+              <div class="form-text">Use para boleto/parcela a vencer. Ex.: 05/07, 05/08, 05/09.</div>
             </div>
 
             <div class="col-md-3">
@@ -90,13 +92,14 @@
               <label class="form-label">Referente ao tratamento/plano</label>
               <select class="form-select" name="plan_item_id" id="planItemSelect">
                 <option value="">— Não vincular —</option>
+                <option value="0" data-plan-general="1" data-patient-id="{{ tx.patient_id if tx and tx.patient_id else request.args.get('patient_id','') }}" data-amount="{{ tx.amount_brl if tx and tx.amount_brl else '' }}" data-procedure="Pagamento do tratamento completo" {% if tx and tx.get('plan_item_id')==0 %}selected{% endif %}>Tratamento completo / Plano geral do paciente</option>
                 {% for item in plan_items %}
                   <option value="{{ item.id }}" data-patient-id="{{ item.patient_id }}" data-amount="{{ cents_to_brl(item.amount_cents) }}" data-procedure="{{ item.procedure }}" {% if (request.args.get('plan_item_id')|int == item.id and not is_edit) or (tx and tx.get('plan_item_id')==item.id) %}selected{% endif %}>
                     {{ item.patient_name }} • {{ item.procedure }} • R$ {{ cents_to_brl(item.amount_cents) }}{% if item.done %} • feito{% endif %}
                   </option>
                 {% endfor %}
               </select>
-              <div class="form-text">Quando vincula, o pagamento abate no saldo da Ficha/Plano do paciente.</div>
+              <div class="form-text">Escolha “Tratamento completo” quando o paciente pagar o plano inteiro. Escolha um procedimento só quando o pagamento for específico daquele procedimento.</div>
             </div>
 
             <div class="col-md-6">
@@ -144,6 +147,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const pid = patientSelect.value || "";
     Array.from(planSelect.options).forEach(opt => {
       if(!opt.value){ opt.hidden = false; return; }
+      if(opt.dataset.planGeneral === "1"){
+        opt.hidden = !pid;
+        opt.dataset.patientId = pid || opt.dataset.patientId || "";
+        return;
+      }
       opt.hidden = pid && opt.dataset.patientId !== pid;
     });
     const selected = planSelect.options[planSelect.selectedIndex];
@@ -158,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if(selected.dataset.patientId && patientSelect) patientSelect.value = selected.dataset.patientId;
     filterPlans();
     if(descInput && !descInput.value) descInput.value = selected.dataset.procedure || "";
-    if(amountInput && !amountInput.value) amountInput.value = selected.dataset.amount || "";
+    if(amountInput && !amountInput.value && selected.dataset.amount) amountInput.value = selected.dataset.amount || "";
   }
 
   if(patientSelect) patientSelect.addEventListener("change", filterPlans);

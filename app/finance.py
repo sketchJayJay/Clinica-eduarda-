@@ -497,7 +497,11 @@ def transaction_new():
         cid = int(category_id) if category_id.isdigit() else None
         prid = int(provider_id) if provider_id.isdigit() else None
         plan_iid = int(plan_item_id) if plan_item_id.isdigit() else None
-        if plan_iid and pid:
+        if plan_iid == 0:
+            # 0 significa pagamento do plano/tratamento completo do paciente.
+            if not pid:
+                plan_iid = None
+        elif plan_iid and pid:
             linked = db.execute("SELECT id FROM plan_items WHERE id=? AND patient_id=?", (plan_iid, pid)).fetchone()
             if not linked:
                 plan_iid = None
@@ -605,9 +609,17 @@ def transaction_new():
         "plan_item_id": request.args.get("plan_item_id", ""),
     }
 
-    # Se vier de um item do Plano/Ficha, já puxa descrição, valor e paciente.
+    # Se vier do Plano/Ficha, já puxa descrição, valor e paciente.
     plan_item_arg = request.args.get("plan_item_id", "").strip()
-    if plan_item_arg.isdigit():
+    patient_arg = request.args.get("patient_id", "").strip()
+    if plan_item_arg in {"0", "geral", "plano"} and patient_arg.isdigit():
+        total_row = db.execute("SELECT COALESCE(SUM(amount_cents),0) AS total FROM plan_items WHERE patient_id=?", (int(patient_arg),)).fetchone()
+        tx_prefill["patient_id"] = int(patient_arg)
+        tx_prefill["plan_item_id"] = 0
+        tx_prefill["description"] = "Pagamento do tratamento completo"
+        tx_prefill["amount_brl"] = cents_to_brl(int(total_row["total"] or 0))
+        tx_prefill["status"] = request.args.get("status", "paid")
+    elif plan_item_arg.isdigit():
         item = db.execute("SELECT * FROM plan_items WHERE id=?", (int(plan_item_arg),)).fetchone()
         if item:
             tx_prefill["patient_id"] = item["patient_id"]
@@ -652,8 +664,11 @@ def transaction_edit(tid: int):
         plan_iid = int(plan_item_id) if plan_item_id.isdigit() else None
 
         # Garante que o tratamento vinculado pertence ao paciente escolhido.
-        # Se o usuário escolher um tratamento sem escolher paciente, puxa o paciente desse tratamento.
-        if plan_iid and pid:
+        # 0 significa plano/tratamento completo do paciente, não um procedimento específico.
+        if plan_iid == 0:
+            if not pid:
+                plan_iid = None
+        elif plan_iid and pid:
             linked = db.execute("SELECT id FROM plan_items WHERE id=? AND patient_id=?", (plan_iid, pid)).fetchone()
             if not linked:
                 plan_iid = None

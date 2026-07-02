@@ -75,6 +75,30 @@ def has_any_user() -> bool:
         return False
 
 
+def first_setup_pending() -> bool:
+    """Mostra a configuração inicial também quando o sistema veio com o usuário padrão admin.
+
+    Isso permite que a clínica abra o sistema pela primeira vez e já escolha
+    o próprio login, senha de entrada e senha do financeiro, sem precisar
+    entrar como admin/admin123 antes.
+    """
+    try:
+        db = get_db()
+        settings = get_settings_map()
+        if settings.get("first_setup_done") == "1":
+            return False
+
+        total = db.execute("SELECT COUNT(*) AS c FROM users").fetchone()["c"] or 0
+        if int(total) <= 0:
+            return True
+
+        # Se existe somente o usuário padrão admin, deixa a clínica personalizar.
+        admin = db.execute("SELECT * FROM users WHERE username='admin' ORDER BY id ASC LIMIT 1").fetchone()
+        return bool(int(total) == 1 and admin)
+    except Exception:
+        return False
+
+
 def log_action(action: str, entity: str | None = None, entity_id: int | None = None, detail: str | None = None) -> None:
     try:
         db = get_db()
@@ -109,7 +133,7 @@ def first_setup():
     ensure_seed_data()
     db = get_db()
 
-    if has_any_user():
+    if not first_setup_pending():
         return redirect(url_for("auth.login"))
 
     if request.method == "POST":
@@ -135,11 +159,19 @@ def first_setup():
             flash("As senhas do financeiro não conferem.", "danger")
             return render_template("first_setup.html", username=username)
 
-        db.execute(
-            "INSERT INTO users(username, password_hash, role) VALUES(?, ?, ?)",
-            (username, generate_password_hash(password), "admin"),
-        )
-        uid = db.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
+        existing_admin = db.execute("SELECT * FROM users WHERE username='admin' ORDER BY id ASC LIMIT 1").fetchone()
+        if existing_admin:
+            uid = int(existing_admin["id"])
+            db.execute(
+                "UPDATE users SET username=?, password_hash=?, role=? WHERE id=?",
+                (username, generate_password_hash(password), "admin", uid),
+            )
+        else:
+            db.execute(
+                "INSERT INTO users(username, password_hash, role) VALUES(?, ?, ?)",
+                (username, generate_password_hash(password), "admin"),
+            )
+            uid = db.execute("SELECT last_insert_rowid() AS id").fetchone()["id"]
         set_setting("finance_password", finance_password)
         set_setting("first_setup_done", "1")
         db.execute(
@@ -162,8 +194,9 @@ def login():
     ensure_seed_data()
     db = get_db()
 
-    # Primeiro acesso: sem usuário cadastrado, abre a tela para a clínica escolher login e senhas.
-    if not has_any_user():
+    # Primeiro acesso: abre a tela para a clínica escolher login e senhas.
+    # Também funciona quando o sistema veio com o usuário padrão admin.
+    if first_setup_pending():
         return redirect(url_for("auth.first_setup"))
 
     if request.method == "POST":
