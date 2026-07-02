@@ -291,14 +291,19 @@
   </div>
 </div>
 
-<div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-1">Plano do paciente</h6><div class="text-muted small">Parte clínica: acompanhe procedimentos, etapas e marque o que foi feito. O pagamento pode ser do plano completo ou de um procedimento específico.</div></div>
+<div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-1">Plano do paciente</h6><div class="text-muted small">Parte clínica: acompanhe procedimentos, etapas e marque o que foi feito. Se lançou errado, use Excluir do plano. Pagamentos já lançados são preservados no financeiro.</div></div>
   <div class="table-responsive"><table class="table table-hover mb-0 align-middle">
     <thead class="table-light"><tr><th>Procedimento</th><th>Dente</th><th class="text-end">Valor</th><th class="text-end">Recebido</th><th class="text-end">Saldo</th><th>Status clínico</th><th>Status financeiro</th><th style="min-width:320px">Etapas</th></tr></thead>
     <tbody>{% for it in plan %}<tr>
       <td>
         <b>{{ it.procedure }}</b>
         <div class="small text-muted">{{ sql_to_br(it.created_at) }}</div>
-        <a class="btn btn-sm btn-outline-success mt-2" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=it.id) }}">Cobrar só este procedimento</a>
+        <div class="d-flex gap-1 flex-wrap mt-2">
+          <a class="btn btn-sm btn-outline-success" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=it.id) }}">Cobrar só este procedimento</a>
+          <form method="post" action="{{ url_for('patients.plan_delete', pid=patient.id, iid=it.id) }}" class="d-inline" onsubmit="return confirm('Excluir este item do plano? Se houver lançamento financeiro vinculado, ele será preservado no financeiro do paciente, mas sem vínculo com este procedimento.')">
+            <button class="btn btn-sm btn-outline-danger">Excluir do plano</button>
+          </form>
+        </div>
       </td>
       <td>{{ it.tooth or '-' }}</td>
       <td class="text-end">R$ {{ cents_to_brl(it.amount_cents) }}</td>

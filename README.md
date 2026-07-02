@@ -1,4 +1,4 @@
-# Eduarda Imbelloni Clínica Especializada - Luxo Clean V27
+# Eduarda Imbelloni Clínica Especializada - Luxo Clean V28
 
 Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.
 
@@ -46,7 +46,7 @@ ASAAS_ENV=production
 ASAAS_API_KEY=sua_chave_real
 ```
 
-## Melhorias da versão Luxo Clean V27
+## Melhorias da versão Luxo Clean V28
 
 - CRM de relacionamento com pacientes
 - Controle de leads e possíveis pacientes
@@ -60,7 +60,7 @@ ASAAS_API_KEY=sua_chave_real
 - Cards operacionais para recepção trabalhar mais rápido
 - Dashboard mais completo e mais comercial
 
-## Já vinha da versão Luxo Clean V27
+## Já vinha da versão Luxo Clean V28
 
 - Painel do paciente com resumo premium
 - Linha do tempo do paciente
@@ -83,121 +83,126 @@ ASAAS_API_KEY=sua_chave_real
 O local da integração já está pronto. Sem a chave `ASAAS_API_KEY`, o sistema só avisa que falta configurar. Após colocar a chave no Coolify ou em Configurações, os botões de boleto/Pix tentam gerar a cobrança via Asaas.
 
 
-## Visual Luxo Clean V27
+## Visual Luxo Clean V28
 
 Esta versão recebeu um redesenho visual com menu lateral, login premium, cards em vidro suave, cores da identidade Eduarda Imbelloni e polimento mobile/PWA.
 
 
-## Atualização Visual Luxo Clean V27
+## Atualização Visual Luxo Clean V28
 
 Redesign visual completo com layout mais limpo, menu lateral refinado, cards mais leves, tela de login premium, tabelas mais elegantes e ajustes de responsividade. Mantém o mesmo banco/volume, sem apagar dados.
 
 
-## Atualização Visual Luxo Clean V27
+## Atualização Visual Luxo Clean V28
 
 Redesign completo do layout para um visual mais limpo, sofisticado e alinhado à identidade visual da Eduarda Imbelloni Clínica Especializada. Inclui sidebar compacta, dashboard premium, cards refinados, tabelas mais modernas, login elegante e ajustes de responsividade.
 
 
-## Atualização Visual Luxo Clean V27
+## Atualização Visual Luxo Clean V28
 
 Refino visual geral do sistema com foco em leveza, sofisticação e aspecto de clínica premium. Nova sidebar clara, dashboard mais enxuto, formulários e tabelas mais elegantes, login minimalista e hierarquia visual mais fina.
 
 
-## Atualização Visual Luxo Clean V27
+## Atualização Visual Luxo Clean V28
 
 Home simplificada com menos informação, ícones restaurados no menu e nos atalhos, e visual mais leve.
 
 
-## Atualização Visual Luxo Clean V27
+## Atualização Visual Luxo Clean V28
 
 Topo da home simplificado, com remoção do texto grande e inclusão de mais cor nos elementos do dashboard.
 
 
-## Atualização Visual Luxo Clean V27
+## Atualização Visual Luxo Clean V28
 
 Mensagem da Home removida, reforço de cores no dashboard e inclusão de microinterações/animações suaves.
 
 
-## Atualização Visual Luxo Clean V27
+## Atualização Visual Luxo Clean V28
 
 Refino visual com mais cor e um pacote maior de microanimações no dashboard, botões, cards, menu e listas.
 
 
-## Atualização App Premium V27
+## Atualização App Premium V28
 
 Versão com mais cor e animações: transição de páginas, barra de carregamento, entrada dos cards, hover animado, modais mais suaves e microinterações em botões, menus, tabelas e abas.
 
 
-## V27 - Documentos e Assinatura
+## V28 - Documentos e Assinatura
 
 Adicionada aba Documentos no painel do paciente, com contrato, termo de consentimento, termo de uso de imagem, assinatura digital na tela e impressão/PDF.
 
 
-## V27 - Assinatura manual e digital
+## V28 - Assinatura manual e digital
 
 A aba Documentos agora permite escolher entre imprimir o modelo para assinatura em mãos ou abrir a assinatura digital na tela.
 
 
-## V27 - Correção do menu inferior no mobile
+## V28 - Correção do menu inferior no mobile
 
 Ajustado o espaçamento do conteúdo para o dock inferior do celular não cobrir botões e formulários, especialmente na aba Documentos.
 
 
-## V27 - Correção forte do dock inferior
+## V28 - Correção forte do dock inferior
 
 O menu inferior agora só aparece no celular e não fica mais por cima dos botões em telas maiores. Também foi adicionado espaço extra no final da aba Documentos.
 
 
-## V27 - Nome clicável na agenda
+## V28 - Nome clicável na agenda
 
 Na agenda, o nome do paciente dentro do evento agora abre diretamente o painel do paciente. Clicar no restante do evento continua abrindo a edição do agendamento.
 
 
-## V27 - Contrato de fidelidade
+## V28 - Contrato de fidelidade
 
 Adicionado modelo de contrato de fidelidade/tratamento completo na aba Documentos, com valor total do tratamento, condições de pagamento e cláusula de multa por quebra de contrato.
 
 
-## V27 - Percentual da multa
+## V28 - Percentual da multa
 
 Adicionados campos próprios no contrato de fidelidade para percentual da multa, base de cálculo da multa e valor fixo opcional.
 
 
-## V27 - Orçamentos
+## V28 - Orçamentos
 
 Adicionadas opções de editar/excluir orçamento e explicação clara: aprovar orçamento envia para Plano/Ficha do paciente, não para o financeiro. Para cobrança, usar Nova cobrança no financeiro.
 
 
-## V27 - Vínculo financeiro com Plano/Ficha
+## V28 - Vínculo financeiro com Plano/Ficha
 
 Agora lançamentos financeiros podem ser vinculados a itens do Plano/Ficha, abatendo recebidos e saldo diretamente na ficha do paciente.
 
 
-## V27 - Correção editar financeiro
+## V28 - Correção editar financeiro
 
 Corrigida queda ao clicar em Editar no financeiro e ajustado salvamento de lançamentos vinculados ao Plano/Ficha.
 
 
-## V27 - Marcar pago no financeiro
+## V28 - Marcar pago no financeiro
 
 Renomeado o botão Baixar para Marcar pago e ajustadas ações da tabela financeira: pagamento parcial para pendentes e ver pagamentos para já pagos.
 
 
-## V27 - Primeiro acesso personalizado
+## V28 - Primeiro acesso personalizado
 
 Agora, na primeira abertura sem usuário cadastrado, o sistema pede para a clínica escolher usuário, senha de entrada e senha separada do financeiro. Removido o primeiro acesso fixo admin/admin123.
 
 
-## V27 - Primeiro acesso forçado quando existe admin padrão
+## V28 - Primeiro acesso forçado quando existe admin padrão
 
 Se o banco tiver apenas o usuário padrão `admin`, o sistema mostra a tela de primeiro acesso para a clínica escolher usuário, senha de entrada e senha do financeiro.
 
 
-## V27 - Plano completo, parcelas e baixa pela ficha
+## V28 - Plano completo, parcelas e baixa pela ficha
 
 Agora a ficha permite lançar pagamento do tratamento completo, criar parcelas com vencimento, dar baixa com valor/data real e aprovar todos os orçamentos para o plano.
 
 
-## V27 - Alertas de cobrança e aniversários
+## V28 - Alertas de cobrança e aniversários
 
 A Home mostra cobranças vencendo hoje/vencidas, com WhatsApp pronto, marcar como enviado e acesso para dar baixa. Aniversários continuam com lembrete e WhatsApp.
+
+
+## V28 - Excluir item do plano
+
+Adicionado botão para excluir item do Plano/Ficha. Lançamentos financeiros vinculados são preservados e o orçamento de origem volta para aberto.

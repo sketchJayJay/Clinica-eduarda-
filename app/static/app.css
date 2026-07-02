@@ -647,3 +647,6 @@ body.is-loaded .page-loader{
 .mini-stat{border:1px solid rgba(91,60,50,.12);border-radius:16px;padding:12px 14px;background:#fffaf6;min-height:78px}
 .mini-stat b{font-size:1.25rem}
 @media(max-width:768px){.mini-stat b{font-size:1rem}}
+
+/* V28 - botão excluir item do plano */
+.table .btn-outline-danger{white-space:nowrap}

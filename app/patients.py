@@ -1050,6 +1050,40 @@ def plan_toggle(pid: int, iid: int):
     return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
 
 
+
+
+@bp.post("/<int:pid>/plan/<int:iid>/delete")
+@login_required
+def plan_delete(pid: int, iid: int):
+    db = get_db()
+    item = db.execute(
+        "SELECT * FROM plan_items WHERE id=? AND patient_id=?",
+        (iid, pid),
+    ).fetchone()
+    if not item:
+        flash("Item do plano não encontrado.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    # Segurança: não apaga lançamentos financeiros já feitos.
+    # Se havia cobrança vinculada a este procedimento, ela fica no financeiro do paciente,
+    # mas sem vínculo com o item excluído do plano.
+    db.execute("UPDATE transactions SET plan_item_id=NULL WHERE patient_id=? AND plan_item_id=?", (pid, iid))
+
+    # Remove etapas clínicas do item.
+    db.execute("DELETE FROM plan_steps WHERE plan_item_id=?", (iid,))
+
+    # Se o item veio de um orçamento, devolve o orçamento para aberto,
+    # permitindo aprovar novamente caso tenha sido enviado errado.
+    budget_id = item["budget_id"] if "budget_id" in item.keys() else None
+    if budget_id:
+        db.execute("UPDATE budgets SET status='aberto' WHERE id=? AND patient_id=?", (budget_id, pid))
+
+    db.execute("DELETE FROM plan_items WHERE id=? AND patient_id=?", (iid, pid))
+    db.commit()
+    flash("Item removido do plano. Lançamentos financeiros existentes foram preservados.", "info")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+
 @bp.post("/<int:pid>/plan/<int:iid>/steps/add")
 @login_required
 def plan_add_step(pid: int, iid: int):
