@@ -37,6 +37,25 @@ def _dtlocal_to_sql(dtlocal: str | None) -> str | None:
     return dt.strftime("%Y-%m-%d %H:%M:%S")
 
 
+def _any_date_to_sql(value: str | None) -> str:
+    """Aceita datetime-local, data simples ou vazio e devolve data/hora SQL."""
+    if not value:
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    s = value.strip()
+    if not s:
+        return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    dt = _dtlocal_to_sql(s)
+    if dt:
+        return dt
+    try:
+        if len(s) == 10:
+            d = datetime.strptime(s, "%Y-%m-%d")
+            return d.strftime("%Y-%m-%d 00:00:00")
+    except Exception:
+        pass
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
 def _sql_to_br(dt_sql: str | None) -> str:
     if not dt_sql:
         return ""
@@ -390,6 +409,14 @@ def view_patient(pid: int):
         plan.append(d)
 
     records = db.execute("SELECT * FROM clinical_records WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall()
+    clinical_evolutions = db.execute(
+        "SELECT ce.*, pi.procedure AS plan_item_name "
+        "FROM clinical_evolutions ce "
+        "LEFT JOIN plan_items pi ON pi.id=ce.plan_item_id "
+        "WHERE ce.patient_id=? "
+        "ORDER BY ce.performed_at DESC, ce.id DESC",
+        (pid,),
+    ).fetchall() if tab in {"resumo", "plano_ficha", "timeline"} else []
     anamneses = db.execute("SELECT * FROM anamnesis WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall() if tab == "anamnese" else []
     appts = db.execute(
         "SELECT a.*, p.name AS provider_name FROM appointments a "
@@ -467,6 +494,10 @@ def view_patient(pid: int):
     timeline = []
     for b in budgets[:8]:
         timeline.append({"date": b["created_at"], "icon": "🧾", "title": "Orçamento", "text": f"{b['description']} • R$ {cents_to_brl(b['amount_cents'])} • {b['status']}"})
+    for ev in clinical_evolutions[:12]:
+        detail = ev["note"] or ev["plan_item_name"] or "Evolução/atendimento registrado"
+        provider = f" • {ev['provider']}" if ev["provider"] else ""
+        timeline.append({"date": ev["performed_at"], "icon": "🦷", "title": ev["title"], "text": f"{detail}{provider}"[:160]})
     for r in records[:8]:
         timeline.append({"date": r["created_at"], "icon": "🩺", "title": "Ficha clínica", "text": (r["queixa"] or r["diagnostico"] or "Registro clínico")[:120]})
     for a in appts[:8]:
@@ -503,6 +534,7 @@ def view_patient(pid: int):
         budgets=budgets,
         plan=plan,
         records=records,
+        clinical_evolutions=clinical_evolutions,
         anamneses=anamneses,
         appts=appts,
         odontos=odontos,
@@ -521,6 +553,7 @@ def view_patient(pid: int):
         phone_to_whatsapp=_phone_to_whatsapp,
         payment_methods=PAYMENT_METHODS,
         today=today_yyyy_mm_dd(),
+        now_local=datetime.now().strftime("%Y-%m-%dT%H:%M"),
     )
 
 
@@ -1046,6 +1079,12 @@ def plan_toggle(pid: int, iid: int):
             "UPDATE plan_items SET done=1, done_at=datetime('now') WHERE id=? AND patient_id=?",
             (iid, pid),
         )
+        proc = db.execute("SELECT procedure FROM plan_items WHERE id=? AND patient_id=?", (iid, pid)).fetchone()
+        if proc:
+            db.execute(
+                "INSERT INTO clinical_evolutions(patient_id, plan_item_id, title, note, provider, performed_at) VALUES(?,?,?,?,?,datetime('now'))",
+                (pid, iid, proc["procedure"] or "Procedimento realizado", "Marcado como feito no plano do paciente.", None),
+            )
     db.commit()
     return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
 
@@ -1123,6 +1162,56 @@ def plan_step_toggle(pid: int, sid: int):
     else:
         db.execute("UPDATE plan_steps SET done=1, done_at=datetime('now') WHERE id=?", (sid,))
     db.commit()
+    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+
+
+@bp.post("/<int:pid>/evolutions/add")
+@login_required
+def evolution_add(pid: int):
+    db = get_db()
+    patient = db.execute("SELECT id FROM patients WHERE id=?", (pid,)).fetchone()
+    if not patient:
+        flash("Paciente não encontrado.", "danger")
+        return redirect(url_for("patients.list_patients"))
+
+    title = (request.form.get("title") or "").strip()
+    note = (request.form.get("note") or "").strip()
+    provider = (request.form.get("provider") or "").strip()
+    performed_at = _any_date_to_sql(request.form.get("performed_at"))
+    plan_item_raw = (request.form.get("plan_item_id") or "").strip()
+    plan_item_id = int(plan_item_raw) if plan_item_raw.isdigit() else None
+
+    if plan_item_id:
+        linked = db.execute("SELECT id, procedure FROM plan_items WHERE id=? AND patient_id=?", (plan_item_id, pid)).fetchone()
+        if not linked:
+            plan_item_id = None
+        elif not title:
+            title = linked["procedure"]
+
+    if not title:
+        title = "Evolução clínica"
+
+    db.execute(
+        "INSERT INTO clinical_evolutions(patient_id, plan_item_id, title, note, provider, performed_at) VALUES(?,?,?,?,?,?)",
+        (pid, plan_item_id, title, note or None, provider or None, performed_at),
+    )
+    db.commit()
+    flash("Evolução clínica registrada ✅", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+
+@bp.post("/<int:pid>/evolutions/<int:eid>/delete")
+@login_required
+def evolution_delete(pid: int, eid: int):
+    db = get_db()
+    ev = db.execute("SELECT id FROM clinical_evolutions WHERE id=? AND patient_id=?", (eid, pid)).fetchone()
+    if not ev:
+        flash("Registro clínico não encontrado.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+    db.execute("DELETE FROM clinical_evolutions WHERE id=? AND patient_id=?", (eid, pid))
+    db.commit()
+    flash("Registro removido da linha do tempo clínica.", "info")
     return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
 
 

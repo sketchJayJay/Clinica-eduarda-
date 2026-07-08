@@ -650,3 +650,11 @@ body.is-loaded .page-loader{
 
 /* V28 - botão excluir item do plano */
 .table .btn-outline-danger{white-space:nowrap}
+
+/* V29 - linha do tempo clínica separada */
+.timeline-clinical .timeline-item{
+  border-left:3px solid rgba(25,135,84,.22);
+}
+.timeline-clinical .tl-icon{
+  background:#ecfff5;
+}

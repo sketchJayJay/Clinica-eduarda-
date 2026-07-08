@@ -291,6 +291,85 @@
   </div>
 </div>
 
+
+<div class="row g-3 mb-3">
+  <div class="col-lg-5">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+          <div>
+            <h6 class="mb-1">Registrar atendimento / evolução</h6>
+            <div class="text-muted small">Use aqui para manutenção de ortodontia, procedimento realizado, retorno ou observação clínica.</div>
+          </div>
+          <span class="badge text-bg-light">Linha clínica</span>
+        </div>
+        <form method="post" action="{{ url_for('patients.evolution_add', pid=patient.id) }}" class="row g-2">
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Data do atendimento</label>
+            <input class="form-control" type="datetime-local" name="performed_at" value="{{ now_local }}">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Vincular ao procedimento</label>
+            <select class="form-select" name="plan_item_id">
+              <option value="">— Sem vínculo —</option>
+              {% for it in plan %}
+                <option value="{{ it.id }}">{{ it.procedure }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label small text-muted">O que foi feito?</label>
+            <input class="form-control" name="title" placeholder="Ex.: Manutenção ortodôntica, restauração 16, retorno, limpeza...">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Profissional</label>
+            <input class="form-control" name="provider" placeholder="Nome de quem atendeu">
+          </div>
+          <div class="col-md-6">
+            <label class="form-label small text-muted">Observação rápida</label>
+            <input class="form-control" name="note" placeholder="Ex.: trocou elástico, ajuste realizado, sem intercorrência...">
+          </div>
+          <div class="col-12 d-grid"><button class="btn btn-brand">Salvar na linha do tempo clínica</button></div>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-7">
+    <div class="card shadow-sm border-0 h-100">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <h6 class="mb-1">Linha do tempo clínica</h6>
+            <div class="text-muted small">Mostra somente o que foi feito no atendimento, separado do financeiro.</div>
+          </div>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=patient.id, tab='timeline') }}">Ver completa</a>
+        </div>
+        <div class="timeline-mini timeline-clinical">
+          {% for ev in clinical_evolutions[:8] %}
+            <div class="timeline-item">
+              <div class="tl-icon">🦷</div>
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between gap-2 flex-wrap">
+                  <div>
+                    <div class="fw-semibold">{{ ev.title }}</div>
+                    <div class="text-muted small">{{ sql_to_br(ev.performed_at) }}{% if ev.provider %} · {{ ev.provider }}{% endif %}{% if ev.plan_item_name %} · {{ ev.plan_item_name }}{% endif %}</div>
+                    {% if ev.note %}<div class="small">{{ ev.note }}</div>{% endif %}
+                  </div>
+                  <form method="post" action="{{ url_for('patients.evolution_delete', pid=patient.id, eid=ev.id) }}" onsubmit="return confirm('Remover este registro da linha do tempo clínica?')" class="d-inline">
+                    <button class="btn btn-sm btn-outline-danger">Excluir</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% else %}
+            <div class="text-muted py-3">Nenhum atendimento registrado nessa linha clínica ainda.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-1">Plano do paciente</h6><div class="text-muted small">Parte clínica: acompanhe procedimentos, etapas e marque o que foi feito. Se lançou errado, use Excluir do plano. Pagamentos já lançados são preservados no financeiro.</div></div>
   <div class="table-responsive"><table class="table table-hover mb-0 align-middle">
     <thead class="table-light"><tr><th>Procedimento</th><th>Dente</th><th class="text-end">Valor</th><th class="text-end">Recebido</th><th class="text-end">Saldo</th><th>Status clínico</th><th>Status financeiro</th><th style="min-width:320px">Etapas</th></tr></thead>
@@ -357,7 +436,7 @@
 </div>
 
 <div class="row g-3">
-  <div class="col-lg-6"><div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Nova ficha clínica</h6>
+  <div class="col-lg-6"><div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Ficha clínica completa</h6>
     <form method="post" action="{{ url_for('patients.record_save', pid=patient.id) }}" class="row g-2">
       <div class="col-md-6"><label class="form-label small text-muted">Queixa principal</label><input class="form-control" name="queixa"></div>
       <div class="col-md-6"><label class="form-label small text-muted">Profissional</label><input class="form-control" name="responsavel"></div>
@@ -371,7 +450,7 @@
       <div class="col-12 d-grid"><button class="btn btn-brand">Salvar ficha</button></div>
     </form>
   </div></div></div>
-  <div class="col-lg-6"><div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Histórico de fichas</h6><div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Data</th><th>Queixa</th><th>Profissional</th><th></th></tr></thead><tbody>{% for r in records %}<tr><td>{{ sql_to_br(r.created_at) }}</td><td>{{ (r.queixa or '')[:60] }}</td><td>{{ r.responsavel or '-' }}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.record_view', pid=patient.id, rid=r.id) }}">Ver</a> <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.record_print', pid=patient.id, rid=r.id) }}">Imprimir</a></td></tr>{% else %}<tr><td colspan="4" class="text-center text-muted py-3">Nenhuma ficha.</td></tr>{% endfor %}</tbody></table></div></div></div></div>
+  <div class="col-lg-6"><div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Histórico de fichas completas</h6><div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Data</th><th>Queixa</th><th>Profissional</th><th></th></tr></thead><tbody>{% for r in records %}<tr><td>{{ sql_to_br(r.created_at) }}</td><td>{{ (r.queixa or '')[:60] }}</td><td>{{ r.responsavel or '-' }}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.record_view', pid=patient.id, rid=r.id) }}">Ver</a> <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.record_print', pid=patient.id, rid=r.id) }}">Imprimir</a></td></tr>{% else %}<tr><td colspan="4" class="text-center text-muted py-3">Nenhuma ficha.</td></tr>{% endfor %}</tbody></table></div></div></div></div>
 </div>
 
 {% elif tab=='anamnese' %}
@@ -674,7 +753,45 @@
 
 
 {% elif tab=='timeline' %}
-<div class="card border-0 shadow-sm"><div class="card-body"><h6 class="mb-3">Linha do tempo completa</h6><div class="timeline-mini timeline-large">{% for item in timeline %}<div class="timeline-item"><div class="tl-icon">{{ item.icon }}</div><div><div class="fw-semibold">{{ item.title }}</div><div class="text-muted small">{{ sql_to_br(item.date) }}</div><div>{{ item.text }}</div></div></div>{% else %}<div class="text-muted">Nada registrado ainda.</div>{% endfor %}</div></div></div>
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h6 class="mb-1">Linha do tempo clínica</h6>
+        <div class="text-muted small mb-3">Somente atendimentos, procedimentos, manutenção de ortodontia e evoluções clínicas.</div>
+        <div class="timeline-mini timeline-large">
+          {% for ev in clinical_evolutions %}
+            <div class="timeline-item">
+              <div class="tl-icon">🦷</div>
+              <div>
+                <div class="fw-semibold">{{ ev.title }}</div>
+                <div class="text-muted small">{{ sql_to_br(ev.performed_at) }}{% if ev.provider %} · {{ ev.provider }}{% endif %}{% if ev.plan_item_name %} · {{ ev.plan_item_name }}{% endif %}</div>
+                {% if ev.note %}<div>{{ ev.note }}</div>{% endif %}
+              </div>
+            </div>
+          {% else %}
+            <div class="text-muted">Nenhuma evolução clínica registrada ainda.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card border-0 shadow-sm h-100">
+      <div class="card-body">
+        <h6 class="mb-1">Linha do tempo geral</h6>
+        <div class="text-muted small mb-3">Aqui entram orçamento, financeiro, agenda, documentos, fotos e CRM.</div>
+        <div class="timeline-mini timeline-large">
+          {% for item in timeline %}
+            <div class="timeline-item"><div class="tl-icon">{{ item.icon }}</div><div><div class="fw-semibold">{{ item.title }}</div><div class="text-muted small">{{ sql_to_br(item.date) }}</div><div>{{ item.text }}</div></div></div>
+          {% else %}
+            <div class="text-muted">Nada registrado ainda.</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endif %}
 
 {% endblock %}

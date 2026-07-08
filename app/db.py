@@ -356,6 +356,22 @@ def init_db():
 
     CREATE INDEX IF NOT EXISTS idx_records_patient ON clinical_records(patient_id);
 
+    CREATE TABLE IF NOT EXISTS clinical_evolutions(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patient_id INTEGER NOT NULL,
+        plan_item_id INTEGER,
+        title TEXT NOT NULL,
+        note TEXT,
+        provider TEXT,
+        performed_at TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE CASCADE,
+        FOREIGN KEY(plan_item_id) REFERENCES plan_items(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_evolutions_patient ON clinical_evolutions(patient_id);
+    CREATE INDEX IF NOT EXISTS idx_evolutions_performed ON clinical_evolutions(performed_at);
+
 
     CREATE TABLE IF NOT EXISTS anamnesis(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
