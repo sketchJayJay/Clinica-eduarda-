@@ -747,10 +747,16 @@ def edit_patient(pid: int):
 @login_required
 def delete_patient(pid: int):
     db = get_db()
-    # mantém os lançamentos (FK ON DELETE SET NULL), apenas desvincula
+    patient = db.execute("SELECT id FROM patients WHERE id=?", (pid,)).fetchone()
+    if not patient:
+        flash("Paciente não encontrado.", "danger")
+        return redirect(url_for("patients.list_patients"))
+
+    # Preserva lançamentos financeiros no histórico, mas desvincula do paciente excluído.
+    db.execute("UPDATE transactions SET patient_id=NULL WHERE patient_id=?", (pid,))
     db.execute("DELETE FROM patients WHERE id=?", (pid,))
     db.commit()
-    flash("Paciente removido.", "info")
+    flash("Paciente excluído. O financeiro foi preservado sem vínculo com o paciente.", "info")
     return redirect(url_for("patients.list_patients"))
 
 

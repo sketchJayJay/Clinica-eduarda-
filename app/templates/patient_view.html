@@ -28,7 +28,7 @@
         {% endif %}
         {% if wa_charge %}<a class="btn btn-outline-success" target="_blank" href="{{ wa_charge }}">Cobrar no WhatsApp</a>{% endif %}
         <a class="btn btn-outline-secondary" href="{{ url_for('patients.list_patients') }}">Voltar</a>
-        <a class="btn btn-outline-secondary" href="{{ url_for('patients.edit_patient', pid=patient.id) }}">Editar</a>
+        <a class="btn btn-outline-secondary" href="{{ url_for('patients.edit_patient', pid=patient.id) }}">Editar</a> <form method="post" action="{{ url_for('patients.delete_patient', pid=patient.id) }}" class="d-inline" onsubmit="return confirm('Tem certeza que deseja excluir este paciente? A ficha clínica, plano, documentos, fotos e histórico clínico serão removidos. O financeiro será preservado, mas sem vínculo com o paciente.')"><button class="btn btn-outline-danger" type="submit">Excluir paciente</button></form>
         <a class="btn btn-brand" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income') }}">Nova cobrança</a>
       </div>
     </div>
