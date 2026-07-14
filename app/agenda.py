@@ -42,6 +42,42 @@ def _sql_to_iso(dt_sql: str | None) -> str | None:
     except Exception:
         return None
 
+
+def _digits_phone(value: str | None) -> str:
+    return "".join(ch for ch in (value or "") if ch.isdigit())
+
+
+def _get_or_create_quick_patient(db, name: str, phone: str = "") -> int | None:
+    """Cria cadastro mínimo pela agenda quando o paciente ainda não existe."""
+    name = (name or "").strip()
+    phone = (phone or "").strip()
+    if not name:
+        return None
+
+    # Evita duplicar quando já existe o mesmo nome e telefone.
+    if phone:
+        digits = _digits_phone(phone)
+        rows = db.execute(
+            "SELECT id, phone FROM patients WHERE lower(trim(name))=lower(trim(?)) ORDER BY id ASC",
+            (name,),
+        ).fetchall()
+        for row in rows:
+            if _digits_phone(row["phone"] or "") == digits:
+                return int(row["id"])
+    else:
+        existing = db.execute(
+            "SELECT id FROM patients WHERE lower(trim(name))=lower(trim(?)) ORDER BY id ASC LIMIT 1",
+            (name,),
+        ).fetchone()
+        if existing:
+            return int(existing["id"])
+
+    db.execute(
+        "INSERT INTO patients(name, phone, notes) VALUES(?,?,?)",
+        (name, phone or None, "Cadastro rápido criado pela agenda."),
+    )
+    return int(db.execute("SELECT last_insert_rowid() AS id").fetchone()["id"])
+
 @bp.get("/")
 @login_required
 def calendar_view():
@@ -126,6 +162,8 @@ def events():
 def create_event():
     db = get_db()
     patient_id = request.form.get("patient_id", type=int)
+    new_patient_name = (request.form.get("new_patient_name") or "").strip()
+    new_patient_phone = (request.form.get("new_patient_phone") or "").strip()
     provider_id_raw = request.form.get("provider_id")
     provider_id = None
     if provider_id_raw is not None:
@@ -139,8 +177,11 @@ def create_event():
     if status not in {"agendada", "confirmada", "compareceu", "faltou", "cancelada"}:
         status = "agendada"
 
+    if not patient_id and new_patient_name:
+        patient_id = _get_or_create_quick_patient(db, new_patient_name, new_patient_phone)
+
     if not patient_id or not start_at:
-        flash("Selecione o paciente e o horário de início.", "danger")
+        flash("Selecione um paciente cadastrado ou informe o nome do paciente novo, além do horário de início.", "danger")
         return redirect(url_for("agenda.calendar_view"))
 
     db.execute(

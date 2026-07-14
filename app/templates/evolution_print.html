@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <title>Ficha de evolução - {{ patient.name }}</title>
+  <style>
+    body{font-family:Arial,sans-serif;color:#222;margin:32px;line-height:1.45}
+    .header{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #8b4f43;padding-bottom:14px;margin-bottom:22px}
+    h1{font-size:22px;margin:0 0 5px}.muted{color:#666}.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{border:1px solid #ddd;border-radius:10px;padding:12px;margin-bottom:12px}.field b.label{display:block;font-size:11px;text-transform:uppercase;color:#8b4f43;margin-bottom:6px}
+    .full{grid-column:1/-1}.lines{white-space:pre-wrap}.signature{margin-top:50px;display:flex;justify-content:space-between;gap:40px}.sign{border-top:1px solid #444;padding-top:6px;text-align:center;width:45%}
+    @media print{body{margin:18mm}.no-print{display:none}}
+  </style>
+</head>
+<body>
+  <button class="no-print" onclick="window.print()">Imprimir</button>
+  <div class="header">
+    <div><h1>Ficha de evolução clínica</h1><div class="muted">Eduarda Imbelloni Clínica Especializada</div></div>
+    <div style="text-align:right"><b>{{ patient.name }}</b><br><span class="muted">{{ sql_to_br(evolution.performed_at) }}</span></div>
+  </div>
+
+  <div class="grid">
+    <div class="field"><b class="label">Atendimento</b>{{ evolution.title }}</div>
+    <div class="field"><b class="label">Profissional</b>{{ evolution.provider or 'Não informado' }}</div>
+    <div class="field"><b class="label">Plano vinculado</b>{{ evolution.plan_item_name or 'Sem vínculo' }}</div>
+    <div class="field"><b class="label">Dente / região</b>{{ evolution.tooth_region or 'Não informado' }}</div>
+    <div class="field full"><b class="label">Evolução detalhada</b><div class="lines">{{ evolution.note or 'Sem descrição.' }}</div></div>
+    <div class="field full"><b class="label">Materiais, medicamentos ou aparelhos</b><div class="lines">{{ evolution.materials or 'Não informado.' }}</div></div>
+    <div class="field full"><b class="label">Intercorrências</b><div class="lines">{{ evolution.intercurrences or 'Sem intercorrências informadas.' }}</div></div>
+    <div class="field full"><b class="label">Conduta e orientações</b><div class="lines">{{ evolution.conduct or 'Não informado.' }}</div></div>
+    <div class="field"><b class="label">Próximo retorno</b>{{ evolution.return_date or 'Não agendado' }}</div>
+    <div class="field"><b class="label">Data do registro</b>{{ sql_to_br(evolution.created_at) }}</div>
+  </div>
+
+  <div class="signature">
+    <div class="sign">Assinatura do profissional</div>
+    <div class="sign">Assinatura do paciente/responsável</div>
+  </div>
+</body>
+</html>

@@ -2,7 +2,7 @@
 {% set title = patient.name %}
 {% block content %}
 {% set tabs = [
-  ('resumo','Resumo'), ('orcamentos','Orçamentos'), ('plano_ficha','Plano/Ficha'),
+  ('resumo','Resumo'), ('orcamentos','Orçamentos'), ('plano_ficha','Plano/Ficha'), ('evolucao','Evolução clínica'),
   ('anamnese','Anamnese'), ('agenda','Agenda'), ('odontograma','Odontograma'),
   ('fotos','Fotos'), ('retornos','Retornos/CRM'), ('documentos','Documentos'), ('timeline','Linha do tempo')
 ] %}
@@ -292,81 +292,16 @@
 </div>
 
 
-<div class="row g-3 mb-3">
-  <div class="col-lg-5">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-body">
-        <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
-          <div>
-            <h6 class="mb-1">Registrar atendimento / evolução</h6>
-            <div class="text-muted small">Use aqui para manutenção de ortodontia, procedimento realizado, retorno ou observação clínica.</div>
-          </div>
-          <span class="badge text-bg-light">Linha clínica</span>
-        </div>
-        <form method="post" action="{{ url_for('patients.evolution_add', pid=patient.id) }}" class="row g-2">
-          <div class="col-md-6">
-            <label class="form-label small text-muted">Data do atendimento</label>
-            <input class="form-control" type="datetime-local" name="performed_at" value="{{ now_local }}">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small text-muted">Vincular ao procedimento</label>
-            <select class="form-select" name="plan_item_id">
-              <option value="">— Sem vínculo —</option>
-              {% for it in plan %}
-                <option value="{{ it.id }}">{{ it.procedure }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="col-12">
-            <label class="form-label small text-muted">O que foi feito?</label>
-            <input class="form-control" name="title" placeholder="Ex.: Manutenção ortodôntica, restauração 16, retorno, limpeza...">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small text-muted">Profissional</label>
-            <input class="form-control" name="provider" placeholder="Nome de quem atendeu">
-          </div>
-          <div class="col-md-6">
-            <label class="form-label small text-muted">Observação rápida</label>
-            <input class="form-control" name="note" placeholder="Ex.: trocou elástico, ajuste realizado, sem intercorrência...">
-          </div>
-          <div class="col-12 d-grid"><button class="btn btn-brand">Salvar na linha do tempo clínica</button></div>
-        </form>
-      </div>
+<div class="card border-0 shadow-sm mb-3 evolution-shortcut">
+  <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div>
+      <div class="eyebrow mb-1">Registro clínico</div>
+      <h6 class="mb-1">Ficha de evolução do paciente</h6>
+      <div class="text-muted small">Registre com detalhes o que foi feito no dia, materiais utilizados, intercorrências, conduta e próximo retorno.</div>
     </div>
-  </div>
-  <div class="col-lg-7">
-    <div class="card shadow-sm border-0 h-100">
-      <div class="card-body">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-          <div>
-            <h6 class="mb-1">Linha do tempo clínica</h6>
-            <div class="text-muted small">Mostra somente o que foi feito no atendimento, separado do financeiro.</div>
-          </div>
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=patient.id, tab='timeline') }}">Ver completa</a>
-        </div>
-        <div class="timeline-mini timeline-clinical">
-          {% for ev in clinical_evolutions[:8] %}
-            <div class="timeline-item">
-              <div class="tl-icon">🦷</div>
-              <div class="flex-grow-1">
-                <div class="d-flex justify-content-between gap-2 flex-wrap">
-                  <div>
-                    <div class="fw-semibold">{{ ev.title }}</div>
-                    <div class="text-muted small">{{ sql_to_br(ev.performed_at) }}{% if ev.provider %} · {{ ev.provider }}{% endif %}{% if ev.plan_item_name %} · {{ ev.plan_item_name }}{% endif %}</div>
-                    {% if ev.note %}<div class="small">{{ ev.note }}</div>{% endif %}
-                  </div>
-                  <form method="post" action="{{ url_for('patients.evolution_delete', pid=patient.id, eid=ev.id) }}" onsubmit="return confirm('Remover este registro da linha do tempo clínica?')" class="d-inline">
-                    <button class="btn btn-sm btn-outline-danger">Excluir</button>
-                  </form>
-                </div>
-              </div>
-            </div>
-          {% else %}
-            <div class="text-muted py-3">Nenhum atendimento registrado nessa linha clínica ainda.</div>
-          {% endfor %}
-        </div>
-      </div>
-    </div>
+    <a class="btn btn-brand" href="{{ url_for('patients.view_patient', pid=patient.id, tab='evolucao') }}">
+      <i class="bi bi-journal-medical me-1"></i>Abrir ficha de evolução
+    </a>
   </div>
 </div>
 
@@ -398,8 +333,13 @@
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-      <div><h6 class="mb-1">Parcelas e pagamentos do paciente</h6><div class="text-muted small">Aqui dá para baixar boleto/parcela pelo valor e pela data que realmente caiu.</div></div>
-      <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=0, status='pending') }}">Criar pelo financeiro</a>
+      <div><h6 class="mb-1">Parcelas e pagamentos do paciente</h6><div class="text-muted small">Para emitir outro boleto, clique em Novo boleto/parcela. Quando cair no banco, dê baixa pelo valor e pela data real do pagamento.</div></div>
+      <div class="d-flex gap-2 flex-wrap">
+        <a class="btn btn-sm btn-brand" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=0, status='pending', payment_method='boleto', description='Boleto do tratamento') }}">
+          <i class="bi bi-upc-scan me-1"></i>Novo boleto / parcela
+        </a>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=0, status='pending') }}">Outro lançamento</a>
+      </div>
     </div>
     <div class="table-responsive">
       <table class="table table-sm align-middle mb-0">
@@ -451,6 +391,142 @@
     </form>
   </div></div></div>
   <div class="col-lg-6"><div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Histórico de fichas completas</h6><div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Data</th><th>Queixa</th><th>Profissional</th><th></th></tr></thead><tbody>{% for r in records %}<tr><td>{{ sql_to_br(r.created_at) }}</td><td>{{ (r.queixa or '')[:60] }}</td><td>{{ r.responsavel or '-' }}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.record_view', pid=patient.id, rid=r.id) }}">Ver</a> <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.record_print', pid=patient.id, rid=r.id) }}">Imprimir</a></td></tr>{% else %}<tr><td colspan="4" class="text-center text-muted py-3">Nenhuma ficha.</td></tr>{% endfor %}</tbody></table></div></div></div></div>
+</div>
+
+{% elif tab=='evolucao' %}
+<div class="row g-3">
+  <div class="col-xl-5">
+    <div class="card shadow-sm border-0 sticky-xl-top" style="top:92px">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
+          <div>
+            <div class="eyebrow mb-1">Registro clínico do dia</div>
+            <h5 class="mb-1">Nova ficha de evolução</h5>
+            <div class="text-muted small">Escreva com detalhes o atendimento realizado e qualquer intercorrência.</div>
+          </div>
+          <span class="badge text-bg-light">Clínico</span>
+        </div>
+
+        <form method="post" action="{{ url_for('patients.evolution_add', pid=patient.id) }}" class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Data e hora do atendimento</label>
+            <input class="form-control" type="datetime-local" name="performed_at" value="{{ now_local }}" required>
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">Profissional</label>
+            <input class="form-control" name="provider" list="evolution-providers" placeholder="Quem realizou">
+            <datalist id="evolution-providers">
+              {% for p in providers %}<option value="{{ p.name }}">{% endfor %}
+            </datalist>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Tipo de atendimento / procedimento</label>
+            <input class="form-control" name="title" placeholder="Ex.: Manutenção ortodôntica, restauração, profilaxia..." required>
+          </div>
+
+          <div class="col-md-7">
+            <label class="form-label">Vincular ao plano</label>
+            <select class="form-select" name="plan_item_id">
+              <option value="">— Sem vínculo com o plano —</option>
+              {% for it in plan %}
+                <option value="{{ it.id }}">{{ it.procedure }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Dente / região</label>
+            <input class="form-control" name="tooth_region" placeholder="Ex.: 16, arcada superior...">
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Evolução detalhada: o que foi feito?</label>
+            <textarea class="form-control evolution-textarea" name="note" rows="6" placeholder="Descreva todo o atendimento realizado, ajustes, técnica utilizada, resposta do paciente e demais detalhes..." required></textarea>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Materiais, medicamentos ou aparelhos utilizados</label>
+            <textarea class="form-control" name="materials" rows="3" placeholder="Ex.: fio 0.016, resina A2, anestésico, elástico, medicação prescrita..."></textarea>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Intercorrências</label>
+            <textarea class="form-control" name="intercurrences" rows="3" placeholder="Ex.: Sem intercorrências. Ou descreva dor, sangramento, reação, quebra, dificuldade clínica...">Sem intercorrências.</textarea>
+          </div>
+
+          <div class="col-12">
+            <label class="form-label">Conduta, orientação e próximos passos</label>
+            <textarea class="form-control" name="conduct" rows="3" placeholder="Ex.: orientado higiene, manter elástico, prescrito medicamento, retornar para avaliação..."></textarea>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Próximo retorno, se houver</label>
+            <input class="form-control" type="date" name="return_date">
+          </div>
+          <div class="col-md-6 d-grid align-items-end">
+            <button class="btn btn-brand mt-md-4" type="submit">
+              <i class="bi bi-check2-circle me-1"></i>Salvar ficha de evolução
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-xl-7">
+    <div class="card shadow-sm border-0">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <div class="eyebrow mb-1">Histórico clínico</div>
+            <h5 class="mb-1">Evoluções registradas</h5>
+            <div class="text-muted small">Cada atendimento fica salvo pela data real em que foi realizado.</div>
+          </div>
+          <span class="badge text-bg-light">{{ clinical_evolutions|length }} registro(s)</span>
+        </div>
+
+        <div class="vstack gap-3">
+          {% for ev in clinical_evolutions %}
+          <div class="evolution-record">
+            <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+              <div class="flex-grow-1">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                  <span class="evolution-date">{{ sql_to_br(ev.performed_at) }}</span>
+                  <span class="badge text-bg-light">{{ ev.title }}</span>
+                  {% if ev.plan_item_name %}<span class="badge bg-info-subtle text-info">{{ ev.plan_item_name }}</span>{% endif %}
+                </div>
+                <div class="fw-semibold mt-2">{{ ev.provider or 'Profissional não informado' }}{% if ev.tooth_region %} · Dente/região: {{ ev.tooth_region }}{% endif %}</div>
+                <div class="mt-2 evolution-note">{{ ev.note or 'Sem descrição.' }}</div>
+
+                {% if ev.intercurrences %}
+                <div class="mt-2 small"><b>Intercorrências:</b> {{ ev.intercurrences }}</div>
+                {% endif %}
+                {% if ev.conduct %}
+                <div class="mt-1 small"><b>Conduta:</b> {{ ev.conduct }}</div>
+                {% endif %}
+                {% if ev.return_date %}
+                <div class="mt-1 small text-muted"><b>Próximo retorno:</b> {{ ev.return_date }}</div>
+                {% endif %}
+              </div>
+              <div class="d-flex gap-1 flex-wrap">
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.evolution_view', pid=patient.id, eid=ev.id) }}">Ver ficha</a>
+                <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.evolution_print', pid=patient.id, eid=ev.id) }}">Imprimir</a>
+                <form method="post" action="{{ url_for('patients.evolution_delete', pid=patient.id, eid=ev.id) }}" onsubmit="return confirm('Excluir esta ficha de evolução?')" class="d-inline">
+                  <button class="btn btn-sm btn-outline-danger">Excluir</button>
+                </form>
+              </div>
+            </div>
+          </div>
+          {% else %}
+          <div class="text-center text-muted py-5">
+            <i class="bi bi-journal-medical fs-2 d-block mb-2"></i>
+            Nenhuma ficha de evolução registrada para este paciente.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 {% elif tab=='anamnese' %}
@@ -767,6 +843,8 @@
                 <div class="fw-semibold">{{ ev.title }}</div>
                 <div class="text-muted small">{{ sql_to_br(ev.performed_at) }}{% if ev.provider %} · {{ ev.provider }}{% endif %}{% if ev.plan_item_name %} · {{ ev.plan_item_name }}{% endif %}</div>
                 {% if ev.note %}<div>{{ ev.note }}</div>{% endif %}
+                {% if ev.intercurrences %}<div class="small mt-1"><b>Intercorrências:</b> {{ ev.intercurrences }}</div>{% endif %}
+                <a class="btn btn-sm btn-outline-secondary mt-2" href="{{ url_for('patients.evolution_view', pid=patient.id, eid=ev.id) }}">Ver ficha completa</a>
               </div>
             </div>
           {% else %}

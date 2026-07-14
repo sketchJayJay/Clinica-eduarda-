@@ -15,7 +15,7 @@ from .finance import insert_transaction, add_payment, normalize_payment_method, 
 
 bp = Blueprint("patients", __name__, url_prefix="/patients")
 
-TABS = {"resumo", "orcamentos", "plano_ficha", "anamnese", "agenda", "odontograma", "fotos", "retornos", "documentos", "timeline"}
+TABS = {"resumo", "orcamentos", "plano_ficha", "evolucao", "anamnese", "agenda", "odontograma", "fotos", "retornos", "documentos", "timeline"}
 
 
 def _dtlocal_to_sql(dtlocal: str | None) -> str | None:
@@ -416,7 +416,7 @@ def view_patient(pid: int):
         "WHERE ce.patient_id=? "
         "ORDER BY ce.performed_at DESC, ce.id DESC",
         (pid,),
-    ).fetchall() if tab in {"resumo", "plano_ficha", "timeline"} else []
+    ).fetchall() if tab in {"resumo", "plano_ficha", "evolucao", "timeline"} else []
     anamneses = db.execute("SELECT * FROM anamnesis WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall() if tab == "anamnese" else []
     appts = db.execute(
         "SELECT a.*, p.name AS provider_name FROM appointments a "
@@ -497,7 +497,8 @@ def view_patient(pid: int):
     for ev in clinical_evolutions[:12]:
         detail = ev["note"] or ev["plan_item_name"] or "Evolução/atendimento registrado"
         provider = f" • {ev['provider']}" if ev["provider"] else ""
-        timeline.append({"date": ev["performed_at"], "icon": "🦷", "title": ev["title"], "text": f"{detail}{provider}"[:160]})
+        interc = f" • Intercorrências: {ev['intercurrences']}" if "intercurrences" in ev.keys() and ev["intercurrences"] else ""
+        timeline.append({"date": ev["performed_at"], "icon": "🦷", "title": ev["title"], "text": f"{detail}{interc}{provider}"[:220]})
     for r in records[:8]:
         timeline.append({"date": r["created_at"], "icon": "🩺", "title": "Ficha clínica", "text": (r["queixa"] or r["diagnostico"] or "Registro clínico")[:120]})
     for a in appts[:8]:
@@ -1184,6 +1185,11 @@ def evolution_add(pid: int):
     title = (request.form.get("title") or "").strip()
     note = (request.form.get("note") or "").strip()
     provider = (request.form.get("provider") or "").strip()
+    tooth_region = (request.form.get("tooth_region") or "").strip()
+    materials = (request.form.get("materials") or "").strip()
+    intercurrences = (request.form.get("intercurrences") or "").strip()
+    conduct = (request.form.get("conduct") or "").strip()
+    return_date = (request.form.get("return_date") or "").strip() or None
     performed_at = _any_date_to_sql(request.form.get("performed_at"))
     plan_item_raw = (request.form.get("plan_item_id") or "").strip()
     plan_item_id = int(plan_item_raw) if plan_item_raw.isdigit() else None
@@ -1199,12 +1205,68 @@ def evolution_add(pid: int):
         title = "Evolução clínica"
 
     db.execute(
-        "INSERT INTO clinical_evolutions(patient_id, plan_item_id, title, note, provider, performed_at) VALUES(?,?,?,?,?,?)",
-        (pid, plan_item_id, title, note or None, provider or None, performed_at),
+        """
+        INSERT INTO clinical_evolutions(
+            patient_id, plan_item_id, title, note, provider, performed_at,
+            tooth_region, materials, intercurrences, conduct, return_date
+        ) VALUES(?,?,?,?,?,?,?,?,?,?,?)
+        """,
+        (
+            pid, plan_item_id, title, note or None, provider or None, performed_at,
+            tooth_region or None, materials or None, intercurrences or None,
+            conduct or None, return_date,
+        ),
     )
     db.commit()
-    flash("Evolução clínica registrada ✅", "success")
-    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+    flash("Ficha de evolução salva ✅", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="evolucao"))
+
+
+
+@bp.get("/<int:pid>/evolutions/<int:eid>")
+@login_required
+def evolution_view(pid: int, eid: int):
+    db = get_db()
+    patient = db.execute("SELECT * FROM patients WHERE id=?", (pid,)).fetchone()
+    evolution = db.execute(
+        "SELECT ce.*, pi.procedure AS plan_item_name "
+        "FROM clinical_evolutions ce "
+        "LEFT JOIN plan_items pi ON pi.id=ce.plan_item_id "
+        "WHERE ce.id=? AND ce.patient_id=?",
+        (eid, pid),
+    ).fetchone()
+    if not patient or not evolution:
+        flash("Ficha de evolução não encontrada.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="evolucao"))
+    return render_template(
+        "evolution_view.html",
+        patient=patient,
+        evolution=evolution,
+        sql_to_br=_sql_to_br,
+    )
+
+
+@bp.get("/<int:pid>/evolutions/<int:eid>/print")
+@login_required
+def evolution_print(pid: int, eid: int):
+    db = get_db()
+    patient = db.execute("SELECT * FROM patients WHERE id=?", (pid,)).fetchone()
+    evolution = db.execute(
+        "SELECT ce.*, pi.procedure AS plan_item_name "
+        "FROM clinical_evolutions ce "
+        "LEFT JOIN plan_items pi ON pi.id=ce.plan_item_id "
+        "WHERE ce.id=? AND ce.patient_id=?",
+        (eid, pid),
+    ).fetchone()
+    if not patient or not evolution:
+        flash("Ficha de evolução não encontrada.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="evolucao"))
+    return render_template(
+        "evolution_print.html",
+        patient=patient,
+        evolution=evolution,
+        sql_to_br=_sql_to_br,
+    )
 
 
 @bp.post("/<int:pid>/evolutions/<int:eid>/delete")
@@ -1217,8 +1279,8 @@ def evolution_delete(pid: int, eid: int):
         return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
     db.execute("DELETE FROM clinical_evolutions WHERE id=? AND patient_id=?", (eid, pid))
     db.commit()
-    flash("Registro removido da linha do tempo clínica.", "info")
-    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+    flash("Ficha de evolução removida.", "info")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="evolucao"))
 
 
 @bp.post("/<int:pid>/records/save")

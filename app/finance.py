@@ -27,6 +27,7 @@ PAYMENT_METHODS = [
     ("card_debit", "Cartão débito"),
     ("card", "Cartão"),  # legado
     ("transfer", "Transferência"),
+    ("boleto", "Boleto bancário"),
     ("other", "Outro"),
 ]
 PAYMENT_METHOD_KEYS = {k for k, _ in PAYMENT_METHODS}
@@ -599,14 +600,16 @@ def transaction_new():
 
     tx_prefill = {
         "kind": request.args.get("kind", "income"),
-        "status": "paid",
-        "date": today_yyyy_mm_dd(),
-        "payment_method": "pix",
-        "installments_total": 1,
+        "status": request.args.get("status", "paid"),
+        "date": request.args.get("date", today_yyyy_mm_dd()),
+        "due_date": request.args.get("due_date", ""),
+        "payment_method": request.args.get("payment_method", "pix"),
+        "installments_total": request.args.get("installments_total", 1),
         "discount_percent": 0,
         "discount_cents_brl": "",
         "patient_id": request.args.get("patient_id", ""),
         "plan_item_id": request.args.get("plan_item_id", ""),
+        "description": request.args.get("description", ""),
     }
 
     # Se vier do Plano/Ficha, já puxa descrição, valor e paciente.
@@ -616,7 +619,7 @@ def transaction_new():
         total_row = db.execute("SELECT COALESCE(SUM(amount_cents),0) AS total FROM plan_items WHERE patient_id=?", (int(patient_arg),)).fetchone()
         tx_prefill["patient_id"] = int(patient_arg)
         tx_prefill["plan_item_id"] = 0
-        tx_prefill["description"] = "Pagamento do tratamento completo"
+        tx_prefill["description"] = request.args.get("description", "Pagamento do tratamento completo")
         tx_prefill["amount_brl"] = cents_to_brl(int(total_row["total"] or 0))
         tx_prefill["status"] = request.args.get("status", "paid")
     elif plan_item_arg.isdigit():

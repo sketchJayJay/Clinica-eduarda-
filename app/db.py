@@ -114,6 +114,13 @@ def _ensure_finance_migrations(db: sqlite3.Connection) -> None:
 
 def _ensure_premium_migrations(db: sqlite3.Connection) -> None:
     """Migrações premium: segurança, agenda, fotos, Asaas e painel do paciente."""
+    # Ficha de evolução clínica detalhada
+    _add_column_if_missing(db, "clinical_evolutions", "tooth_region", "TEXT")
+    _add_column_if_missing(db, "clinical_evolutions", "materials", "TEXT")
+    _add_column_if_missing(db, "clinical_evolutions", "intercurrences", "TEXT")
+    _add_column_if_missing(db, "clinical_evolutions", "conduct", "TEXT")
+    _add_column_if_missing(db, "clinical_evolutions", "return_date", "TEXT")
+
     # Pacientes mais completos
     _add_column_if_missing(db, "patients", "email", "TEXT")
     _add_column_if_missing(db, "patients", "cpf", "TEXT")
@@ -364,6 +371,11 @@ def init_db():
         note TEXT,
         provider TEXT,
         performed_at TEXT NOT NULL,
+        tooth_region TEXT,
+        materials TEXT,
+        intercurrences TEXT,
+        conduct TEXT,
+        return_date TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE CASCADE,
         FOREIGN KEY(plan_item_id) REFERENCES plan_items(id) ON DELETE SET NULL

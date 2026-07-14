@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% set title = "Ficha de evolução | " ~ patient.name %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+  <div>
+    <div class="eyebrow mb-1">Ficha clínica</div>
+    <h2 class="page-title mb-1">Evolução de {{ patient.name }}</h2>
+    <div class="text-muted">{{ sql_to_br(evolution.performed_at) }}</div>
+  </div>
+  <div class="d-flex gap-2">
+    <a class="btn btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=patient.id, tab='evolucao') }}">Voltar</a>
+    <a class="btn btn-brand" target="_blank" href="{{ url_for('patients.evolution_print', pid=patient.id, eid=evolution.id) }}">Imprimir</a>
+  </div>
+</div>
+
+<div class="card border-0 shadow-sm">
+  <div class="card-body p-4">
+    <div class="row g-3">
+      <div class="col-md-6"><div class="evolution-field"><span>Atendimento</span><b>{{ evolution.title }}</b></div></div>
+      <div class="col-md-6"><div class="evolution-field"><span>Profissional</span><b>{{ evolution.provider or 'Não informado' }}</b></div></div>
+      <div class="col-md-6"><div class="evolution-field"><span>Plano vinculado</span><b>{{ evolution.plan_item_name or 'Sem vínculo' }}</b></div></div>
+      <div class="col-md-6"><div class="evolution-field"><span>Dente / região</span><b>{{ evolution.tooth_region or 'Não informado' }}</b></div></div>
+
+      <div class="col-12"><div class="evolution-field"><span>Evolução detalhada</span><div class="preserve-lines">{{ evolution.note or 'Sem descrição.' }}</div></div></div>
+      <div class="col-12"><div class="evolution-field"><span>Materiais, medicamentos ou aparelhos</span><div class="preserve-lines">{{ evolution.materials or 'Não informado.' }}</div></div></div>
+      <div class="col-12"><div class="evolution-field"><span>Intercorrências</span><div class="preserve-lines">{{ evolution.intercurrences or 'Sem intercorrências informadas.' }}</div></div></div>
+      <div class="col-12"><div class="evolution-field"><span>Conduta e orientações</span><div class="preserve-lines">{{ evolution.conduct or 'Não informado.' }}</div></div></div>
+      <div class="col-md-6"><div class="evolution-field"><span>Próximo retorno</span><b>{{ evolution.return_date or 'Não agendado' }}</b></div></div>
+      <div class="col-md-6"><div class="evolution-field"><span>Registro criado em</span><b>{{ sql_to_br(evolution.created_at) }}</b></div></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

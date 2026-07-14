@@ -15,6 +15,7 @@
   .fc-patient-link:hover{opacity:.9}
   .fc-event-main-frame-premium{line-height:1.15}
   .fc-event-title-small{font-size:.78rem;opacity:.92;margin-top:1px}
+  .quick-patient-box{padding:12px;border:1px dashed #d9b9aa;border-radius:14px;background:#fff8f4}
 </style>
 {% endblock %}
 
@@ -50,13 +51,19 @@
         <h6 class="mb-2">Criar rápido</h6>
         <form method="post" action="{{ url_for('agenda.create_event') }}" class="vstack gap-2">
           <div>
-            <label class="form-label small">Paciente</label>
-            <select name="patient_id" class="form-select" required>
-              <option value="">Selecione...</option>
+            <label class="form-label small">Paciente cadastrado</label>
+            <select name="patient_id" class="form-select">
+              <option value="">Selecione ou cadastre abaixo...</option>
               {% for p in patients %}
                 <option value="{{ p.id }}">{{ p.name }}</option>
               {% endfor %}
             </select>
+          </div>
+          <div class="quick-patient-box">
+            <div class="fw-semibold small mb-1">Paciente novo / ainda não cadastrado</div>
+            <input class="form-control mb-2" name="new_patient_name" placeholder="Nome do paciente novo">
+            <input class="form-control" name="new_patient_phone" placeholder="Telefone / WhatsApp">
+            <div class="form-text">Ao salvar, o sistema cria um cadastro básico automaticamente.</div>
           </div>
           <div>
             <label class="form-label small">Profissional</label>
@@ -97,7 +104,7 @@
         </form>
         <hr>
         <div class="mini-hint">
-          Clique em um evento para abrir o paciente e editar.
+          Você pode escolher um paciente cadastrado ou digitar o nome de um paciente novo. O sistema cria o cadastro básico ao salvar.
         </div>
       </div>
     </div>
@@ -117,9 +124,9 @@
           <input type="hidden" id="apptId" value="">
           <div class="row g-2">
             <div class="col-md-6">
-              <label class="form-label">Paciente</label>
-              <select id="patient_id" name="patient_id" class="form-select" required>
-                <option value="">Selecione...</option>
+              <label class="form-label">Paciente cadastrado</label>
+              <select id="patient_id" name="patient_id" class="form-select">
+                <option value="">Selecione ou informe o novo abaixo...</option>
                 {% for p in patients %}
                   <option value="{{ p.id }}">{{ p.name }}</option>
                 {% endfor %}
@@ -133,6 +140,23 @@
                   <option value="{{ pr.id }}">{{ pr.name }}</option>
                 {% endfor %}
               </select>
+            </div>
+
+            <div class="col-12" id="newPatientFields">
+              <div class="quick-patient-box">
+                <div class="fw-semibold mb-2">Paciente novo / sem cadastro completo</div>
+                <div class="row g-2">
+                  <div class="col-md-7">
+                    <label class="form-label small">Nome</label>
+                    <input class="form-control" id="new_patient_name" name="new_patient_name" placeholder="Nome do paciente novo">
+                  </div>
+                  <div class="col-md-5">
+                    <label class="form-label small">Telefone / WhatsApp</label>
+                    <input class="form-control" id="new_patient_phone" name="new_patient_phone" placeholder="(00) 00000-0000">
+                  </div>
+                </div>
+                <div class="form-text">Não precisa sair da agenda. O cadastro básico será criado automaticamente ao salvar.</div>
+              </div>
             </div>
 
             <div class="col-md-4">
@@ -218,6 +242,9 @@
     $('apptTitle').textContent = "Novo agendamento";
     $('apptId').value = "";
     $('patient_id').value = "";
+    $('new_patient_name').value = "";
+    $('new_patient_phone').value = "";
+    $('newPatientFields').style.display = "block";
     $('provider_id').value = "";
     $('title').value = "Consulta";
     $('status').value = "agendada";
@@ -236,6 +263,9 @@
     $('apptTitle').textContent = "Editar agendamento";
     $('apptId').value = ev.id;
     $('patient_id').value = p.patient_id || "";
+    $('new_patient_name').value = "";
+    $('new_patient_phone').value = "";
+    $('newPatientFields').style.display = "none";
     $('provider_id').value = p.provider_id || "";
     $('title').value = p.raw_title || "Consulta";
     $('status').value = p.status || "agendada";
@@ -266,6 +296,15 @@
 
   $('btnNew').addEventListener('click', () => openNew());
 
+  $('patient_id').addEventListener('change', () => {
+    const hasExisting = !!$('patient_id').value;
+    $('newPatientFields').style.display = hasExisting ? "none" : "block";
+    if(hasExisting){
+      $('new_patient_name').value = "";
+      $('new_patient_phone').value = "";
+    }
+  });
+
   // Delete button
   $('btnDelete').addEventListener('click', () => {
     if(!currentEventId) return;
@@ -280,6 +319,8 @@
     e.preventDefault();
     const payload = {
       patient_id: $('patient_id').value,
+      new_patient_name: $('new_patient_name').value,
+      new_patient_phone: $('new_patient_phone').value,
       provider_id: $('provider_id').value,
       title: $('title').value,
       start_at: $('start_at').value,

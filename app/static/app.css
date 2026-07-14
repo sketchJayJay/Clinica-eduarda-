@@ -658,3 +658,41 @@ body.is-loaded .page-loader{
 .timeline-clinical .tl-icon{
   background:#ecfff5;
 }
+
+/* V31 - ficha de evolução clínica detalhada */
+.evolution-shortcut{
+  background:linear-gradient(135deg,#fff 0%,#fff7f3 100%);
+}
+.evolution-textarea{min-height:150px}
+.evolution-record{
+  padding:16px;
+  border:1px solid var(--line, #eaded6);
+  border-radius:18px;
+  background:linear-gradient(135deg,#fff 0%,#fffaf7 100%);
+}
+.evolution-date{
+  font-size:.78rem;
+  font-weight:800;
+  color:var(--accent, #9b594b);
+}
+.evolution-note{
+  white-space:pre-wrap;
+  line-height:1.55;
+}
+.evolution-field{
+  height:100%;
+  padding:16px;
+  border:1px solid var(--line, #eaded6);
+  border-radius:16px;
+  background:#fffaf7;
+}
+.evolution-field>span{
+  display:block;
+  font-size:.75rem;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--muted, #8a756c);
+  font-weight:800;
+  margin-bottom:6px;
+}
+.preserve-lines{white-space:pre-wrap;line-height:1.6}

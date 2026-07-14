@@ -11,6 +11,12 @@
             <a class="btn btn-outline-success btn-sm" href="{{ url_for('finance.transaction_payments', tid=tx.id) }}">Pagamentos / Parcial</a>
           {% endif %}
         </div>
+        {% if tx and tx.payment_method=="boleto" %}
+        <div class="alert alert-info border mb-3">
+          <b>Novo boleto/parcela:</b> informe o valor, a data de vencimento e a quantidade de parcelas. 
+          Quando o dinheiro cair no banco, abra a ficha do paciente e use <b>Dar baixa</b>, colocando o valor e a data real do pagamento.
+        </div>
+        {% endif %}
         <form method="post">
           <div class="row g-3">
             <div class="col-md-3">
@@ -64,6 +70,7 @@
                   <option value="{{ k }}" {% if tx and tx.payment_method==k %}selected{% endif %}>{{ label }}</option>
                 {% endfor %}
               </select>
+              <div class="form-text">Para boleto do banco, escolha <b>Boleto bancário</b>, deixe como <b>Pendente</b> e informe o vencimento.</div>
             </div>
             <div class="col-md-4">
               <label class="form-label">Categoria</label>
