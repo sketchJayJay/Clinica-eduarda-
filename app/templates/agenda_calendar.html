@@ -41,7 +41,7 @@
   <div class="col-lg-9">
     <div id="calendar"></div>
     <div class="mini-hint mt-2">
-      Dica: arraste o evento para outro dia/horário. Você também pode <b>puxar a ponta</b> do evento para aumentar/diminuir a duração.
+      Dica: clique no <b>nome do paciente</b> para abrir a ficha. Clique no restante do bloco para editar o agendamento.
     </div>
   </div>
 
@@ -104,7 +104,7 @@
         </form>
         <hr>
         <div class="mini-hint">
-          Você pode escolher um paciente cadastrado ou digitar o nome de um paciente novo. O sistema cria o cadastro básico ao salvar.
+          Clique no nome do paciente dentro do calendário para abrir a ficha. Para editar, clique fora do nome, no restante do agendamento.
         </div>
       </div>
     </div>
@@ -214,7 +214,7 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales-all.global.min.js"></script>
 <script>
   const modalEl = document.getElementById('apptModal');
-  const modal = new bootstrap.Modal(modalEl);
+  const modal = new bootstrap.Modal(modalEl, {backdrop:false});
 
   const $ = (id) => document.getElementById(id);
 
@@ -408,11 +408,13 @@
       name.textContent = p.patient_name || arg.event.title || "Paciente";
       if(p.patient_id){
         name.href = "{{ url_for('patients.view_patient', pid=0, tab='resumo') }}".replace("/0", "/" + p.patient_id);
-        name.addEventListener("click", function(e){
+        function openPatientFromEvent(e){
           e.preventDefault();
           e.stopPropagation();
           window.location.href = name.href;
-        });
+        }
+        name.addEventListener("click", openPatientFromEvent);
+        name.addEventListener("touchend", openPatientFromEvent);
       }else{
         name.href = "#";
       }
@@ -428,6 +430,13 @@
       return { domNodes: [wrap] };
     },
     eventClick: function(info){
+      const clickedPatientLink = info.jsEvent && info.jsEvent.target && info.jsEvent.target.closest && info.jsEvent.target.closest(".fc-patient-link");
+      if(clickedPatientLink){
+        info.jsEvent.preventDefault();
+        info.jsEvent.stopPropagation();
+        window.location.href = clickedPatientLink.href;
+        return;
+      }
       openEdit(info.event);
     },
     eventDrop: function(info){
