@@ -82,7 +82,7 @@ def _get_or_create_quick_patient(db, name: str, phone: str = "") -> int | None:
 @login_required
 def calendar_view():
     db = get_db()
-    patients = db.execute("SELECT id, name FROM patients ORDER BY name COLLATE NOCASE").fetchall()
+    patients = db.execute("SELECT id, name, phone FROM patients ORDER BY name COLLATE NOCASE").fetchall()
     providers = db.execute("SELECT id, name FROM providers ORDER BY name COLLATE NOCASE").fetchall()
     return render_template("agenda_calendar.html", patients=patients, providers=providers)
 

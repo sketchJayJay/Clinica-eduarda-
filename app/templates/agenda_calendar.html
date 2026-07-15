@@ -16,6 +16,37 @@
   .fc-event-main-frame-premium{line-height:1.15}
   .fc-event-title-small{font-size:.78rem;opacity:.92;margin-top:1px}
   .quick-patient-box{padding:12px;border:1px dashed #d9b9aa;border-radius:14px;background:#fff8f4}
+  input[list]{background-image:none!important}
+  .patient-search-wrap{position:relative}
+  .patient-search-results{
+    position:absolute;
+    z-index:3000;
+    top:100%;
+    left:0;
+    right:0;
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:14px;
+    box-shadow:0 18px 45px rgba(68,45,38,.16);
+    margin-top:6px;
+    max-height:260px;
+    overflow:auto;
+    display:none;
+  }
+  .patient-search-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    padding:10px 12px;
+    cursor:pointer;
+    border-bottom:1px solid rgba(0,0,0,.045);
+  }
+  .patient-search-item:last-child{border-bottom:0}
+  .patient-search-item:hover,.patient-search-item.active{background:#fff6f1}
+  .patient-search-name{font-weight:900;color:var(--coffee)}
+  .patient-search-phone{font-size:.78rem;color:var(--soft);white-space:nowrap}
+  .patient-search-empty{padding:12px;color:var(--soft);font-size:.9rem}
 </style>
 {% endblock %}
 
@@ -24,7 +55,7 @@
   <div>
     <div class="eyebrow mb-1">Calendário clínico</div>
     <h1 class="page-title mb-1">Agenda</h1>
-    <div class="page-subtitle">Arraste para reagendar, clique para editar e filtre por profissional.</div>
+    <div class="page-subtitle">Busque paciente pelo nome, arraste para reagendar e filtre por profissional.</div>
   </div>
   <div class="d-flex gap-2 align-items-center">
     <select id="providerFilter" class="form-select form-select-sm" style="max-width:260px">
@@ -51,13 +82,13 @@
         <h6 class="mb-2">Criar rápido</h6>
         <form method="post" action="{{ url_for('agenda.create_event') }}" class="vstack gap-2">
           <div>
-            <label class="form-label small">Paciente cadastrado</label>
-            <select name="patient_id" class="form-select">
-              <option value="">Selecione ou cadastre abaixo...</option>
-              {% for p in patients %}
-                <option value="{{ p.id }}">{{ p.name }}</option>
-              {% endfor %}
-            </select>
+            <label class="form-label small">Buscar paciente cadastrado</label>
+            <div class="patient-search-wrap">
+              <input class="form-control" id="quick_patient_search" placeholder="Digite o nome do paciente" autocomplete="off">
+              <input type="hidden" name="patient_id" id="quick_patient_id">
+              <div class="patient-search-results" id="quick_patient_results"></div>
+            </div>
+            <div class="form-text">Digite algumas letras e clique no paciente. Se não encontrar, use o paciente novo logo abaixo.</div>
           </div>
           <div class="quick-patient-box">
             <div class="fw-semibold small mb-1">Paciente novo / ainda não cadastrado</div>
@@ -124,13 +155,13 @@
           <input type="hidden" id="apptId" value="">
           <div class="row g-2">
             <div class="col-md-6">
-              <label class="form-label">Paciente cadastrado</label>
-              <select id="patient_id" name="patient_id" class="form-select">
-                <option value="">Selecione ou informe o novo abaixo...</option>
-                {% for p in patients %}
-                  <option value="{{ p.id }}">{{ p.name }}</option>
-                {% endfor %}
-              </select>
+              <label class="form-label">Buscar paciente cadastrado</label>
+              <div class="patient-search-wrap">
+                <input id="patient_search" class="form-control" placeholder="Digite o nome do paciente" autocomplete="off">
+                <input type="hidden" id="patient_id" name="patient_id">
+                <div class="patient-search-results" id="patient_results"></div>
+              </div>
+              <div class="form-text">Digite algumas letras e clique no paciente encontrado.</div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Profissional</label>
@@ -218,6 +249,82 @@
 
   const $ = (id) => document.getElementById(id);
 
+  const PATIENTS = [
+    {% for p in patients %}
+      {id: "{{ p.id }}", name: {{ p.name|tojson }}, phone: {{ (p.phone or '')|tojson }}},
+    {% endfor %}
+  ];
+
+  function normalizeText(s){
+    return (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+  }
+
+  function patientLabel(p){
+    return `${p.name}${p.phone ? ' · ' + p.phone : ''}`;
+  }
+
+  function renderPatientResults(inputId, hiddenId, resultsId, onPick){
+    const input = $(inputId);
+    const hidden = $(hiddenId);
+    const box = $(resultsId);
+    const term = normalizeText(input.value);
+    hidden.value = '';
+
+    if(term.length < 1){
+      box.style.display = 'none';
+      box.innerHTML = '';
+      if(onPick) onPick(null);
+      return;
+    }
+
+    const results = PATIENTS
+      .filter(p => normalizeText(p.name).includes(term) || normalizeText(p.phone).includes(term))
+      .slice(0, 8);
+
+    if(!results.length){
+      box.innerHTML = '<div class="patient-search-empty">Nenhum paciente encontrado. Use o cadastro rápido de paciente novo.</div>';
+      box.style.display = 'block';
+      if(onPick) onPick(null);
+      return;
+    }
+
+    box.innerHTML = results.map(p => `
+      <div class="patient-search-item" data-id="${p.id}" data-name="${p.name.replace(/"/g, '&quot;')}">
+        <div class="patient-search-name">${p.name}</div>
+        <div class="patient-search-phone">${p.phone || ''}</div>
+      </div>
+    `).join('');
+    box.style.display = 'block';
+
+    box.querySelectorAll('.patient-search-item').forEach(item => {
+      item.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        const picked = PATIENTS.find(p => String(p.id) === String(item.dataset.id));
+        if(!picked) return;
+        input.value = patientLabel(picked);
+        hidden.value = picked.id;
+        box.style.display = 'none';
+        if(onPick) onPick(picked);
+      });
+    });
+  }
+
+  function hidePatientResults(resultsId){
+    const box = $(resultsId);
+    if(box){
+      setTimeout(() => { box.style.display = 'none'; }, 150);
+    }
+  }
+
+  function toggleNewPatientFields(){
+    const hasExisting = !!$('patient_id').value;
+    $('newPatientFields').style.display = hasExisting ? 'none' : 'block';
+    if(hasExisting){
+      $('new_patient_name').value = '';
+      $('new_patient_phone').value = '';
+    }
+  }
+
   function toLocalInput(iso){
     if(!iso) return "";
     // iso: YYYY-MM-DDTHH:MM:SS
@@ -242,9 +349,10 @@
     $('apptTitle').textContent = "Novo agendamento";
     $('apptId').value = "";
     $('patient_id').value = "";
+    $('patient_search').value = "";
     $('new_patient_name').value = "";
     $('new_patient_phone').value = "";
-    $('newPatientFields').style.display = "block";
+    toggleNewPatientFields();
     $('provider_id').value = "";
     $('title').value = "Consulta";
     $('status').value = "agendada";
@@ -263,9 +371,10 @@
     $('apptTitle').textContent = "Editar agendamento";
     $('apptId').value = ev.id;
     $('patient_id').value = p.patient_id || "";
+    $('patient_search').value = p.patient_name ? (p.patient_name + (p.patient_phone ? ' · ' + p.patient_phone : '')) : "";
     $('new_patient_name').value = "";
     $('new_patient_phone').value = "";
-    $('newPatientFields').style.display = "none";
+    toggleNewPatientFields();
     $('provider_id').value = p.provider_id || "";
     $('title').value = p.raw_title || "Consulta";
     $('status').value = p.status || "agendada";
@@ -296,14 +405,30 @@
 
   $('btnNew').addEventListener('click', () => openNew());
 
-  $('patient_id').addEventListener('change', () => {
-    const hasExisting = !!$('patient_id').value;
-    $('newPatientFields').style.display = hasExisting ? "none" : "block";
-    if(hasExisting){
-      $('new_patient_name').value = "";
-      $('new_patient_phone').value = "";
-    }
+  $('patient_search').addEventListener('input', () => {
+    renderPatientResults('patient_search', 'patient_id', 'patient_results', toggleNewPatientFields);
+    toggleNewPatientFields();
   });
+  $('patient_search').addEventListener('focus', () => {
+    renderPatientResults('patient_search', 'patient_id', 'patient_results', toggleNewPatientFields);
+  });
+  $('patient_search').addEventListener('blur', () => hidePatientResults('patient_results'));
+
+  const quickForm = document.querySelector('.agenda-side form');
+  const quickSearch = $('quick_patient_search');
+  if(quickSearch){
+    quickSearch.addEventListener('input', () => renderPatientResults('quick_patient_search', 'quick_patient_id', 'quick_patient_results'));
+    quickSearch.addEventListener('focus', () => renderPatientResults('quick_patient_search', 'quick_patient_id', 'quick_patient_results'));
+    quickSearch.addEventListener('blur', () => hidePatientResults('quick_patient_results'));
+  }
+
+  if(quickForm){
+    quickForm.addEventListener('submit', () => {
+      const value = normalizeText(quickSearch ? quickSearch.value : '');
+      const found = PATIENTS.find(p => normalizeText(patientLabel(p)) === value || normalizeText(p.name) === value);
+      if(found){ $('quick_patient_id').value = found.id; }
+    });
+  }
 
   // Delete button
   $('btnDelete').addEventListener('click', () => {
@@ -317,6 +442,10 @@
   // Submit (create or update)
   $('apptForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const searchValue = normalizeText($('patient_search').value);
+    const found = PATIENTS.find(p => normalizeText(patientLabel(p)) === searchValue || normalizeText(p.name) === searchValue);
+    if(found){ $('patient_id').value = found.id; }
+    toggleNewPatientFields();
     const payload = {
       patient_id: $('patient_id').value,
       new_patient_name: $('new_patient_name').value,
