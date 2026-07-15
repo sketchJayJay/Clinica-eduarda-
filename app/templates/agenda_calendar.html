@@ -9,7 +9,6 @@
   .fc .fc-button-primary{ background:var(--coffee)!important; border-color:var(--coffee)!important; border-radius:12px!important; font-weight:800!important; }
   .fc .fc-button-primary:hover{ background:var(--terracotta)!important; border-color:var(--terracotta)!important; }
   .fc .fc-button-primary:disabled{ opacity:.55; }
-  .agenda-side{ position: sticky; top:24px; }
   .mini-hint{ font-size:.85rem; color:var(--soft); }
   .fc-patient-link{color:#fff!important;font-weight:900;text-decoration:underline;text-underline-offset:2px}
   .fc-patient-link:hover{opacity:.9}
@@ -47,6 +46,22 @@
   .patient-search-name{font-weight:900;color:var(--coffee)}
   .patient-search-phone{font-size:.78rem;color:var(--soft);white-space:nowrap}
   .patient-search-empty{padding:12px;color:var(--soft);font-size:.9rem}
+  .agenda-main-card{border-radius:26px;overflow:visible}
+  .agenda-main-card .fc{box-shadow:none;border:0;padding:0}
+  .fc .fc-toolbar{gap:10px;flex-wrap:wrap}
+  .fc .fc-toolbar-title{font-size:1.25rem!important}
+  .fc .fc-button{padding:.38rem .58rem!important}
+  .fc .fc-timegrid-slot{height:2.15em}
+  .fc-event{border-radius:10px!important;box-shadow:0 6px 14px rgba(68,45,38,.12);overflow:hidden}
+  .fc-event-main{padding:2px 4px!important}
+  .fc-event-time{font-size:.72rem!important;font-weight:800;opacity:.94}
+  .fc-patient-link{display:block;line-height:1.05;white-space:normal;font-size:.82rem}
+  .fc-event-title-small{display:none}
+  @media(max-width:900px){
+    .fc .fc-toolbar{display:block}
+    .fc .fc-toolbar-chunk{margin-bottom:8px}
+    .fc .fc-toolbar-title{font-size:1.05rem!important}
+  }
 </style>
 {% endblock %}
 
@@ -55,7 +70,7 @@
   <div>
     <div class="eyebrow mb-1">Calendário clínico</div>
     <h1 class="page-title mb-1">Agenda</h1>
-    <div class="page-subtitle">Busque paciente pelo nome, arraste para reagendar e filtre por profissional.</div>
+    <div class="page-subtitle">Calendário mais limpo: agende pelo botão ou clicando em um horário. Busque paciente pelo nome dentro da janela.</div>
   </div>
   <div class="d-flex gap-2 align-items-center">
     <select id="providerFilter" class="form-select form-select-sm" style="max-width:260px">
@@ -64,80 +79,16 @@
         <option value="{{ pr.id }}">{{ pr.name }}</option>
       {% endfor %}
     </select>
-    <button class="btn btn-sm btn-brand" id="btnNew">Novo agendamento</button>
+    <button class="btn btn-sm btn-brand" id="btnNew"><i class="bi bi-plus-lg me-1"></i>Novo agendamento</button>
   </div>
 </div>
 
-<div class="row g-3">
-  <div class="col-lg-9">
+<div class="card border-0 shadow-sm agenda-main-card">
+  <div class="card-body p-3 p-md-4">
     <div id="calendar"></div>
-    <div class="mini-hint mt-2">
-      Dica: clique no <b>nome do paciente</b> para abrir a ficha. Clique no restante do bloco para editar o agendamento.
-    </div>
-  </div>
-
-  <div class="col-lg-3">
-    <div class="card border-0 shadow-sm agenda-side">
-      <div class="card-body">
-        <h6 class="mb-2">Criar rápido</h6>
-        <form method="post" action="{{ url_for('agenda.create_event') }}" class="vstack gap-2">
-          <div>
-            <label class="form-label small">Buscar paciente cadastrado</label>
-            <div class="patient-search-wrap">
-              <input class="form-control" id="quick_patient_search" placeholder="Digite o nome do paciente" autocomplete="off">
-              <input type="hidden" name="patient_id" id="quick_patient_id">
-              <div class="patient-search-results" id="quick_patient_results"></div>
-            </div>
-            <div class="form-text">Digite algumas letras e clique no paciente. Se não encontrar, use o paciente novo logo abaixo.</div>
-          </div>
-          <div class="quick-patient-box">
-            <div class="fw-semibold small mb-1">Paciente novo / ainda não cadastrado</div>
-            <input class="form-control mb-2" name="new_patient_name" placeholder="Nome do paciente novo">
-            <input class="form-control" name="new_patient_phone" placeholder="Telefone / WhatsApp">
-            <div class="form-text">Ao salvar, o sistema cria um cadastro básico automaticamente.</div>
-          </div>
-          <div>
-            <label class="form-label small">Profissional</label>
-            <select name="provider_id" class="form-select">
-              <option value="">(Opcional)</option>
-              {% for pr in providers %}
-                <option value="{{ pr.id }}">{{ pr.name }}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div>
-            <label class="form-label small">Título</label>
-            <input class="form-control" name="title" value="Consulta">
-          </div>
-          <div>
-            <label class="form-label small">Status</label>
-            <select class="form-select" name="status">
-              <option value="agendada">Agendada</option>
-              <option value="confirmada">Confirmada</option>
-              <option value="compareceu">Compareceu</option>
-              <option value="faltou">Faltou</option>
-              <option value="cancelada">Cancelada</option>
-            </select>
-          </div>
-          <div>
-            <label class="form-label small">Início</label>
-            <input class="form-control" type="datetime-local" name="start_at" required>
-          </div>
-          <div>
-            <label class="form-label small">Fim</label>
-            <input class="form-control" type="datetime-local" name="end_at">
-          </div>
-          <div>
-            <label class="form-label small">Observação</label>
-            <textarea class="form-control" name="note" rows="2"></textarea>
-          </div>
-          <button class="btn btn-brand w-100">Salvar</button>
-        </form>
-        <hr>
-        <div class="mini-hint">
-          Clique no nome do paciente dentro do calendário para abrir a ficha. Para editar, clique fora do nome, no restante do agendamento.
-        </div>
-      </div>
+    <div class="mini-hint mt-3">
+      <b>Agenda limpa:</b> clique em um horário vazio ou no botão <b>Novo agendamento</b> para agendar. 
+      Clique no <b>nome do paciente</b> para abrir a ficha. Clique no restante do bloco para editar.
     </div>
   </div>
 </div>
@@ -148,7 +99,7 @@
     <div class="modal-content">
       <form id="apptForm" method="post">
         <div class="modal-header">
-          <h5 class="modal-title" id="apptTitle">Agendamento</h5>
+          <h5 class="modal-title" id="apptTitle">Agendamento</h5><div class="small text-muted ms-2 d-none d-md-block">Busque o paciente pelo nome ou cadastre um novo ali mesmo.</div>
           <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
@@ -249,6 +200,7 @@
 
   const $ = (id) => document.getElementById(id);
 
+  // Lista local para autocomplete do paciente dentro do modal
   const PATIENTS = [
     {% for p in patients %}
       {id: "{{ p.id }}", name: {{ p.name|tojson }}, phone: {{ (p.phone or '')|tojson }}},
@@ -413,24 +365,7 @@
     renderPatientResults('patient_search', 'patient_id', 'patient_results', toggleNewPatientFields);
   });
   $('patient_search').addEventListener('blur', () => hidePatientResults('patient_results'));
-
-  const quickForm = document.querySelector('.agenda-side form');
-  const quickSearch = $('quick_patient_search');
-  if(quickSearch){
-    quickSearch.addEventListener('input', () => renderPatientResults('quick_patient_search', 'quick_patient_id', 'quick_patient_results'));
-    quickSearch.addEventListener('focus', () => renderPatientResults('quick_patient_search', 'quick_patient_id', 'quick_patient_results'));
-    quickSearch.addEventListener('blur', () => hidePatientResults('quick_patient_results'));
-  }
-
-  if(quickForm){
-    quickForm.addEventListener('submit', () => {
-      const value = normalizeText(quickSearch ? quickSearch.value : '');
-      const found = PATIENTS.find(p => normalizeText(patientLabel(p)) === value || normalizeText(p.name) === value);
-      if(found){ $('quick_patient_id').value = found.id; }
-    });
-  }
-
-  // Delete button
+// Delete button
   $('btnDelete').addEventListener('click', () => {
     if(!currentEventId) return;
     if(!confirm("Excluir este agendamento?")) return;
@@ -549,12 +484,7 @@
       }
       wrap.appendChild(name);
 
-      if(p.raw_title){
-        const subtitle = document.createElement("div");
-        subtitle.className = "fc-event-title-small";
-        subtitle.textContent = p.raw_title + (p.provider_name ? " • " + p.provider_name : "");
-        wrap.appendChild(subtitle);
-      }
+      // V36: evento compacto para não poluir o calendário.
 
       return { domNodes: [wrap] };
     },
