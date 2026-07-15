@@ -62,6 +62,29 @@
     .fc .fc-toolbar-chunk{margin-bottom:8px}
     .fc .fc-toolbar-title{font-size:1.05rem!important}
   }
+
+  /* V37 - correção do modo Lista da agenda */
+  .fc-list-event .fc-patient-link{
+    color:var(--coffee)!important;
+    text-decoration:none!important;
+    font-weight:900!important;
+    display:inline-block!important;
+    white-space:normal!important;
+  }
+  .fc-list-event .fc-event-main-frame-premium{
+    color:var(--coffee)!important;
+    line-height:1.2!important;
+  }
+  .fc-list-event .fc-event-title-small{
+    display:block!important;
+    color:var(--soft)!important;
+    font-size:.78rem!important;
+    margin-top:2px!important;
+  }
+  .fc-list-event:hover td{
+    background:#fff7f2!important;
+  }
+
 </style>
 {% endblock %}
 
@@ -484,7 +507,12 @@
       }
       wrap.appendChild(name);
 
-      // V36: evento compacto para não poluir o calendário.
+      if(arg.view && String(arg.view.type || "").startsWith("list") && p.raw_title){
+        const subtitle = document.createElement("div");
+        subtitle.className = "fc-event-title-small";
+        subtitle.textContent = p.raw_title + (p.provider_name ? " • " + p.provider_name : "");
+        wrap.appendChild(subtitle);
+      }
 
       return { domNodes: [wrap] };
     },
