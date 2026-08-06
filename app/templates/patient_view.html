@@ -1,5 +1,40 @@
 {% extends "base.html" %}
 {% set title = patient.name %}
+
+{% block head_extra %}
+<style>
+  /* V39 - correção do salvar da ficha de evolução em celular/iPad */
+  @media (max-width: 1199px){
+    .evolution-form-card .card-body{
+      padding-bottom: 120px !important;
+    }
+    .evolution-save-wrap{
+      position: sticky;
+      bottom: 86px;
+      z-index: 12;
+      background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.94) 18%, #fff 40%);
+      padding-top: 12px;
+      margin-top: 2px;
+    }
+    .evolution-save-wrap .btn{
+      min-height: 52px;
+      box-shadow: 0 10px 26px rgba(68,45,38,.12);
+    }
+    .evolution-history-card{
+      margin-top: 12px;
+    }
+  }
+  @media (max-width: 575px){
+    .evolution-form-card .card-body{
+      padding-bottom: 132px !important;
+    }
+    .evolution-save-wrap{
+      bottom: 94px;
+    }
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 {% set tabs = [
   ('resumo','Resumo'), ('orcamentos','Orçamentos'), ('plano_ficha','Plano/Ficha'), ('evolucao','Evolução clínica'),
@@ -172,7 +207,7 @@
   </div>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 evolution-history-card">
   <div class="table-responsive">
     <table class="table table-hover mb-0 align-middle budget-table">
       <thead class="table-light">
@@ -396,7 +431,7 @@
 {% elif tab=='evolucao' %}
 <div class="row g-3">
   <div class="col-xl-5">
-    <div class="card shadow-sm border-0 sticky-xl-top" style="top:92px">
+    <div class="card shadow-sm border-0 sticky-xl-top evolution-form-card" style="top:92px">
       <div class="card-body p-4">
         <div class="d-flex align-items-start justify-content-between gap-2 mb-3">
           <div>
@@ -463,7 +498,7 @@
             <label class="form-label">Próximo retorno, se houver</label>
             <input class="form-control" type="date" name="return_date">
           </div>
-          <div class="col-md-6 d-grid align-items-end">
+          <div class="col-12 col-md-6 d-grid align-items-end evolution-save-wrap">
             <button class="btn btn-brand mt-md-4" type="submit">
               <i class="bi bi-check2-circle me-1"></i>Salvar ficha de evolução
             </button>
