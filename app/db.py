@@ -114,6 +114,14 @@ def _ensure_finance_migrations(db: sqlite3.Connection) -> None:
 
 def _ensure_premium_migrations(db: sqlite3.Connection) -> None:
     """Migrações premium: segurança, agenda, fotos, Asaas e painel do paciente."""
+    # Assinatura da anamnese
+    _add_column_if_missing(db, "anamnesis", "signature_data", "TEXT")
+    _add_column_if_missing(db, "anamnesis", "signer_name", "TEXT")
+    _add_column_if_missing(db, "anamnesis", "signer_document", "TEXT")
+    _add_column_if_missing(db, "anamnesis", "signed_at", "TEXT")
+    _add_column_if_missing(db, "anamnesis", "signature_source_doc_id", "INTEGER")
+    _add_column_if_missing(db, "anamnesis", "signature_source_title", "TEXT")
+
     # Ficha de evolução clínica detalhada
     _add_column_if_missing(db, "clinical_evolutions", "tooth_region", "TEXT")
     _add_column_if_missing(db, "clinical_evolutions", "materials", "TEXT")
@@ -406,6 +414,12 @@ def init_db():
         hepatite INTEGER NOT NULL DEFAULT 0,
         hiv INTEGER NOT NULL DEFAULT 0,
         observacoes TEXT,
+        signature_data TEXT,
+        signer_name TEXT,
+        signer_document TEXT,
+        signed_at TEXT,
+        signature_source_doc_id INTEGER,
+        signature_source_title TEXT,
         created_at TEXT NOT NULL DEFAULT (datetime('now')),
         FOREIGN KEY(patient_id) REFERENCES patients(id) ON DELETE CASCADE
     );

@@ -581,10 +581,158 @@
     <div class="col-md-4"><label class="form-label small text-muted">Álcool</label><select class="form-select" name="alcool"><option value="">—</option><option value="nao">Não</option><option value="sim">Sim</option><option value="social">Social</option></select></div>
     <div class="col-12"><div class="border rounded p-3"><div class="text-muted small mb-2">Marque se possui:</div><div class="row g-2">{% for key,label in [('hipertensao','Hipertensão'),('diabetes','Diabetes'),('cardiaco','Cardíaco'),('hepatite','Hepatite'),('hiv','HIV')] %}<div class="col-md-3 form-check ms-3"><input class="form-check-input" type="checkbox" value="1" id="{{ key }}" name="{{ key }}"><label class="form-check-label" for="{{ key }}">{{ label }}</label></div>{% endfor %}</div></div></div>
     <div class="col-12"><label class="form-label small text-muted">Observações</label><textarea class="form-control" name="observacoes" rows="2"></textarea></div>
+
+    <div class="col-12">
+      <div class="anamnesis-sign-box">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
+          <div>
+            <h6 class="mb-1">Assinatura da anamnese</h6>
+            <div class="text-muted small">Pode assinar agora ou reutilizar uma assinatura digital já feita em contrato/termo deste paciente.</div>
+          </div>
+          {% if signed_documents and signed_documents|length %}
+            <span class="badge text-bg-success">{{ signed_documents|length }} assinatura(s) disponível(is)</span>
+          {% else %}
+            <span class="badge text-bg-light">Sem assinatura anterior</span>
+          {% endif %}
+        </div>
+
+        <div class="vstack gap-2">
+          {% if signed_documents and signed_documents|length %}
+          <label class="form-check signature-choice">
+            <input class="form-check-input signature-mode" type="radio" name="signature_mode" value="reuse" checked>
+            <span class="form-check-label"><b>Usar assinatura existente</b> <span class="text-muted small">não precisa o paciente assinar de novo</span></span>
+          </label>
+          <select class="form-select signature-reuse-select" name="signature_source_doc_id">
+            {% for doc in signed_documents %}
+              <option value="{{ doc.id }}">{{ doc.title }} · {{ sql_to_br(doc.signed_at) }}{% if doc.signer_name %} · {{ doc.signer_name }}{% endif %}</option>
+            {% endfor %}
+          </select>
+          {% endif %}
+
+          <label class="form-check signature-choice">
+            <input class="form-check-input signature-mode" type="radio" name="signature_mode" value="sign_now" {% if not signed_documents or not signed_documents|length %}checked{% endif %}>
+            <span class="form-check-label"><b>Assinar agora na tela</b> <span class="text-muted small">paciente assina com dedo, caneta touch ou mouse</span></span>
+          </label>
+
+          <div class="anamnesis-sign-now" {% if signed_documents and signed_documents|length %}style="display:none"{% endif %}>
+            <div class="row g-2 mb-2">
+              <div class="col-md-6"><input class="form-control" name="signer_name" placeholder="Nome de quem assinou" value="{{ patient.name }}"></div>
+              <div class="col-md-6"><input class="form-control" name="signer_document" placeholder="CPF/documento" value="{{ patient.cpf if patient.cpf is defined else '' }}"></div>
+            </div>
+            <div class="signature-pad-wrap">
+              <canvas class="signature-pad anamnesis-signature-pad" width="780" height="210"></canvas>
+              <input type="hidden" name="signature_data" class="signature-data">
+            </div>
+            <div class="d-flex gap-2 mt-2 flex-wrap">
+              <button type="button" class="btn btn-sm btn-outline-secondary clear-signature"><i class="bi bi-eraser me-1"></i>Limpar assinatura</button>
+            </div>
+          </div>
+
+          <label class="form-check signature-choice">
+            <input class="form-check-input signature-mode" type="radio" name="signature_mode" value="none">
+            <span class="form-check-label"><b>Salvar sem assinatura</b> <span class="text-muted small">pode assinar depois</span></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <div class="col-12 d-grid"><button class="btn btn-brand">Salvar anamnese</button></div>
   </form>
 </div></div>
-<div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Histórico de anamneses</h6><div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Data</th><th>Queixa</th><th>Profissional</th><th></th></tr></thead><tbody>{% for a in anamneses %}<tr><td>{{ sql_to_br(a.created_at) }}</td><td>{{ (a.queixa or '')[:60] }}</td><td>{{ a.responsavel or '-' }}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.anamnesis_view', pid=patient.id, aid=a.id) }}">Ver</a> <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.anamnesis_print', pid=patient.id, aid=a.id) }}">Imprimir</a></td></tr>{% else %}<tr><td colspan="4" class="text-center text-muted py-3">Nenhuma anamnese.</td></tr>{% endfor %}</tbody></table></div></div></div>
+<div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Histórico de anamneses</h6><div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Data</th><th>Queixa</th><th>Profissional</th><th>Assinatura</th><th></th></tr></thead><tbody>{% for a in anamneses %}<tr><td>{{ sql_to_br(a.created_at) }}</td><td>{{ (a.queixa or '')[:60] }}</td><td>{{ a.responsavel or '-' }}</td><td>{% if a.signature_data %}<span class="badge text-bg-success">Assinada</span>{% if a.signature_source_title %}<div class="small text-muted">{{ a.signature_source_title }}</div>{% endif %}{% else %}<span class="badge text-bg-warning">Sem assinatura</span>{% endif %}</td><td class="text-end"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.anamnesis_view', pid=patient.id, aid=a.id) }}">Ver</a> <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.anamnesis_print', pid=patient.id, aid=a.id) }}">Imprimir</a></td></tr>{% else %}<tr><td colspan="5" class="text-center text-muted py-3">Nenhuma anamnese.</td></tr>{% endfor %}</tbody></table></div></div></div>
+
+
+<style>
+  .anamnesis-sign-box{border:1px solid #ead8c9;background:linear-gradient(135deg,#fff8f3 0%,#fff 100%);border-radius:16px;padding:14px}
+  .signature-choice{padding:9px 10px;border-radius:12px;background:#fff;border:1px solid var(--line);margin:0}
+  .signature-choice .form-check-input{margin-top:.25rem}
+  .signature-pad-wrap{background:linear-gradient(135deg,#fff 0%,#fff8f3 100%);border:1px dashed var(--accent);border-radius:16px;padding:10px}
+  .signature-pad{width:100%;height:210px;background:#fff;border-radius:12px;touch-action:none;display:block}
+  @media(max-width:575px){.signature-pad{height:170px}.anamnesis-sign-box{padding:12px}}
+</style>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const form = document.querySelector("form[action*='/anamnese/save']");
+    if(!form) return;
+
+    const signNowBox = form.querySelector(".anamnesis-sign-now");
+    const modes = form.querySelectorAll(".signature-mode");
+    const canvas = form.querySelector(".signature-pad");
+    const input = form.querySelector(".signature-data");
+    const clearBtn = form.querySelector(".clear-signature");
+    let drawing = false;
+    let hasInk = false;
+    let ctx = null;
+
+    function selectedMode(){
+      const checked = form.querySelector(".signature-mode:checked");
+      return checked ? checked.value : "none";
+    }
+
+    function toggleSignatureMode(){
+      if(signNowBox){
+        signNowBox.style.display = selectedMode() === "sign_now" ? "block" : "none";
+        if(selectedMode() === "sign_now") setTimeout(resizeCanvas, 50);
+      }
+    }
+
+    function resizeCanvas(){
+      if(!canvas) return;
+      ctx = canvas.getContext("2d");
+      const ratio = Math.max(window.devicePixelRatio || 1, 1);
+      const rect = canvas.getBoundingClientRect();
+      if(!rect.width) return;
+      canvas.width = rect.width * ratio;
+      canvas.height = rect.height * ratio;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.lineWidth = 2.4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      ctx.strokeStyle = "#3f2a22";
+    }
+
+    function pos(e){
+      const r = canvas.getBoundingClientRect();
+      const p = e.touches ? e.touches[0] : e;
+      return {x:p.clientX-r.left, y:p.clientY-r.top};
+    }
+    function start(e){ if(selectedMode() !== "sign_now") return; e.preventDefault(); drawing = true; hasInk = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); }
+    function move(e){ if(!drawing) return; e.preventDefault(); const p = pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); }
+    function end(){ if(!drawing) return; drawing = false; if(input) input.value = canvas.toDataURL("image/png"); }
+
+    modes.forEach(m => m.addEventListener("change", toggleSignatureMode));
+    toggleSignatureMode();
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    if(canvas){
+      canvas.addEventListener("mousedown", start);
+      canvas.addEventListener("mousemove", move);
+      window.addEventListener("mouseup", end);
+      canvas.addEventListener("touchstart", start, {passive:false});
+      canvas.addEventListener("touchmove", move, {passive:false});
+      canvas.addEventListener("touchend", end);
+    }
+    if(clearBtn){
+      clearBtn.addEventListener("click", () => {
+        if(!ctx) resizeCanvas();
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if(input) input.value = "";
+        hasInk = false;
+      });
+    }
+
+    form.addEventListener("submit", (e) => {
+      if(selectedMode() === "sign_now"){
+        if(!input.value && hasInk){ input.value = canvas.toDataURL("image/png"); }
+        if(!input.value){
+          e.preventDefault();
+          alert("Peça para o paciente assinar no quadro antes de salvar, ou escolha usar uma assinatura existente.");
+        }
+      }
+    });
+  });
+</script>
 
 {% elif tab=='agenda' %}
 <div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-3">Novo agendamento</h6>

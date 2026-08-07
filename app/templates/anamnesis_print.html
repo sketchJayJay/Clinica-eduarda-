@@ -121,6 +121,24 @@
     </div>
   </div>
 
+  {% if rec.signature_data %}
+  <div class="mt-4 box">
+    <div class="label">Assinatura digital do paciente/responsável</div>
+    <div class="small text-muted mb-2">
+      Assinado por: <b>{{ rec.signer_name or patient.name }}</b>
+      {% if rec.signer_document %} · Documento: {{ rec.signer_document }}{% endif %}
+      {% if rec.signed_at %} · {{ sql_to_br(rec.signed_at) }}{% endif %}
+      {% if rec.signature_source_title %}<br>Origem da assinatura: {{ rec.signature_source_title }}{% endif %}
+    </div>
+    <img src="{{ rec.signature_data }}" style="max-width:360px;width:100%;border:1px solid #ddd;border-radius:10px;background:#fff;">
+  </div>
+  {% else %}
+  <div class="mt-5 d-flex gap-5">
+    <div style="border-top:1px solid #444;width:45%;text-align:center;padding-top:6px">Assinatura do paciente/responsável</div>
+    <div style="border-top:1px solid #444;width:45%;text-align:center;padding-top:6px">Assinatura do profissional</div>
+  </div>
+  {% endif %}
+
   <div class="mt-4 small text-muted">
     * Documento gerado pelo sistema da Eduarda Imbelloni Clínica Especializada.
   </div>

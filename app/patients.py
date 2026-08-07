@@ -85,6 +85,64 @@ def _setting(db, key: str, default: str = "") -> str:
     return row["value"] if row and row["value"] is not None else default
 
 
+def _signed_docs_for_patient(db, pid: int):
+    return db.execute(
+        """
+        SELECT id, doc_type, title, signer_name, signer_document, signed_at, signature_data
+          FROM patient_documents
+         WHERE patient_id=?
+           AND status='assinado'
+           AND signature_data IS NOT NULL
+           AND signature_data!=''
+         ORDER BY signed_at DESC, id DESC
+        """,
+        (pid,),
+    ).fetchall()
+
+
+def _get_signature_payload(db, pid: int, form, patient=None):
+    """Retorna dados de assinatura para anamnese, podendo reutilizar documento já assinado."""
+    mode = (form.get("signature_mode") or "none").strip()
+    signer_name = (form.get("signer_name") or "").strip()
+    signer_document = (form.get("signer_document") or "").strip()
+
+    if mode == "reuse":
+        raw_id = (form.get("signature_source_doc_id") or "").strip()
+        if raw_id.isdigit():
+            doc = db.execute(
+                "SELECT id, title, signer_name, signer_document, signature_data FROM patient_documents "
+                "WHERE id=? AND patient_id=? AND status='assinado' AND signature_data IS NOT NULL AND signature_data!=''",
+                (int(raw_id), pid),
+            ).fetchone()
+            if doc:
+                return {
+                    "signature_data": doc["signature_data"],
+                    "signer_name": doc["signer_name"] or signer_name or (patient["name"] if patient else None),
+                    "signer_document": doc["signer_document"] or signer_document or (patient["cpf"] if patient and "cpf" in patient.keys() else None),
+                    "signature_source_doc_id": int(doc["id"]),
+                    "signature_source_title": doc["title"],
+                }
+
+    if mode == "sign_now":
+        signature = (form.get("signature_data") or "").strip()
+        if signature.startswith("data:image/png;base64,"):
+            return {
+                "signature_data": signature,
+                "signer_name": signer_name or (patient["name"] if patient else None),
+                "signer_document": signer_document or (patient["cpf"] if patient and "cpf" in patient.keys() else None),
+                "signature_source_doc_id": None,
+                "signature_source_title": "Assinada na anamnese",
+            }
+
+    return {
+        "signature_data": None,
+        "signer_name": None,
+        "signer_document": None,
+        "signature_source_doc_id": None,
+        "signature_source_title": None,
+    }
+
+
 def _audit(db, action: str, entity: str, entity_id: int | None = None, detail: str | None = None) -> None:
     try:
         from flask import session
@@ -418,6 +476,7 @@ def view_patient(pid: int):
         (pid,),
     ).fetchall() if tab in {"resumo", "plano_ficha", "evolucao", "timeline"} else []
     anamneses = db.execute("SELECT * FROM anamnesis WHERE patient_id=? ORDER BY id DESC", (pid,)).fetchall() if tab == "anamnese" else []
+    signed_documents = _signed_docs_for_patient(db, pid) if tab == "anamnese" else []
     appts = db.execute(
         "SELECT a.*, p.name AS provider_name FROM appointments a "
         "LEFT JOIN providers p ON p.id=a.provider_id "
@@ -537,6 +596,7 @@ def view_patient(pid: int):
         records=records,
         clinical_evolutions=clinical_evolutions,
         anamneses=anamneses,
+        signed_documents=signed_documents,
         appts=appts,
         odontos=odontos,
         mapa=mapa,
@@ -1351,10 +1411,19 @@ def anamnesis_save(pid: int):
         return 1 if (f.get(name) in {"1", "on", "true", "True", "yes", "sim"}) else 0
 
     db = get_db()
+    patient = db.execute("SELECT * FROM patients WHERE id=?", (pid,)).fetchone()
+    if not patient:
+        flash("Paciente não encontrado.", "danger")
+        return redirect(url_for("patients.list_patients"))
+
+    sig = _get_signature_payload(db, pid, f, patient)
+    signed_at_expr = "datetime('now')" if sig["signature_data"] else "NULL"
+
     db.execute(
         "INSERT INTO anamnesis(patient_id, responsavel, queixa, historico_medico, medicamentos, alergias, doencas, cirurgias, "
-        "anestesia_reacao, sangramento, gestante, fumante, alcool, hipertensao, diabetes, cardiaco, hepatite, hiv, observacoes) "
-        "VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+        "anestesia_reacao, sangramento, gestante, fumante, alcool, hipertensao, diabetes, cardiaco, hepatite, hiv, observacoes, "
+        "signature_data, signer_name, signer_document, signed_at, signature_source_doc_id, signature_source_title) "
+        f"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,{signed_at_expr},?,?)",
         (
             pid,
             (f.get("responsavel") or "").strip() or None,
@@ -1375,11 +1444,57 @@ def anamnesis_save(pid: int):
             _ck("hepatite"),
             _ck("hiv"),
             (f.get("observacoes") or "").strip() or None,
+            sig["signature_data"],
+            sig["signer_name"],
+            sig["signer_document"],
+            sig["signature_source_doc_id"],
+            sig["signature_source_title"],
         ),
     )
     db.commit()
-    flash("Anamnese salva ✅", "success")
+    flash("Anamnese salva ✅" + (" Assinatura incluída." if sig["signature_data"] else ""), "success")
     return redirect(url_for("patients.view_patient", pid=pid, tab="anamnese"))
+
+
+@bp.post("/<int:pid>/anamnese/<int:aid>/sign")
+@login_required
+def anamnesis_sign(pid: int, aid: int):
+    db = get_db()
+    patient = db.execute("SELECT * FROM patients WHERE id=?", (pid,)).fetchone()
+    rec = db.execute("SELECT * FROM anamnesis WHERE id=? AND patient_id=?", (aid, pid)).fetchone()
+    if not patient or not rec:
+        flash("Anamnese não encontrada.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="anamnese"))
+
+    sig = _get_signature_payload(db, pid, request.form, patient)
+    if not sig["signature_data"]:
+        flash("Escolha uma assinatura existente ou peça para o paciente assinar na tela.", "warning")
+        return redirect(url_for("patients.anamnesis_view", pid=pid, aid=aid))
+
+    db.execute(
+        """
+        UPDATE anamnesis
+           SET signature_data=?,
+               signer_name=?,
+               signer_document=?,
+               signed_at=datetime('now'),
+               signature_source_doc_id=?,
+               signature_source_title=?
+         WHERE id=? AND patient_id=?
+        """,
+        (
+            sig["signature_data"],
+            sig["signer_name"],
+            sig["signer_document"],
+            sig["signature_source_doc_id"],
+            sig["signature_source_title"],
+            aid,
+            pid,
+        ),
+    )
+    db.commit()
+    flash("Assinatura incluída na anamnese ✅", "success")
+    return redirect(url_for("patients.anamnesis_view", pid=pid, aid=aid))
 
 
 @bp.get("/<int:pid>/anamnese/<int:aid>")
@@ -1394,7 +1509,7 @@ def anamnesis_view(pid: int, aid: int):
     if not patient or not rec:
         flash("Anamnese não encontrada.", "danger")
         return redirect(url_for("patients.view_patient", pid=pid, tab="anamnese"))
-    return render_template("anamnesis_view.html", patient=patient, rec=rec, sql_to_br=_sql_to_br)
+    return render_template("anamnesis_view.html", patient=patient, rec=rec, signed_documents=_signed_docs_for_patient(db, pid), sql_to_br=_sql_to_br)
 
 
 @bp.get("/<int:pid>/anamnese/<int:aid>/print")
