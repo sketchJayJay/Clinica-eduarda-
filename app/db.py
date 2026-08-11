@@ -114,6 +114,10 @@ def _ensure_finance_migrations(db: sqlite3.Connection) -> None:
 
 def _ensure_premium_migrations(db: sqlite3.Connection) -> None:
     """Migrações premium: segurança, agenda, fotos, Asaas e painel do paciente."""
+    # Perguntas extras da anamnese
+    _add_column_if_missing(db, "anamnesis", "bee_sting_allergy", "TEXT")
+    _add_column_if_missing(db, "anamnesis", "facial_filler", "TEXT")
+
     # Assinatura da anamnese
     _add_column_if_missing(db, "anamnesis", "signature_data", "TEXT")
     _add_column_if_missing(db, "anamnesis", "signer_name", "TEXT")
@@ -401,6 +405,8 @@ def init_db():
         historico_medico TEXT,
         medicamentos TEXT,
         alergias TEXT,
+        bee_sting_allergy TEXT,
+        facial_filler TEXT,
         doencas TEXT,
         cirurgias TEXT,
         anestesia_reacao TEXT,

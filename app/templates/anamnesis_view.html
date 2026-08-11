@@ -29,10 +29,18 @@
         <div style="white-space:pre-wrap">{{ rec.alergias or "—" }}</div>
       </div>
       <div class="col-md-4">
+        <div class="text-muted small">Alergia à picada de abelha ou outro inseto?</div>
+        <div><b>{{ rec.bee_sting_allergy or "—" }}</b></div>
+      </div>
+      <div class="col-md-4">
+        <div class="text-muted small">Já fez preenchimento ou Botox?</div>
+        <div><b>{{ rec.facial_filler or "—" }}</b></div>
+      </div>
+      <div class="col-md-4">
         <div class="text-muted small">Medicamentos em uso</div>
         <div style="white-space:pre-wrap">{{ rec.medicamentos or "—" }}</div>
       </div>
-      <div class="col-md-4">
+      <div class="col-md-8">
         <div class="text-muted small">Doenças / Condições</div>
         <div style="white-space:pre-wrap">{{ rec.doencas or "—" }}</div>
       </div>

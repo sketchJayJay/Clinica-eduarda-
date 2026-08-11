@@ -1420,10 +1420,10 @@ def anamnesis_save(pid: int):
     signed_at_expr = "datetime('now')" if sig["signature_data"] else "NULL"
 
     db.execute(
-        "INSERT INTO anamnesis(patient_id, responsavel, queixa, historico_medico, medicamentos, alergias, doencas, cirurgias, "
+        "INSERT INTO anamnesis(patient_id, responsavel, queixa, historico_medico, medicamentos, alergias, bee_sting_allergy, facial_filler, doencas, cirurgias, "
         "anestesia_reacao, sangramento, gestante, fumante, alcool, hipertensao, diabetes, cardiaco, hepatite, hiv, observacoes, "
         "signature_data, signer_name, signer_document, signed_at, signature_source_doc_id, signature_source_title) "
-        f"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,{signed_at_expr},?,?)",
+        f"VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,{signed_at_expr},?,?)",
         (
             pid,
             (f.get("responsavel") or "").strip() or None,
@@ -1431,6 +1431,8 @@ def anamnesis_save(pid: int):
             (f.get("historico_medico") or "").strip() or None,
             (f.get("medicamentos") or "").strip() or None,
             (f.get("alergias") or "").strip() or None,
+            (f.get("bee_sting_allergy") or "").strip() or None,
+            (f.get("facial_filler") or "").strip() or None,
             (f.get("doencas") or "").strip() or None,
             (f.get("cirurgias") or "").strip() or None,
             (f.get("anestesia_reacao") or "").strip() or None,
