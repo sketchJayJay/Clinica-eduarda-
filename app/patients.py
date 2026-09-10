@@ -429,6 +429,27 @@ def view_patient(pid: int):
         for pr in pay_rows:
             plan_pay_map[int(pr["plan_item_id"])] = {"charged": int(pr["charged"] or 0), "paid": int(pr["paid"] or 0)}
 
+        multi_pay_rows = db.execute(
+            f"""
+            SELECT tpi.plan_item_id,
+                   COALESCE(SUM(tpi.amount_cents),0) AS charged,
+                   COALESCE(SUM(CASE
+                       WHEN COALESCE(t.final_amount_cents, t.amount_cents, 0) > 0
+                       THEN CAST((COALESCE(t.paid_amount_cents, 0) * tpi.amount_cents) / COALESCE(t.final_amount_cents, t.amount_cents, 0) AS INTEGER)
+                       ELSE 0 END),0) AS paid
+              FROM transaction_plan_items tpi
+              JOIN transactions t ON t.id=tpi.transaction_id
+             WHERE t.patient_id=? AND t.kind='income' AND tpi.plan_item_id IN ({placeholders})
+             GROUP BY tpi.plan_item_id
+            """,
+            (pid, *tuple(plan_ids)),
+        ).fetchall()
+        for pr in multi_pay_rows:
+            iid = int(pr["plan_item_id"])
+            cur = plan_pay_map.setdefault(iid, {"charged": 0, "paid": 0})
+            cur["charged"] += int(pr["charged"] or 0)
+            cur["paid"] += int(pr["paid"] or 0)
+
     plan_total_preview = sum(int(r["amount_cents"] or 0) for r in plan_rows)
     plan_individual_paid_preview = sum(int(plan_pay_map.get(int(r["id"]), {}).get("paid", 0)) for r in plan_rows)
     plan_received_preview = general_plan_paid + plan_individual_paid_preview
@@ -1565,6 +1586,42 @@ def appointment_add(pid: int):
     )
     db.commit()
     flash("Agendamento salvo ✅", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="agenda"))
+
+
+@bp.post("/<int:pid>/appointments/<int:aid>/edit")
+@login_required
+def appointment_edit(pid: int, aid: int):
+    provider_id = request.form.get("provider_id") or None
+    provider_id_int = int(provider_id) if provider_id and str(provider_id).isdigit() else None
+    title = (request.form.get("title") or "Consulta").strip() or "Consulta"
+    note = (request.form.get("note") or "").strip() or None
+    status = (request.form.get("status") or "agendada").strip()
+    if status not in {"agendada", "confirmada", "compareceu", "faltou", "cancelada"}:
+        status = "agendada"
+    start_at = _dtlocal_to_sql(request.form.get("start_at"))
+    end_at = _dtlocal_to_sql(request.form.get("end_at"))
+    if not start_at:
+        flash("Informe a data/hora do agendamento.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="agenda"))
+    if not end_at:
+        try:
+            dt = datetime.strptime(start_at, "%Y-%m-%d %H:%M:%S") + timedelta(minutes=30)
+            end_at = dt.strftime("%Y-%m-%d %H:%M:%S")
+        except Exception:
+            end_at = None
+    db = get_db()
+    appt = db.execute("SELECT id FROM appointments WHERE id=? AND patient_id=?", (aid, pid)).fetchone()
+    if not appt:
+        flash("Agendamento não encontrado.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="agenda"))
+    db.execute(
+        "UPDATE appointments SET provider_id=?, title=?, start_at=?, end_at=?, note=?, status=? WHERE id=? AND patient_id=?",
+        (provider_id_int, title, start_at, end_at, note, status, aid, pid),
+    )
+    _audit(db, "appointment_edit", "appointment", aid, title)
+    db.commit()
+    flash("Agendamento atualizado ✅", "success")
     return redirect(url_for("patients.view_patient", pid=pid, tab="agenda"))
 
 

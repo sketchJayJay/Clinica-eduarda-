@@ -1,25 +1,24 @@
 FROM python:3.12-slim
 
-# Prevents Python from writing pyc files and buffers
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PIP_DEFAULT_TIMEOUT=120
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-# System deps (optional but helpful)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
+RUN python -m pip install --upgrade pip setuptools wheel \
+    && pip install --no-cache-dir -r /app/requirements.txt
 
 COPY . /app
 
-# Create data dir inside container (will be mounted as volume in compose)
 RUN mkdir -p /data/uploads
 
-# Default: gunicorn behind reverse proxy
 ENV PORT=8000
 EXPOSE 8000
 CMD ["gunicorn", "-b", "0.0.0.0:8000", "wsgi:app", "--workers", "2", "--threads", "4", "--timeout", "120"]

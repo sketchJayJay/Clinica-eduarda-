@@ -109,6 +109,17 @@
               <div class="form-text">Escolha “Tratamento completo” quando o paciente pagar o plano inteiro. Escolha um procedimento só quando o pagamento for específico daquele procedimento.</div>
             </div>
 
+            {% if not is_edit %}
+            <div class="col-12">
+              <div class="finance-multi-box">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2"><div><label class="form-label mb-0">Cobrar vários procedimentos do paciente</label><div class="form-text mt-0">Marque mais de um procedimento para gerar uma cobrança única. O total e a descrição são preenchidos automaticamente.</div></div><span class="badge text-bg-light" id="multiPlanCount">0 selecionado(s)</span></div>
+                <div class="finance-multi-list" id="financeMultiPlanList">
+                  {% for item in plan_items %}<label class="finance-multi-option" data-patient-id="{{ item.patient_id }}"><input class="form-check-input finance-multi-check" type="checkbox" name="plan_item_ids" value="{{ item.id }}" data-title="{{ item.procedure }}" data-amount="{{ item.amount_cents }}" data-patient-id="{{ item.patient_id }}"><span><b>{{ item.procedure }}</b><small>{{ item.patient_name }} · R$ {{ cents_to_brl(item.amount_cents) }}</small></span></label>{% endfor %}
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
             <div class="col-md-6">
               <label class="form-label">Profissional (opcional)</label>
               <select class="form-select" name="provider_id">
@@ -149,6 +160,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const descInput = document.querySelector('input[name="description"]');
   const amountInput = document.querySelector('input[name="amount"]');
 
+  const multiChecks = Array.from(document.querySelectorAll(".finance-multi-check"));
+  const multiCount = document.getElementById("multiPlanCount");
+  function centsToBRLFinance(cents){ return (cents/100).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+  function updateMultiPlans(){
+    const pid = patientSelect ? patientSelect.value : "";
+    multiChecks.forEach(ch => { const wrap = ch.closest(".finance-multi-option"); const show = !pid || ch.dataset.patientId === pid; if(wrap) wrap.style.display = show ? "flex" : "none"; if(!show) ch.checked = false; });
+    const selected = multiChecks.filter(c => c.checked);
+    if(multiCount) multiCount.textContent = selected.length + " selecionado(s)";
+    if(selected.length){ if(planSelect) planSelect.value = ""; const total = selected.reduce((s,c)=>s+(parseInt(c.dataset.amount||"0",10)||0),0); const names = selected.map(c=>c.dataset.title||"Procedimento"); if(amountInput) amountInput.value = centsToBRLFinance(total); if(descInput) descInput.value = "Procedimentos selecionados: " + names.join(", "); }
+  }
+
   function filterPlans(){
     if(!patientSelect || !planSelect) return;
     const pid = patientSelect.value || "";
@@ -165,11 +187,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if(selected && selected.hidden){
       planSelect.value = "";
     }
+    updateMultiPlans();
   }
 
   function fillFromPlan(){
     const selected = planSelect.options[planSelect.selectedIndex];
     if(!selected || !selected.value) return;
+    multiChecks.forEach(c => c.checked = false);
     if(selected.dataset.patientId && patientSelect) patientSelect.value = selected.dataset.patientId;
     filterPlans();
     if(descInput && !descInput.value) descInput.value = selected.dataset.procedure || "";
@@ -178,8 +202,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if(patientSelect) patientSelect.addEventListener("change", filterPlans);
   if(planSelect) planSelect.addEventListener("change", fillFromPlan);
+  multiChecks.forEach(c => c.addEventListener("change", updateMultiPlans));
   filterPlans();
   fillFromPlan();
+  updateMultiPlans();
 });
 </script>
+<style>
+.finance-multi-box{border:1px solid var(--line);border-radius:16px;padding:14px;background:linear-gradient(135deg,#fff8f3 0%,#fff 100%)}.finance-multi-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;max-height:260px;overflow:auto;padding-right:2px}.finance-multi-option{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);background:#fff;border-radius:14px;padding:10px;cursor:pointer}.finance-multi-option:hover{border-color:var(--accent)}.finance-multi-option span{display:flex;flex-direction:column;line-height:1.2}.finance-multi-option small{color:var(--soft);font-size:.78rem;margin-top:3px}
+</style>
 {% endblock %}

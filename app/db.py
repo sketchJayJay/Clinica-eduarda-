@@ -70,6 +70,18 @@ def _ensure_finance_migrations(db: sqlite3.Connection) -> None:
     CREATE INDEX IF NOT EXISTS idx_txpay_date ON transaction_payments(date);
     CREATE INDEX IF NOT EXISTS idx_txpay_method ON transaction_payments(payment_method);
 
+    CREATE TABLE IF NOT EXISTS transaction_plan_items(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        transaction_id INTEGER NOT NULL,
+        plan_item_id INTEGER NOT NULL,
+        amount_cents INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT NOT NULL DEFAULT (datetime('now')),
+        FOREIGN KEY(transaction_id) REFERENCES transactions(id) ON DELETE CASCADE,
+        FOREIGN KEY(plan_item_id) REFERENCES plan_items(id) ON DELETE CASCADE
+    );
+    CREATE INDEX IF NOT EXISTS idx_tx_plan_items_tx ON transaction_plan_items(transaction_id);
+    CREATE INDEX IF NOT EXISTS idx_tx_plan_items_item ON transaction_plan_items(plan_item_id);
+
     CREATE TABLE IF NOT EXISTS charge_log(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         transaction_id INTEGER NOT NULL,

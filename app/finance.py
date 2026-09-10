@@ -109,6 +109,57 @@ def row_to_dict(row):
     return dict(row)
 
 
+def allocate_amounts(total_cents: int, weights: list[int]) -> list[int]:
+    """Divide centavos proporcionalmente sem perder centavo no arredondamento."""
+    total_cents = max(0, int(total_cents or 0))
+    weights = [max(0, int(w or 0)) for w in weights]
+    weight_sum = sum(weights)
+    if total_cents <= 0 or weight_sum <= 0 or not weights:
+        return [0 for _ in weights]
+    raw = [(total_cents * w) / weight_sum for w in weights]
+    base = [int(x) for x in raw]
+    remainder = total_cents - sum(base)
+    order = sorted(range(len(weights)), key=lambda i: (raw[i] - base[i]), reverse=True)
+    for i in order[:remainder]:
+        base[i] += 1
+    return base
+
+
+def link_transaction_plan_items(db, transaction_id: int, plan_allocations: list[tuple[int, int]]) -> None:
+    """Vincula uma cobrança a um ou vários procedimentos do plano."""
+    db.execute("DELETE FROM transaction_plan_items WHERE transaction_id=?", (transaction_id,))
+    for plan_item_id, amount_cents in plan_allocations:
+        try:
+            iid = int(plan_item_id)
+            amount = max(0, int(amount_cents or 0))
+        except Exception:
+            continue
+        if iid > 0 and amount > 0:
+            db.execute("INSERT INTO transaction_plan_items(transaction_id, plan_item_id, amount_cents) VALUES(?,?,?)", (transaction_id, iid, amount))
+
+
+def get_selected_plan_items(db, selected_ids: list[int], pid: int | None = None):
+    selected_ids = [] if not selected_ids else list(dict.fromkeys(int(x) for x in selected_ids if int(x) > 0))
+    if not selected_ids:
+        return []
+    placeholders = ",".join("?" for _ in selected_ids)
+    params = list(selected_ids)
+    where_patient = ""
+    if pid:
+        where_patient = " AND pi.patient_id=?"
+        params.append(pid)
+    return db.execute(
+        f"""
+        SELECT pi.id, pi.patient_id, pi.procedure, pi.amount_cents, p.name AS patient_name
+          FROM plan_items pi
+          JOIN patients p ON p.id=pi.patient_id
+         WHERE pi.id IN ({placeholders}) {where_patient}
+         ORDER BY pi.created_at ASC, pi.id ASC
+        """,
+        tuple(params),
+    ).fetchall()
+
+
 def sync_transaction_payments(db, tid: int) -> None:
     tx = db.execute("SELECT * FROM transactions WHERE id=?", (tid,)).fetchone()
     if not tx:
@@ -487,8 +538,16 @@ def transaction_new():
         category_id = request.form.get("category_id", "").strip()
         provider_id = request.form.get("provider_id", "").strip()
         plan_item_id = request.form.get("plan_item_id", "").strip()
+        selected_plan_ids = []
+        for raw in request.form.getlist("plan_item_ids"):
+            raw = str(raw).strip()
+            if raw.isdigit():
+                val = int(raw)
+                if val not in selected_plan_ids:
+                    selected_plan_ids.append(val)
         repasse_percent = request.form.get("repasse_percent", "").strip()
         installments_total = request.form.get("installments_total", "1").strip()
+        next_url = request.form.get("next", "").strip()
 
         if kind not in ("income", "expense"):
             kind = "income"
@@ -498,6 +557,24 @@ def transaction_new():
         cid = int(category_id) if category_id.isdigit() else None
         prid = int(provider_id) if provider_id.isdigit() else None
         plan_iid = int(plan_item_id) if plan_item_id.isdigit() else None
+        selected_plan_rows = []
+        if selected_plan_ids:
+            selected_plan_rows = get_selected_plan_items(db, selected_plan_ids, pid)
+            if not selected_plan_rows:
+                selected_plan_rows = get_selected_plan_items(db, selected_plan_ids, None)
+            if selected_plan_rows:
+                first_pid = int(selected_plan_rows[0]["patient_id"])
+                selected_plan_rows = [r for r in selected_plan_rows if int(r["patient_id"]) == first_pid]
+                pid = first_pid
+                plan_iid = None
+                selected_total = sum(int(r["amount_cents"] or 0) for r in selected_plan_rows)
+                if gross_amount <= 0:
+                    gross_amount = selected_total
+                if not description:
+                    names = ", ".join((r["procedure"] or "Procedimento") for r in selected_plan_rows[:6])
+                    if len(selected_plan_rows) > 6:
+                        names += f" +{len(selected_plan_rows)-6}"
+                    description = "Procedimentos selecionados: " + names
         if plan_iid == 0:
             # 0 significa pagamento do plano/tratamento completo do paciente.
             if not pid:
@@ -567,6 +644,14 @@ def transaction_new():
                     parent_transaction_id=parent_id,
                     plan_item_id=plan_iid,
                 )
+                if selected_plan_rows:
+                    weights = [int(r["amount_cents"] or 0) for r in selected_plan_rows]
+                    item_final_amounts = allocate_amounts(final_amount, weights)
+                    allocations = []
+                    for idx_item, r in enumerate(selected_plan_rows):
+                        item_parts = allocate_amounts(item_final_amounts[idx_item], [1 for _ in range(installments_total_int)])
+                        allocations.append((int(r["id"]), item_parts[i-1]))
+                    link_transaction_plan_items(db, tid, allocations)
                 if parent_id is None:
                     parent_id = tid
                     db.execute("UPDATE transactions SET parent_transaction_id=? WHERE id=?", (parent_id, tid))
@@ -575,9 +660,9 @@ def transaction_new():
                 created.append(tid)
             db.commit()
             flash(f"Parcelamento criado com {installments_total_int} parcelas ✅", "success")
-            return redirect(url_for("finance.transactions", status="pending"))
+            return redirect(next_url or url_for("finance.transactions", status="pending"))
 
-        insert_transaction(
+        tid = insert_transaction(
             db,
             kind=kind,
             status=status,
@@ -594,9 +679,13 @@ def transaction_new():
             payment_method=payment_method,
             plan_item_id=plan_iid,
         )
+        if selected_plan_rows:
+            weights = [int(r["amount_cents"] or 0) for r in selected_plan_rows]
+            allocations = list(zip([int(r["id"]) for r in selected_plan_rows], allocate_amounts(final_amount, weights)))
+            link_transaction_plan_items(db, tid, allocations)
         db.commit()
         flash("Lançamento salvo ✅", "success")
-        return redirect(url_for("finance.transactions"))
+        return redirect(next_url or url_for("finance.transactions"))
 
     tx_prefill = {
         "kind": request.args.get("kind", "income"),
@@ -705,6 +794,8 @@ def transaction_edit(tid: int):
             """,
             (kind, date_eff, due_date, final_amount, payment_method, description, pid, cid, prid, repasse_percent_int, gross_amount, discount_percent, total_discount, final_amount, plan_iid, tid),
         )
+        if plan_iid is not None:
+            db.execute("DELETE FROM transaction_plan_items WHERE transaction_id=?", (tid,))
         sync_transaction_payments(db, tid)
         tx2 = db.execute("SELECT * FROM transactions WHERE id=?", (tid,)).fetchone()
         if status == "paid" and int(tx2["balance_cents"] or 0) > 0:
