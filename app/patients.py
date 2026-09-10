@@ -11,7 +11,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from .auth import login_required
 from .db import get_db
 from .utils import cents_to_brl, parse_brl_to_cents, today_yyyy_mm_dd
-from .finance import insert_transaction, add_payment, normalize_payment_method, add_months, PAYMENT_METHODS
+from .finance import insert_transaction, add_payment, normalize_payment_method, add_months, PAYMENT_METHODS, allocate_amounts, link_transaction_plan_items
 
 bp = Blueprint("patients", __name__, url_prefix="/patients")
 
@@ -1017,6 +1017,138 @@ def budget_print(pid: int, bid: int):
 # =========================
 # Pagamentos do plano pela ficha
 # =========================
+
+
+@bp.post("/<int:pid>/plan/charge-selected")
+@login_required
+def plan_charge_selected(pid: int):
+    """Cria cobrança de vários procedimentos direto pela ficha, sem liberar o módulo financeiro geral."""
+    db = get_db()
+    patient = db.execute("SELECT * FROM patients WHERE id=?", (pid,)).fetchone()
+    if not patient:
+        flash("Paciente não encontrado.", "danger")
+        return redirect(url_for("patients.list_patients"))
+
+    selected_ids = []
+    for raw in request.form.getlist("plan_item_ids"):
+        try:
+            val = int(raw)
+            if val > 0 and val not in selected_ids:
+                selected_ids.append(val)
+        except Exception:
+            pass
+
+    if not selected_ids:
+        flash("Selecione pelo menos um procedimento para cobrar.", "warning")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    placeholders = ",".join("?" for _ in selected_ids)
+    rows = db.execute(
+        f"""
+        SELECT id, patient_id, procedure, amount_cents
+          FROM plan_items
+         WHERE patient_id=? AND id IN ({placeholders})
+         ORDER BY created_at ASC, id ASC
+        """,
+        (pid, *selected_ids),
+    ).fetchall()
+
+    if not rows:
+        flash("Nenhum procedimento válido encontrado para este paciente.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    amount = parse_brl_to_cents(request.form.get("amount", ""))
+    if amount <= 0:
+        amount = sum(int(r["amount_cents"] or 0) for r in rows)
+    if amount <= 0:
+        flash("Valor da cobrança precisa ser maior que zero.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    status = (request.form.get("status") or "paid").strip()
+    if status not in {"paid", "pending"}:
+        status = "paid"
+    payment_method = normalize_payment_method(request.form.get("payment_method", "pix"))
+    date_eff = (request.form.get("date") or today_yyyy_mm_dd()).strip() or today_yyyy_mm_dd()
+    due_date = (request.form.get("due_date") or "").strip() or None
+
+    names = ", ".join((r["procedure"] or "Procedimento") for r in rows[:6])
+    if len(rows) > 6:
+        names += f" +{len(rows)-6}"
+    description = (request.form.get("description") or f"Cobrança de procedimentos: {names}").strip()
+
+    try:
+        installments_total = max(1, min(36, int((request.form.get("installments_total") or "1").strip() or 1)))
+    except Exception:
+        installments_total = 1
+
+    weights = [int(r["amount_cents"] or 0) for r in rows]
+    row_ids = [int(r["id"]) for r in rows]
+
+    parent_id = None
+    if installments_total > 1:
+        base_due = due_date or date_eff
+        each = amount // installments_total
+        remainder = amount % installments_total
+        item_final_amounts = allocate_amounts(amount, weights)
+        for i in range(1, installments_total + 1):
+            part_amount = each + (1 if i <= remainder else 0)
+            part_due = add_months(base_due, i - 1)
+            part_status = "paid" if (status == "paid" and i == 1) else "pending"
+            tid = insert_transaction(
+                db,
+                kind="income",
+                status=part_status,
+                date_eff=date_eff if part_status == "paid" else part_due,
+                due_date=part_due,
+                gross_amount=part_amount,
+                discount_percent=0,
+                discount_fixed=0,
+                description=f"{description} - Parcela {i}/{installments_total}",
+                pid=pid,
+                cid=None,
+                prid=None,
+                repasse_percent_int=0,
+                payment_method=payment_method,
+                installments_total=installments_total,
+                installment_number=i,
+                parent_transaction_id=parent_id,
+                plan_item_id=None,
+            )
+            allocations = []
+            for idx_item, plan_item_id in enumerate(row_ids):
+                item_parts = allocate_amounts(item_final_amounts[idx_item], [1 for _ in range(installments_total)])
+                allocations.append((plan_item_id, item_parts[i - 1]))
+            link_transaction_plan_items(db, tid, allocations)
+            if parent_id is None:
+                parent_id = tid
+            db.execute("UPDATE transactions SET parent_transaction_id=? WHERE id=?", (parent_id, tid))
+        db.commit()
+        flash(f"Cobrança de {len(rows)} procedimento(s) criada em {installments_total}x ✅", "success")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    tid = insert_transaction(
+        db,
+        kind="income",
+        status=status,
+        date_eff=date_eff,
+        due_date=due_date,
+        gross_amount=amount,
+        discount_percent=0,
+        discount_fixed=0,
+        description=description,
+        pid=pid,
+        cid=None,
+        prid=None,
+        repasse_percent_int=0,
+        payment_method=payment_method,
+        plan_item_id=None,
+    )
+    allocations = list(zip(row_ids, allocate_amounts(amount, weights)))
+    link_transaction_plan_items(db, tid, allocations)
+    db.commit()
+    flash(f"Cobrança de {len(rows)} procedimento(s) lançada ✅", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
 
 @bp.post("/<int:pid>/plan/payment")
 @login_required

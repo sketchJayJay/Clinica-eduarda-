@@ -343,12 +343,10 @@
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-      <div><h6 class="mb-1">Cobrar vários procedimentos juntos</h6><div class="text-muted small">Marque um ou mais procedimentos do plano para gerar uma única cobrança no financeiro.</div></div>
-      <span class="badge text-bg-light">Financeiro</span>
+      <div><h6 class="mb-1">Cobrar vários procedimentos juntos</h6><div class="text-muted small">Marque um ou mais procedimentos para gerar uma única cobrança, sem liberar o financeiro geral.</div></div>
+      <span class="badge text-bg-light">Caixa rápido</span>
     </div>
-    {% if session.get('finance_unlocked') %}
-    <form method="post" action="{{ url_for('finance.transaction_new') }}" class="row g-3 multi-plan-charge-form">
-      <input type="hidden" name="next" value="{{ url_for('patients.view_patient', pid=patient.id, tab='plano_ficha') }}">
+    <form method="post" action="{{ url_for('patients.plan_charge_selected', pid=patient.id) }}" class="row g-3 multi-plan-charge-form">
       <input type="hidden" name="kind" value="income"><input type="hidden" name="patient_id" value="{{ patient.id }}"><input type="hidden" name="plan_item_id" value="">
       <input type="hidden" name="amount" class="multi-total-input" value=""><input type="hidden" name="description" class="multi-description-input" value="">
       <div class="col-12"><div class="multi-plan-grid">
@@ -366,7 +364,7 @@
       <div class="col-md-2"><label class="form-label small">Parcelas</label><input class="form-control" type="number" name="installments_total" min="1" max="36" value="1"></div>
       <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2"><div class="small text-muted">Total selecionado: <b class="multi-total-label">R$ 0,00</b></div><button class="btn btn-brand" type="submit"><i class="bi bi-cash-stack me-1"></i>Cobrar selecionados</button></div>
     </form>
-    {% else %}<div class="alert alert-warning mb-0">Desbloqueie o financeiro para cobrar vários procedimentos juntos. <a href="{{ url_for('finance.unlock', next=url_for('patients.view_patient', pid=patient.id, tab='plano_ficha')) }}">Desbloquear agora</a></div>{% endif %}
+    <div class="form-text mt-2">Essa ação cria a cobrança vinculada ao paciente, mas não abre a tela completa do financeiro.</div>
   </div>
 </div>
 
