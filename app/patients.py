@@ -1038,6 +1038,14 @@ def plan_charge_selected(pid: int):
         except Exception:
             pass
 
+    if request.form.get("charge_all") == "1":
+        selected_ids = [
+            int(r["id"]) for r in db.execute(
+                "SELECT id FROM plan_items WHERE patient_id=? ORDER BY created_at ASC, id ASC",
+                (pid,),
+            ).fetchall()
+        ]
+
     if not selected_ids:
         flash("Selecione pelo menos um procedimento para cobrar.", "warning")
         return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
@@ -1057,9 +1065,56 @@ def plan_charge_selected(pid: int):
         flash("Nenhum procedimento válido encontrado para este paciente.", "danger")
         return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
 
+    rows = [dict(r) for r in rows]
+    row_ids_tmp = [int(r["id"]) for r in rows]
+    item_paid_map = {int(r["id"]): 0 for r in rows}
+
+    if row_ids_tmp:
+        tmp_placeholders = ",".join("?" for _ in row_ids_tmp)
+        direct_paid_rows = db.execute(
+            f"""
+            SELECT plan_item_id, COALESCE(SUM(COALESCE(paid_amount_cents, 0)),0) AS paid
+              FROM transactions
+             WHERE patient_id=? AND kind='income' AND plan_item_id IN ({tmp_placeholders})
+             GROUP BY plan_item_id
+            """,
+            (pid, *row_ids_tmp),
+        ).fetchall()
+        for pr in direct_paid_rows:
+            if pr["plan_item_id"]:
+                item_paid_map[int(pr["plan_item_id"])] = item_paid_map.get(int(pr["plan_item_id"]), 0) + int(pr["paid"] or 0)
+
+        multi_paid_rows = db.execute(
+            f"""
+            SELECT tpi.plan_item_id,
+                   COALESCE(SUM(CASE
+                       WHEN COALESCE(t.final_amount_cents, t.amount_cents, 0) > 0
+                       THEN CAST((COALESCE(t.paid_amount_cents, 0) * tpi.amount_cents) / COALESCE(t.final_amount_cents, t.amount_cents, 0) AS INTEGER)
+                       ELSE 0 END),0) AS paid
+              FROM transaction_plan_items tpi
+              JOIN transactions t ON t.id=tpi.transaction_id
+             WHERE t.patient_id=? AND t.kind='income' AND tpi.plan_item_id IN ({tmp_placeholders})
+             GROUP BY tpi.plan_item_id
+            """,
+            (pid, *row_ids_tmp),
+        ).fetchall()
+        for pr in multi_paid_rows:
+            iid = int(pr["plan_item_id"])
+            item_paid_map[iid] = item_paid_map.get(iid, 0) + int(pr["paid"] or 0)
+
+    for r in rows:
+        original_amount = int(r["amount_cents"] or 0)
+        paid_amount = int(item_paid_map.get(int(r["id"]), 0) or 0)
+        r["charge_amount_cents"] = max(original_amount - paid_amount, 0)
+
+    rows = [r for r in rows if int(r.get("charge_amount_cents", 0) or 0) > 0]
+    if not rows:
+        flash("Todos os procedimentos selecionados já estão quitados.", "info")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
     amount = parse_brl_to_cents(request.form.get("amount", ""))
     if amount <= 0:
-        amount = sum(int(r["amount_cents"] or 0) for r in rows)
+        amount = sum(int(r["charge_amount_cents"] or 0) for r in rows)
     if amount <= 0:
         flash("Valor da cobrança precisa ser maior que zero.", "danger")
         return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
@@ -1081,7 +1136,7 @@ def plan_charge_selected(pid: int):
     except Exception:
         installments_total = 1
 
-    weights = [int(r["amount_cents"] or 0) for r in rows]
+    weights = [int(r.get("charge_amount_cents", r.get("amount_cents", 0)) or 0) for r in rows]
     row_ids = [int(r["id"]) for r in rows]
 
     parent_id = None
@@ -1123,7 +1178,7 @@ def plan_charge_selected(pid: int):
                 parent_id = tid
             db.execute("UPDATE transactions SET parent_transaction_id=? WHERE id=?", (parent_id, tid))
         db.commit()
-        flash(f"Cobrança de {len(rows)} procedimento(s) criada em {installments_total}x ✅", "success")
+        flash(("Cobrança de todos os procedimentos em aberto criada em " if request.form.get("charge_all") == "1" else f"Cobrança de {len(rows)} procedimento(s) criada em ") + f"{installments_total}x ✅", "success")
         return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
 
     tid = insert_transaction(
@@ -1146,7 +1201,7 @@ def plan_charge_selected(pid: int):
     allocations = list(zip(row_ids, allocate_amounts(amount, weights)))
     link_transaction_plan_items(db, tid, allocations)
     db.commit()
-    flash(f"Cobrança de {len(rows)} procedimento(s) lançada ✅", "success")
+    flash(("Cobrança de todos os procedimentos em aberto lançada ✅" if request.form.get("charge_all") == "1" else f"Cobrança de {len(rows)} procedimento(s) lançada ✅"), "success")
     return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
 
 

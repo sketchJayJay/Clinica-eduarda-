@@ -343,8 +343,24 @@
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
-      <div><h6 class="mb-1">Cobrar vários procedimentos juntos</h6><div class="text-muted small">Marque um ou mais procedimentos para gerar uma única cobrança, sem liberar o financeiro geral.</div></div>
-      <span class="badge text-bg-light">Caixa rápido</span>
+      <div>
+        <h6 class="mb-1">Cobrar procedimentos</h6>
+        <div class="text-muted small">Use <b>Cobrar tudo</b> para lançar todos os procedimentos em aberto com um clique, ou marque apenas alguns procedimentos abaixo.</div>
+      </div>
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <span class="badge text-bg-light">Caixa rápido</span>
+        {% if plan_summary.financial_balance_cents > 0 %}
+        <form method="post" action="{{ url_for('patients.plan_charge_selected', pid=patient.id) }}" class="m-0" onsubmit="return confirm('Cobrar todos os procedimentos em aberto deste paciente? O lançamento será marcado como PAGO hoje, usando Pix como forma padrão.')">
+          <input type="hidden" name="charge_all" value="1">
+          <input type="hidden" name="status" value="paid">
+          <input type="hidden" name="payment_method" value="pix">
+          <input type="hidden" name="date" value="{{ today }}">
+          <input type="hidden" name="installments_total" value="1">
+          <input type="hidden" name="description" value="Cobrança de todos os procedimentos em aberto">
+          <button class="btn btn-sm btn-brand" type="submit"><i class="bi bi-lightning-charge me-1"></i>Cobrar tudo</button>
+        </form>
+        {% endif %}
+      </div>
     </div>
     <form method="post" action="{{ url_for('patients.plan_charge_selected', pid=patient.id) }}" class="row g-3 multi-plan-charge-form">
       <input type="hidden" name="kind" value="income"><input type="hidden" name="patient_id" value="{{ patient.id }}"><input type="hidden" name="plan_item_id" value="">
@@ -364,7 +380,7 @@
       <div class="col-md-2"><label class="form-label small">Parcelas</label><input class="form-control" type="number" name="installments_total" min="1" max="36" value="1"></div>
       <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-2"><div class="small text-muted">Total selecionado: <b class="multi-total-label">R$ 0,00</b></div><button class="btn btn-brand" type="submit"><i class="bi bi-cash-stack me-1"></i>Cobrar selecionados</button></div>
     </form>
-    <div class="form-text mt-2">Essa ação cria a cobrança vinculada ao paciente, mas não abre a tela completa do financeiro.</div>
+    <div class="form-text mt-2"><b>Cobrar tudo</b> lança todos os procedimentos em aberto como pago hoje. Para boleto, pendente ou forma de pagamento diferente, use a seleção manual abaixo.</div>
   </div>
 </div>
 
