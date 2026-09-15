@@ -113,6 +113,75 @@
     background:#fff7f2!important;
   }
 
+
+  /* V47 - agenda adaptada para celular/iPad */
+  @media (max-width: 768px){
+    .agenda-main-card{border-radius:18px!important}
+    .agenda-main-card .card-body{padding:10px!important}
+    .fc .fc-toolbar{display:grid!important;grid-template-columns:1fr;gap:8px!important}
+    .fc .fc-toolbar-chunk{display:flex!important;justify-content:center!important;flex-wrap:wrap!important;margin:0!important}
+    .fc .fc-toolbar-title{font-size:1rem!important;text-align:center!important}
+    .fc .fc-button{font-size:.82rem!important;padding:.34rem .48rem!important}
+    .fc .fc-timegrid-slot{height:2.35em!important}
+    .fc-event{font-size:.8rem!important}
+
+    #apptModal.modal{
+      overflow-y:auto!important;
+      -webkit-overflow-scrolling:touch!important;
+      padding:0!important;
+    }
+    #apptModal .modal-dialog{
+      margin:0!important;
+      width:100%!important;
+      max-width:100%!important;
+      min-height:100dvh!important;
+    }
+    #apptModal .modal-content{
+      min-height:100dvh!important;
+      max-height:none!important;
+      border-radius:0!important;
+      border:0!important;
+    }
+    #apptModal .modal-header{
+      position:sticky!important;
+      top:0!important;
+      z-index:30!important;
+      background:#fff!important;
+      box-shadow:0 8px 20px rgba(68,45,38,.06)!important;
+    }
+    #apptModal .modal-body{
+      overflow:visible!important;
+      max-height:none!important;
+      padding-bottom:150px!important;
+    }
+    #apptModal .modal-footer{
+      position:sticky!important;
+      bottom:0!important;
+      z-index:40!important;
+      background:linear-gradient(180deg,rgba(255,255,255,.88),#fff 35%)!important;
+      box-shadow:0 -12px 30px rgba(68,45,38,.10)!important;
+      padding-bottom:calc(14px + env(safe-area-inset-bottom))!important;
+      gap:8px!important;
+    }
+    #apptModal .modal-footer .d-flex{
+      width:100%!important;
+      justify-content:space-between!important;
+    }
+    #apptModal .modal-footer .btn{
+      min-height:46px!important;
+    }
+    #apptModal .modal-footer .btn-brand{
+      flex:1!important;
+    }
+    .modal-open{
+      overflow:auto!important;
+      padding-right:0!important;
+    }
+    input, select, textarea{
+      font-size:16px!important;
+    }
+  }
+
 </style>
 {% endblock %}
 
@@ -232,7 +301,7 @@
           <div class="d-flex gap-2">
             <button type="button" class="btn btn-outline-danger" id="btnDelete" style="display:none;">Excluir</button>
             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancelar</button>
-            <button type="submit" class="btn btn-brand">Salvar</button>
+            <button type="submit" class="btn btn-brand"><i class="bi bi-check2-circle me-1"></i>Salvar agendamento</button>
           </div>
         </div>
       </form>
@@ -248,6 +317,22 @@
 <script>
   const modalEl = document.getElementById('apptModal');
   const modal = new bootstrap.Modal(modalEl, {backdrop:false});
+
+  function prepareMobileModalScroll(){
+    if(window.innerWidth <= 768){
+      setTimeout(() => {
+        modalEl.scrollTop = 0;
+        const body = modalEl.querySelector('.modal-body');
+        if(body){ body.scrollTop = 0; }
+        document.body.style.overflow = 'auto';
+      }, 80);
+    }
+  }
+
+  modalEl.addEventListener('shown.bs.modal', prepareMobileModalScroll);
+  modalEl.addEventListener('hidden.bs.modal', () => {
+    document.body.style.overflow = '';
+  });
 
   const $ = (id) => document.getElementById(id);
 

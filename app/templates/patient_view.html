@@ -789,14 +789,14 @@ document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".mu
 
 {% elif tab=='agenda' %}
 <div class="card shadow-sm border-0 mb-3"><div class="card-body"><h6 class="mb-3">Novo agendamento</h6>
-  <form method="post" action="{{ url_for('patients.appointment_add', pid=patient.id) }}" class="row g-2">
+  <form method="post" action="{{ url_for('patients.appointment_add', pid=patient.id) }}" class="row g-2 patient-agenda-form">
     <div class="col-md-3"><label class="form-label small text-muted">Início</label><input class="form-control" type="datetime-local" name="start_at" required></div>
     <div class="col-md-3"><label class="form-label small text-muted">Fim</label><input class="form-control" type="datetime-local" name="end_at"></div>
     <div class="col-md-3"><label class="form-label small text-muted">Profissional</label><select class="form-select" name="provider_id"><option value="">Selecione</option>{% for pr in providers %}<option value="{{ pr.id }}">{{ pr.name }}</option>{% endfor %}</select></div>
     <div class="col-md-3"><label class="form-label small text-muted">Status</label><select class="form-select" name="status"><option value="agendada">Agendada</option><option value="confirmada">Confirmada</option><option value="compareceu">Compareceu</option><option value="faltou">Faltou</option><option value="cancelada">Cancelada</option></select></div>
     <div class="col-md-4"><label class="form-label small text-muted">Título</label><input class="form-control" name="title" value="Consulta"></div>
     <div class="col-md-8"><label class="form-label small text-muted">Observações</label><input class="form-control" name="note"></div>
-    <div class="col-12 d-grid"><button class="btn btn-brand">Salvar agendamento</button></div>
+    <div class="col-12 d-grid patient-agenda-save"><button class="btn btn-brand"><i class="bi bi-check2-circle me-1"></i>Salvar agendamento</button></div>
   </form>
 </div></div>
 <div class="card shadow-sm border-0"><div class="card-body"><h6 class="mb-3">Agendamentos deste paciente</h6><div class="table-responsive"><table class="table table-sm align-middle"><thead class="table-light"><tr><th>Data/Hora</th><th>Profissional</th><th>Título</th><th>Status</th><th>Obs.</th><th></th></tr></thead><tbody>{% for a in appts %}<tr>
@@ -817,6 +817,34 @@ document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".mu
   </form>
 </td></tr>{% else %}<tr><td colspan="6" class="text-center text-muted py-3">Nenhum agendamento.</td></tr>{% endfor %}</tbody></table></div></div></div>
 
+
+
+<style>
+  /* V47 - agenda do paciente mobile */
+  @media(max-width:768px){
+    .patient-agenda-form{
+      padding-bottom:120px!important;
+    }
+    .patient-agenda-save{
+      position:sticky!important;
+      bottom:92px!important;
+      z-index:25!important;
+      background:linear-gradient(180deg,rgba(255,255,255,0),rgba(255,255,255,.95) 24%,#fff 44%)!important;
+      padding-top:14px!important;
+      margin-top:4px!important;
+    }
+    .patient-agenda-save .btn{
+      min-height:52px!important;
+      box-shadow:0 10px 26px rgba(68,45,38,.14)!important;
+    }
+    .tab-content-mobile-safe{
+      padding-bottom:170px!important;
+    }
+    input, select, textarea{
+      font-size:16px!important;
+    }
+  }
+</style>
 
 {% elif tab=='odontograma' %}
 <div class="card shadow-sm border-0 mb-3"><div class="card-body"><div class="d-flex justify-content-between align-items-center flex-wrap gap-2"><h6 class="mb-0">Odontograma</h6><button class="btn btn-outline-secondary btn-sm" type="button" onclick="window.print()">Imprimir</button></div><div class="mt-3">{% include 'partials/odontograma_inline.html' %}</div></div></div>
