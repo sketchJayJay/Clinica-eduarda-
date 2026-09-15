@@ -733,3 +733,41 @@ body.is-loaded .page-loader{
     -webkit-overflow-scrolling:touch!important;
   }
 }
+
+
+/* V48 - Home mobile sem espaço gigante no topo */
+@media(max-width:768px){
+  body.logged-in .brand-nav{
+    min-height:auto!important;
+    padding-top:6px!important;
+    padding-bottom:6px!important;
+  }
+  body.logged-in .brand-nav .container-fluid{
+    padding-top:2px!important;
+    padding-bottom:2px!important;
+    align-items:center!important;
+  }
+  body.logged-in .brand-logo{
+    width:170px!important;
+    height:48px!important;
+    object-fit:contain!important;
+  }
+  body.logged-in main.app-content{
+    padding-top:12px!important;
+  }
+  /* Na Home, aquele bloco de apresentação estava criando um vazio enorme no celular. */
+  body.logged-in .hero-slim{
+    display:none!important;
+  }
+  body.logged-in .hero-slim + .row{
+    margin-top:0!important;
+  }
+  body.logged-in .kpi-card.compact{
+    padding:15px!important;
+    min-height:auto!important;
+  }
+  body.logged-in .kpi-value{
+    font-size:1.85rem!important;
+    margin-top:6px!important;
+  }
+}
