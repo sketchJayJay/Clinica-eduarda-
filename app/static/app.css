@@ -771,3 +771,11 @@ body.is-loaded .page-loader{
     margin-top:6px!important;
   }
 }
+
+/* V49 - separacao orcamento financeiro */
+.alert-info.border, .alert-light.border{
+  border-radius:16px;
+}
+.budget-table .small.text-muted{
+  line-height:1.15;
+}

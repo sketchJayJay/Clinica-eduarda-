@@ -846,6 +846,8 @@ def delete_patient(pid: int):
 # Orçamentos
 # =========================
 
+# V49: orçamento não lança financeiro. Ele só fica no orçamento/plano.
+# Entrada financeira só é criada nas rotas de cobrança/pagamento.
 @bp.post("/<int:pid>/budgets/add")
 @login_required
 def budget_add(pid: int):
@@ -865,7 +867,7 @@ def budget_add(pid: int):
         (pid, description, cents, "aberto"),
     )
     db.commit()
-    flash("Orçamento adicionado ✅", "success")
+    flash("Orçamento salvo ✅ Ele NÃO entrou no financeiro. Só vira entrada quando lançar cobrança/pagamento.", "success")
     return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
 
 
@@ -906,7 +908,7 @@ def budget_edit(pid: int, bid: int):
     )
 
     db.commit()
-    flash("Orçamento atualizado ✅", "success")
+    flash("Orçamento atualizado ✅ Sem lançar no financeiro.", "success")
     return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
 
 
@@ -959,7 +961,12 @@ def budget_status(pid: int, bid: int, s: str):
             )
 
     db.commit()
-    flash("Status atualizado ✅", "success")
+    if s == "aprovado":
+        flash("Orçamento aprovado para o plano ✅ Não foi lançado como entrada no financeiro.", "success")
+    elif s == "reprovado":
+        flash("Orçamento reprovado. Sem lançamento no financeiro.", "info")
+    else:
+        flash("Orçamento voltou para aberto. Sem lançamento no financeiro.", "info")
     return redirect(url_for("patients.view_patient", pid=pid, tab="orcamentos"))
 
 
@@ -988,7 +995,7 @@ def budget_approve_all(pid: int):
             )
             created += 1
     db.commit()
-    flash(f"{len(open_budgets)} orçamento(s) aprovados para o plano ✅", "success")
+    flash(f"{len(open_budgets)} orçamento(s) aprovados para o plano ✅ Nenhuma entrada financeira foi lançada.", "success")
     return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
 
 @bp.get("/<int:pid>/budgets/<int:bid>/print")

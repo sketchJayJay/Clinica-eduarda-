@@ -71,10 +71,10 @@
 </div>
 
 <div class="row g-3 mb-3">
-  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Tratamento total</div><div class="kpi-value">R$ {{ plan_summary.total }}</div><div class="small text-muted">{{ plan_summary.done_count }}/{{ plan_summary.count }} feitos</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Tratamento pendente</div><div class="kpi-value">R$ {{ plan_summary.pending }}</div><div class="small text-muted">procedimentos em aberto</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Recebido no plano</div><div class="kpi-value text-success">R$ {{ plan_summary.received }}</div><div class="small text-muted">abatido dos tratamentos</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Saldo do plano</div><div class="kpi-value {% if plan_summary.financial_balance != '0,00' %}text-danger{% endif %}">R$ {{ plan_summary.financial_balance }}</div><div class="small text-muted">saldo financeiro vinculado</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Plano aprovado</div><div class="kpi-value">R$ {{ plan_summary.total }}</div><div class="small text-muted">não entra no financeiro sozinho</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Procedimentos pendentes</div><div class="kpi-value">R$ {{ plan_summary.pending }}</div><div class="small text-muted">parte clínica em aberto</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Recebido lançado</div><div class="kpi-value text-success">R$ {{ plan_summary.received }}</div><div class="small text-muted">só o que foi cobrado/pago</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi border-0 shadow-sm"><div class="card-body"><div class="kpi-label">Saldo previsto</div><div class="kpi-value {% if plan_summary.financial_balance != '0,00' %}text-danger{% endif %}">R$ {{ plan_summary.financial_balance }}</div><div class="small text-muted">não é entrada até cobrar</div></div></div></div>
 </div>
 
 <ul class="nav nav-pills flex-wrap gap-2 mb-3 premium-tabs">
@@ -175,6 +175,12 @@
 </div>
 
 {% elif tab=='orcamentos' %}
+<div class="alert alert-info border mb-3">
+  <b>Orçamento não entra no financeiro.</b>
+  Aqui é só proposta/planejamento. Ao salvar ou aprovar um orçamento, ele pode ir para o <b>Plano/Ficha</b>, mas não vira entrada.
+  O financeiro só recebe valor quando usar <b>Nova cobrança</b>, <b>Cobrar procedimento</b>, <b>Cobrar vários</b> ou <b>Cobrar tudo</b>.
+</div>
+
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
@@ -242,7 +248,7 @@
               </button>
 
               {% if b.status!='aprovado' %}
-                <a class="btn btn-sm btn-success" href="{{ url_for('patients.budget_status', pid=patient.id, bid=b.id, s='aprovado') }}">Aprovar para plano</a>
+                <a class="btn btn-sm btn-success" href="{{ url_for('patients.budget_status', pid=patient.id, bid=b.id, s='aprovado') }}">Aprovar para plano</a><div class="small text-muted mt-1">Não lança financeiro</div>
                 <a class="btn btn-sm btn-outline-danger" href="{{ url_for('patients.budget_status', pid=patient.id, bid=b.id, s='reprovado') }}">Reprovar</a>
               {% else %}
                 <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('patients.view_patient', pid=patient.id, tab='plano_ficha') }}">Ver no plano</a>
@@ -283,6 +289,12 @@
 </div>
 
 {% elif tab=='plano_ficha' %}
+<div class="alert alert-light border mb-3">
+  <b>Plano/Ficha é separado do financeiro.</b>
+  Procedimentos aprovados aparecem aqui para controle clínico.
+  Eles só entram como entrada financeira quando forem cobrados/pagos.
+</div>
+
 <div class="row g-3 mb-3">
   <div class="col-lg-7">
     <div class="card shadow-sm border-0 h-100">
