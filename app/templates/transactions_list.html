@@ -7,6 +7,8 @@
     <div class="page-subtitle">Entradas, saídas, parcelas, pagamentos parciais, pendências e cobranças Asaas.</div>
   </div>
   <div class="d-flex gap-2 flex-wrap">
+    <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions') }}">Mês atual</a>
+    <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', period='all') }}">Ver tudo</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.reports') }}">Relatórios</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.export_csv') }}">CSV</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.export_excel') }}">Excel</a>
@@ -14,6 +16,12 @@
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.transaction_new', kind='expense') }}">Nova saída</a>
     <a class="btn btn-brand" href="{{ url_for('finance.transaction_new', kind='income') }}">Nova entrada</a>
   </div>
+</div>
+
+<div class="alert alert-info border mb-3">
+  <b>Resumo financeiro em regime de caixa:</b> esta tela abre no mês atual.
+  O card <b>Recebido</b> soma somente pagamentos que realmente caíram no período.
+  Orçamento e plano aprovado não entram aqui enquanto não virar cobrança/pagamento.
 </div>
 
 <form class="card shadow-sm border-0 mb-3">
@@ -64,14 +72,18 @@
   </div>
 </form>
 
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+  <div class="text-muted small">Período do resumo: <b>{{ totals.period_label }}</b></div>
+  {% if filters.period == 'all' and not filters.date_from and not filters.date_to %}<span class="badge text-bg-warning">Mostrando tudo</span>{% else %}<span class="badge text-bg-light">Filtro mensal</span>{% endif %}
+</div>
 <div class="row g-3 mb-3">
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Entradas previstas</div><div class="kpi-value text-success">R$ {{ totals.income }}</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido</div><div class="kpi-value text-success">R$ {{ totals.received }}</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Saídas pagas</div><div class="kpi-value text-danger">R$ {{ totals.paid_expense }}</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Total do período</div><div class="kpi-value text-success">R$ {{ totals.income }}</div><div class="small text-muted">Recebido + a receber</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido no período</div><div class="kpi-value text-success">R$ {{ totals.received }}</div><div class="small text-muted">data real do pagamento</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Saídas pagas</div><div class="kpi-value text-danger">R$ {{ totals.paid_expense }}</div><div class="small text-muted">data real do pagamento</div></div></div></div>
   <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Resultado recebido</div><div class="kpi-value">R$ {{ totals.result }}</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Pendências</div><div class="kpi-value">R$ {{ totals.pending }}</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Vencidos</div><div class="kpi-value text-danger">R$ {{ totals.overdue }}</div></div></div></div>
-  <div class="col-md-6"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido por pagamento</div><div class="small">Dinheiro R$ {{ income_by_pm.cash }} · Pix R$ {{ income_by_pm.pix }} · Crédito R$ {{ income_by_pm.card_credit }} · Débito R$ {{ income_by_pm.card_debit }} · Transf. R$ {{ income_by_pm.transfer }}</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">A receber</div><div class="kpi-value">R$ {{ totals.pending }}</div><div class="small text-muted">vencimentos do período</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Vencidos</div><div class="kpi-value text-danger">R$ {{ totals.overdue }}</div><div class="small text-muted">pendências vencidas</div></div></div></div>
+  <div class="col-md-6"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido no período por forma</div><div class="small">Dinheiro R$ {{ income_by_pm.cash }} · Pix R$ {{ income_by_pm.pix }} · Crédito R$ {{ income_by_pm.card_credit }} · Débito R$ {{ income_by_pm.card_debit }} · Transf. R$ {{ income_by_pm.transfer }}</div></div></div></div>
 </div>
 
 <div class="card shadow-sm border-0">

@@ -1,4 +1,4 @@
-# Eduarda Imbelloni Clínica Especializada - Luxo Clean V49
+# Eduarda Imbelloni Clínica Especializada - Luxo Clean V50
 
 Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.
 
@@ -46,7 +46,7 @@ ASAAS_ENV=production
 ASAAS_API_KEY=sua_chave_real
 ```
 
-## Melhorias da versão Luxo Clean V49
+## Melhorias da versão Luxo Clean V50
 
 - CRM de relacionamento com pacientes
 - Controle de leads e possíveis pacientes
@@ -60,7 +60,7 @@ ASAAS_API_KEY=sua_chave_real
 - Cards operacionais para recepção trabalhar mais rápido
 - Dashboard mais completo e mais comercial
 
-## Já vinha da versão Luxo Clean V49
+## Já vinha da versão Luxo Clean V50
 
 - Painel do paciente com resumo premium
 - Linha do tempo do paciente
@@ -83,231 +83,236 @@ ASAAS_API_KEY=sua_chave_real
 O local da integração já está pronto. Sem a chave `ASAAS_API_KEY`, o sistema só avisa que falta configurar. Após colocar a chave no Coolify ou em Configurações, os botões de boleto/Pix tentam gerar a cobrança via Asaas.
 
 
-## Visual Luxo Clean V49
+## Visual Luxo Clean V50
 
 Esta versão recebeu um redesenho visual com menu lateral, login premium, cards em vidro suave, cores da identidade Eduarda Imbelloni e polimento mobile/PWA.
 
 
-## Atualização Visual Luxo Clean V49
+## Atualização Visual Luxo Clean V50
 
 Redesign visual completo com layout mais limpo, menu lateral refinado, cards mais leves, tela de login premium, tabelas mais elegantes e ajustes de responsividade. Mantém o mesmo banco/volume, sem apagar dados.
 
 
-## Atualização Visual Luxo Clean V49
+## Atualização Visual Luxo Clean V50
 
 Redesign completo do layout para um visual mais limpo, sofisticado e alinhado à identidade visual da Eduarda Imbelloni Clínica Especializada. Inclui sidebar compacta, dashboard premium, cards refinados, tabelas mais modernas, login elegante e ajustes de responsividade.
 
 
-## Atualização Visual Luxo Clean V49
+## Atualização Visual Luxo Clean V50
 
 Refino visual geral do sistema com foco em leveza, sofisticação e aspecto de clínica premium. Nova sidebar clara, dashboard mais enxuto, formulários e tabelas mais elegantes, login minimalista e hierarquia visual mais fina.
 
 
-## Atualização Visual Luxo Clean V49
+## Atualização Visual Luxo Clean V50
 
 Home simplificada com menos informação, ícones restaurados no menu e nos atalhos, e visual mais leve.
 
 
-## Atualização Visual Luxo Clean V49
+## Atualização Visual Luxo Clean V50
 
 Topo da home simplificado, com remoção do texto grande e inclusão de mais cor nos elementos do dashboard.
 
 
-## Atualização Visual Luxo Clean V49
+## Atualização Visual Luxo Clean V50
 
 Mensagem da Home removida, reforço de cores no dashboard e inclusão de microinterações/animações suaves.
 
 
-## Atualização Visual Luxo Clean V49
+## Atualização Visual Luxo Clean V50
 
 Refino visual com mais cor e um pacote maior de microanimações no dashboard, botões, cards, menu e listas.
 
 
-## Atualização App Premium V49
+## Atualização App Premium V50
 
 Versão com mais cor e animações: transição de páginas, barra de carregamento, entrada dos cards, hover animado, modais mais suaves e microinterações em botões, menus, tabelas e abas.
 
 
-## V49 - Documentos e Assinatura
+## V50 - Documentos e Assinatura
 
 Adicionada aba Documentos no painel do paciente, com contrato, termo de consentimento, termo de uso de imagem, assinatura digital na tela e impressão/PDF.
 
 
-## V49 - Assinatura manual e digital
+## V50 - Assinatura manual e digital
 
 A aba Documentos agora permite escolher entre imprimir o modelo para assinatura em mãos ou abrir a assinatura digital na tela.
 
 
-## V49 - Correção do menu inferior no mobile
+## V50 - Correção do menu inferior no mobile
 
 Ajustado o espaçamento do conteúdo para o dock inferior do celular não cobrir botões e formulários, especialmente na aba Documentos.
 
 
-## V49 - Correção forte do dock inferior
+## V50 - Correção forte do dock inferior
 
 O menu inferior agora só aparece no celular e não fica mais por cima dos botões em telas maiores. Também foi adicionado espaço extra no final da aba Documentos.
 
 
-## V49 - Nome clicável na agenda
+## V50 - Nome clicável na agenda
 
 Na agenda, o nome do paciente dentro do evento agora abre diretamente o painel do paciente. Clicar no restante do evento continua abrindo a edição do agendamento.
 
 
-## V49 - Contrato de fidelidade
+## V50 - Contrato de fidelidade
 
 Adicionado modelo de contrato de fidelidade/tratamento completo na aba Documentos, com valor total do tratamento, condições de pagamento e cláusula de multa por quebra de contrato.
 
 
-## V49 - Percentual da multa
+## V50 - Percentual da multa
 
 Adicionados campos próprios no contrato de fidelidade para percentual da multa, base de cálculo da multa e valor fixo opcional.
 
 
-## V49 - Orçamentos
+## V50 - Orçamentos
 
 Adicionadas opções de editar/excluir orçamento e explicação clara: aprovar orçamento envia para Plano/Ficha do paciente, não para o financeiro. Para cobrança, usar Nova cobrança no financeiro.
 
 
-## V49 - Vínculo financeiro com Plano/Ficha
+## V50 - Vínculo financeiro com Plano/Ficha
 
 Agora lançamentos financeiros podem ser vinculados a itens do Plano/Ficha, abatendo recebidos e saldo diretamente na ficha do paciente.
 
 
-## V49 - Correção editar financeiro
+## V50 - Correção editar financeiro
 
 Corrigida queda ao clicar em Editar no financeiro e ajustado salvamento de lançamentos vinculados ao Plano/Ficha.
 
 
-## V49 - Marcar pago no financeiro
+## V50 - Marcar pago no financeiro
 
 Renomeado o botão Baixar para Marcar pago e ajustadas ações da tabela financeira: pagamento parcial para pendentes e ver pagamentos para já pagos.
 
 
-## V49 - Primeiro acesso personalizado
+## V50 - Primeiro acesso personalizado
 
 Agora, na primeira abertura sem usuário cadastrado, o sistema pede para a clínica escolher usuário, senha de entrada e senha separada do financeiro. Removido o primeiro acesso fixo admin/admin123.
 
 
-## V49 - Primeiro acesso forçado quando existe admin padrão
+## V50 - Primeiro acesso forçado quando existe admin padrão
 
 Se o banco tiver apenas o usuário padrão `admin`, o sistema mostra a tela de primeiro acesso para a clínica escolher usuário, senha de entrada e senha do financeiro.
 
 
-## V49 - Plano completo, parcelas e baixa pela ficha
+## V50 - Plano completo, parcelas e baixa pela ficha
 
 Agora a ficha permite lançar pagamento do tratamento completo, criar parcelas com vencimento, dar baixa com valor/data real e aprovar todos os orçamentos para o plano.
 
 
-## V49 - Alertas de cobrança e aniversários
+## V50 - Alertas de cobrança e aniversários
 
 A Home mostra cobranças vencendo hoje/vencidas, com WhatsApp pronto, marcar como enviado e acesso para dar baixa. Aniversários continuam com lembrete e WhatsApp.
 
 
-## V49 - Excluir item do plano
+## V50 - Excluir item do plano
 
 Adicionado botão para excluir item do Plano/Ficha. Lançamentos financeiros vinculados são preservados e o orçamento de origem volta para aberto.
 
 
-## V49 - Linha do tempo clínica separada
+## V50 - Linha do tempo clínica separada
 
 Adicionada linha do tempo clínica separada para registrar manutenções, procedimentos realizados e evoluções por data, sem misturar com financeiro.
 
 
-## V49 - Excluir paciente
+## V50 - Excluir paciente
 
 Adicionado botão Excluir paciente no painel do paciente, com confirmação e preservação dos lançamentos financeiros.
 
 
-## V49 - Ficha de evolução detalhada
+## V50 - Ficha de evolução detalhada
 
 Nova aba Evolução clínica com descrição completa do atendimento, materiais, intercorrências, conduta, retorno, visualização e impressão.
 
 
-## V49 - Agenda rápida e boleto
+## V50 - Agenda rápida e boleto
 
 A agenda aceita paciente novo sem cadastro prévio, criando cadastro básico automaticamente. A ficha ganhou botão Novo boleto/parcela e a forma de pagamento Boleto bancário.
 
 
-## V49 - Correção clique na agenda
+## V50 - Correção clique na agenda
 
 Corrigido clique no nome do paciente dentro da agenda: abre a ficha diretamente e evita modal escuro/travado.
 
 
-## V49 - Busca por paciente na agenda
+## V50 - Busca por paciente na agenda
 
 O agendamento agora usa busca por nome no lugar do select de paciente, deixando o fluxo mais rápido.
 
 
-## V49 - Autocomplete na agenda
+## V50 - Autocomplete na agenda
 
 Busca de paciente na agenda ganhou autocomplete visual com nome e telefone, no Criar rápido e no modal de agendamento.
 
 
-## V49 - Agenda limpa
+## V50 - Agenda limpa
 
 Removido painel lateral da agenda, deixando o calendário mais largo e os eventos mais compactos. O agendamento passa a ser feito pelo botão superior ou clicando em um horário vazio.
 
 
-## V49 - Correção modo Lista da agenda
+## V50 - Correção modo Lista da agenda
 
 Corrigido nome invisível no modo Lista da agenda. Agora o paciente aparece em cor escura e o título aparece abaixo.
 
 
-## V49 - Correção modo Mês da agenda
+## V50 - Correção modo Mês da agenda
 
 Corrigido nome invisível no modo Mês da agenda. Eventos do mês agora aparecem com texto escuro e cartão claro.
 
 
-## V49 - Correção salvar evolução no mobile
+## V50 - Correção salvar evolução no mobile
 
 Corrigido o botão "Salvar ficha de evolução" no celular/iPad, que podia ficar escondido pela barra inferior e pelo histórico.
 
 
-## V49 - Assinatura da anamnese
+## V50 - Assinatura da anamnese
 
 Anamnese agora pode ser assinada digitalmente, reutilizando assinatura de contrato/termo já assinado pelo mesmo paciente ou capturando nova assinatura na tela.
 
 
-## V49 - Perguntas extras na anamnese
+## V50 - Perguntas extras na anamnese
 
 Adicionadas as perguntas sobre alergia à picada de abelha e preenchimento na anamnese, com visualização e impressão.
 
 
-## V49 - Perguntas ajustadas na anamnese
+## V50 - Perguntas ajustadas na anamnese
 
 A anamnese agora pergunta sobre alergia à picada de abelha ou outro inseto e se já fez preenchimento ou Botox.
 
 
-## V49 - Correção build Coolify
+## V50 - Correção build Coolify
 
 Dependências Python travadas e Dockerfile ajustado para melhorar build no Coolify.
 
 
-## V49 - Cobrança múltipla e edição de agenda
+## V50 - Cobrança múltipla e edição de agenda
 
 Adicionada cobrança de vários procedimentos em uma única cobrança e botão Editar nos agendamentos dentro da ficha do paciente.
 
 
-## V49 - Cobrança múltipla sem liberar financeiro geral
+## V50 - Cobrança múltipla sem liberar financeiro geral
 
 O bloco Cobrar vários procedimentos juntos agora funciona direto pela ficha do paciente, sem exigir desbloqueio do financeiro. A tela completa do financeiro continua protegida.
 
 
-## V49 - Botão Cobrar tudo
+## V50 - Botão Cobrar tudo
 
 Adicionado botão Cobrar tudo no Plano/Ficha para cobrar todos os procedimentos em aberto com um clique, sem desbloquear o financeiro geral.
 
 
-## V49 - Agenda melhor no celular/iPad
+## V50 - Agenda melhor no celular/iPad
 
 Corrigido scroll do agendamento no celular. O modal da agenda agora rola corretamente e o botão Salvar fica acessível.
 
 
-## V49 - Correção Home mobile
+## V50 - Correção Home mobile
 
 Removido o espaço grande no topo da Home no celular. Os cards agora aparecem logo abaixo do cabeçalho.
 
 
-## V49 - Orçamento separado do financeiro
+## V50 - Orçamento separado do financeiro
 
 Orçamentos e aprovações para plano não entram no financeiro. Apenas cobranças/pagamentos geram entradas financeiras.
+
+
+## V50 - Financeiro mensal e regime de caixa
+
+Financeiro abre no mês atual e separa recebido pela data real do pagamento, a receber por vencimento, e orçamento/plano fora do financeiro até virar cobrança.

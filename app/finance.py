@@ -103,6 +103,114 @@ def add_months(date_str: str, months: int) -> str:
     return date(year, month, day).isoformat()
 
 
+def current_month_range() -> tuple[str, str]:
+    today = date.today()
+    start = today.replace(day=1)
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    end = today.replace(day=last_day)
+    return start.isoformat(), end.isoformat()
+
+
+def month_label(date_from: str, date_to: str) -> str:
+    try:
+        d1 = datetime.strptime(date_from, "%Y-%m-%d").date()
+        d2 = datetime.strptime(date_to, "%Y-%m-%d").date()
+        if d1.day == 1 and d1.year == d2.year and d1.month == d2.month and d2.day == calendar.monthrange(d2.year, d2.month)[1]:
+            meses = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"]
+            return f"{meses[d1.month-1]} de {d1.year}"
+        return f"{d1.strftime('%d/%m/%Y')} a {d2.strftime('%d/%m/%Y')}"
+    except Exception:
+        return "período selecionado"
+
+
+def finance_cash_summary(db, filters: dict) -> dict:
+    """Resumo financeiro em regime de caixa: recebido/pago pela data real do pagamento, pendente pelo vencimento."""
+    date_from = filters.get("date_from") or current_month_range()[0]
+    date_to = filters.get("date_to") or current_month_range()[1]
+
+    pay_income = db.execute(
+        """
+        SELECT COALESCE(SUM(p.amount_cents),0) s
+          FROM transaction_payments p
+          JOIN transactions t ON t.id=p.transaction_id
+         WHERE t.kind='income' AND p.date BETWEEN ? AND ?
+        """,
+        (date_from, date_to),
+    ).fetchone()["s"]
+    pay_expense = db.execute(
+        """
+        SELECT COALESCE(SUM(p.amount_cents),0) s
+          FROM transaction_payments p
+          JOIN transactions t ON t.id=p.transaction_id
+         WHERE t.kind='expense' AND p.date BETWEEN ? AND ?
+        """,
+        (date_from, date_to),
+    ).fetchone()["s"]
+    pending_income = db.execute(
+        """
+        SELECT COALESCE(SUM(balance_cents),0) s
+          FROM transactions
+         WHERE kind='income' AND status='pending'
+           AND COALESCE(due_date, date) BETWEEN ? AND ?
+        """,
+        (date_from, date_to),
+    ).fetchone()["s"]
+    pending_expense = db.execute(
+        """
+        SELECT COALESCE(SUM(balance_cents),0) s
+          FROM transactions
+         WHERE kind='expense' AND status='pending'
+           AND COALESCE(due_date, date) BETWEEN ? AND ?
+        """,
+        (date_from, date_to),
+    ).fetchone()["s"]
+    overdue_income = db.execute(
+        """
+        SELECT COALESCE(SUM(balance_cents),0) s
+          FROM transactions
+         WHERE kind='income' AND status='pending'
+           AND COALESCE(due_date, date) < ?
+        """,
+        (today_yyyy_mm_dd(),),
+    ).fetchone()["s"]
+
+    by_pm = {k: 0 for k, _ in PAYMENT_METHODS}
+    rows = db.execute(
+        """
+        SELECT p.payment_method, COALESCE(SUM(p.amount_cents),0) s
+          FROM transaction_payments p
+          JOIN transactions t ON t.id=p.transaction_id
+         WHERE t.kind='income' AND p.date BETWEEN ? AND ?
+         GROUP BY p.payment_method
+        """,
+        (date_from, date_to),
+    ).fetchall()
+    for r in rows:
+        pm = r["payment_method"] or "other"
+        if pm == "card": pm = "card_credit"
+        if pm not in by_pm: pm = "other"
+        by_pm[pm] += int(r["s"] or 0)
+
+    pay_income = int(pay_income or 0)
+    pay_expense = int(pay_expense or 0)
+    pending_income = int(pending_income or 0)
+    pending_expense = int(pending_expense or 0)
+    overdue_income = int(overdue_income or 0)
+    return {
+        "date_from": date_from,
+        "date_to": date_to,
+        "period_label": month_label(date_from, date_to),
+        "received_cents": pay_income,
+        "paid_expense_cents": pay_expense,
+        "pending_income_cents": pending_income,
+        "pending_expense_cents": pending_expense,
+        "overdue_income_cents": overdue_income,
+        "expected_income_cents": pay_income + pending_income,
+        "result_cents": pay_income - pay_expense,
+        "income_by_pm_cents": by_pm,
+    }
+
+
 def row_to_dict(row):
     if row is None:
         return None
@@ -233,13 +341,23 @@ def get_common_form_data(db):
 
 
 def get_filters():
+    default_from, default_to = current_month_range()
+    # O financeiro agora abre no mês atual por padrão. Para ver tudo, use periodo=all.
+    period = request.args.get("period", "month").strip()
+    if period == "all":
+        date_from = request.args.get("from", "").strip()
+        date_to = request.args.get("to", "").strip()
+    else:
+        date_from = request.args.get("from", default_from).strip() or default_from
+        date_to = request.args.get("to", default_to).strip() or default_to
     return {
         "kind": request.args.get("kind", "").strip(),
         "status": request.args.get("status", "").strip(),
         "payment_method": request.args.get("payment_method", "").strip(),
         "q": request.args.get("q", "").strip(),
-        "date_from": request.args.get("from", "").strip(),
-        "date_to": request.args.get("to", "").strip(),
+        "date_from": date_from,
+        "date_to": date_to,
+        "period": period,
         "patient_id": request.args.get("patient_id", "").strip(),
         "category_id": request.args.get("category_id", "").strip(),
         "provider_id": request.args.get("provider_id", "").strip(),
@@ -365,41 +483,8 @@ def transactions():
         tuple(params),
     ).fetchall()
 
-    total_income = total_expense = total_pending = total_received = total_paid_expense = total_overdue = 0
-    income_by_pm_cents = {"cash": 0, "pix": 0, "card_credit": 0, "card_debit": 0, "transfer": 0, "other": 0}
-    today = today_yyyy_mm_dd()
-    ids = [r["id"] for r in rows]
-
-    for r in rows:
-        amount = int(r["final_amount_cents"] or r["amount_cents"] or 0)
-        paid = int(r["paid_amount_cents"] or 0)
-        balance = int(r["balance_cents"] or 0)
-        if r["kind"] == "income":
-            total_income += amount
-            total_received += paid
-        else:
-            total_expense += amount
-            total_paid_expense += paid
-        if r["status"] == "pending":
-            total_pending += balance
-            if (r["due_date"] or r["date"]) < today:
-                total_overdue += balance
-
-    if ids:
-        placeholders = ",".join("?" for _ in ids)
-        pay_rows = db.execute(
-            "SELECT p.payment_method, SUM(p.amount_cents) AS s "
-            "FROM transaction_payments p JOIN transactions t ON t.id=p.transaction_id "
-            f"WHERE t.kind='income' AND t.id IN ({placeholders}) GROUP BY p.payment_method",
-            tuple(ids),
-        ).fetchall()
-        for r in pay_rows:
-            pm = r["payment_method"] or "other"
-            if pm == "card":
-                pm = "card_credit"
-            if pm not in income_by_pm_cents:
-                pm = "other"
-            income_by_pm_cents[pm] += int(r["s"] or 0)
+    cash_summary = finance_cash_summary(db, filters)
+    income_by_pm_cents = cash_summary["income_by_pm_cents"]
 
     patients = db.execute("SELECT id, name FROM patients ORDER BY name ASC").fetchall()
     categories = db.execute("SELECT id, name FROM categories WHERE active=1 ORDER BY name ASC").fetchall()
@@ -408,13 +493,15 @@ def transactions():
 
     income_by_pm = {k: cents_to_brl(v) for k, v in income_by_pm_cents.items()}
     totals = {
-        "income": cents_to_brl(total_income),
-        "expense": cents_to_brl(total_expense),
-        "received": cents_to_brl(total_received),
-        "paid_expense": cents_to_brl(total_paid_expense),
-        "pending": cents_to_brl(total_pending),
-        "overdue": cents_to_brl(total_overdue),
-        "result": cents_to_brl(total_received - total_paid_expense),
+        "income": cents_to_brl(cash_summary["expected_income_cents"]),
+        "expense": cents_to_brl(cash_summary["pending_expense_cents"] + cash_summary["paid_expense_cents"]),
+        "received": cents_to_brl(cash_summary["received_cents"]),
+        "paid_expense": cents_to_brl(cash_summary["paid_expense_cents"]),
+        "pending": cents_to_brl(cash_summary["pending_income_cents"]),
+        "pending_expense": cents_to_brl(cash_summary["pending_expense_cents"]),
+        "overdue": cents_to_brl(cash_summary["overdue_income_cents"]),
+        "result": cents_to_brl(cash_summary["result_cents"]),
+        "period_label": cash_summary["period_label"],
     }
     return render_template(
         "transactions_list.html",
@@ -919,20 +1006,15 @@ def reports():
     date_from = request.args.get("from", default_from).strip() or default_from
     date_to = request.args.get("to", default_to).strip() or default_to
 
-    summary = db.execute(
-        """
-        SELECT
-          SUM(CASE WHEN kind='income' THEN final_amount_cents ELSE 0 END) AS income_total,
-          SUM(CASE WHEN kind='income' THEN paid_amount_cents ELSE 0 END) AS income_paid,
-          SUM(CASE WHEN kind='income' THEN balance_cents ELSE 0 END) AS income_pending,
-          SUM(CASE WHEN kind='expense' THEN final_amount_cents ELSE 0 END) AS expense_total,
-          SUM(CASE WHEN kind='expense' THEN paid_amount_cents ELSE 0 END) AS expense_paid,
-          SUM(CASE WHEN status='pending' AND COALESCE(due_date,date) < date('now') THEN balance_cents ELSE 0 END) AS overdue
-        FROM transactions
-        WHERE COALESCE(due_date, date) BETWEEN ? AND ?
-        """,
-        (date_from, date_to),
-    ).fetchone()
+    cash_summary = finance_cash_summary(db, {"date_from": date_from, "date_to": date_to})
+    summary = {
+        "income_total": cash_summary["expected_income_cents"],
+        "income_paid": cash_summary["received_cents"],
+        "income_pending": cash_summary["pending_income_cents"],
+        "expense_total": cash_summary["paid_expense_cents"] + cash_summary["pending_expense_cents"],
+        "expense_paid": cash_summary["paid_expense_cents"],
+        "overdue": cash_summary["overdue_income_cents"],
+    }
 
     by_method = db.execute(
         """

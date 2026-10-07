@@ -8,11 +8,11 @@
 <form class="card shadow-sm border-0 mb-3"><div class="card-body"><div class="row g-2 align-items-end"><div class="col-md-3"><label class="form-label">De</label><input class="form-control" type="date" name="from" value="{{ date_from }}"></div><div class="col-md-3"><label class="form-label">Até</label><input class="form-control" type="date" name="to" value="{{ date_to }}"></div><div class="col-md-2"><button class="btn btn-brand w-100">Atualizar</button></div><div class="col-md-2"><a class="btn btn-light w-100" href="{{ url_for('finance.reports') }}">Mês atual</a></div></div></div></form>
 
 <div class="row g-3 mb-3">
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Entradas previstas</div><div class="kpi-value text-success">R$ {{ cents_to_brl(summary.income_total or 0) }}</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido</div><div class="kpi-value text-success">R$ {{ cents_to_brl(summary.income_paid or 0) }}</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Total do período</div><div class="kpi-value text-success">R$ {{ cents_to_brl(summary.income_total or 0) }}</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido no período</div><div class="kpi-value text-success">R$ {{ cents_to_brl(summary.income_paid or 0) }}</div></div></div></div>
   <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Saídas pagas</div><div class="kpi-value text-danger">R$ {{ cents_to_brl(summary.expense_paid or 0) }}</div></div></div></div>
   <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Resultado</div><div class="kpi-value">R$ {{ cents_to_brl((summary.income_paid or 0) - (summary.expense_paid or 0)) }}</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">A receber</div><div class="kpi-value">R$ {{ cents_to_brl(summary.income_pending or 0) }}</div></div></div></div>
+  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">A receber no período</div><div class="kpi-value">R$ {{ cents_to_brl(summary.income_pending or 0) }}</div></div></div></div>
   <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Vencidos</div><div class="kpi-value text-danger">R$ {{ cents_to_brl(summary.overdue or 0) }}</div></div></div></div>
 </div>
 
