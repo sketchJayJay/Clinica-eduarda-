@@ -50,6 +50,35 @@
 </style>
 
 <style>
+/* V54 - gráfico financeiro mais claro */
+.month-chart-premium{display:grid;gap:12px}
+.month-chart-card{
+  display:grid;grid-template-columns:64px 1fr 136px;gap:14px;align-items:center;
+  padding:12px 14px;border:1px solid rgba(183,150,127,.16);border-radius:18px;
+  background:linear-gradient(180deg,#fff,#fffaf5);
+}
+.month-chart-month{font-weight:950;color:var(--coffee);font-size:.96rem}
+.month-chart-bars{display:grid;gap:8px;min-width:0}
+.month-line{display:grid;grid-template-columns:68px 1fr 88px;gap:10px;align-items:center}
+.month-line-label{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:#9b7d69}
+.month-line-value{font-size:.82rem;font-weight:900;color:var(--coffee);text-align:right;white-space:nowrap}
+.chart-bar.clean{height:12px;background:#f1e7dc}
+.chart-result-box{
+  text-align:right;border-left:1px solid var(--line);padding-left:12px;
+}
+.chart-result-box .result-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.10em;font-weight:900;color:#9b7d69}
+.chart-result-box .result-value{font-size:1rem;font-weight:950;color:var(--coffee);white-space:nowrap}
+.legend-dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;vertical-align:-1px}
+.dot-income{background:#2d966e}.dot-expense{background:#bd5d65}
+@media(max-width:720px){
+  .month-chart-card{grid-template-columns:1fr;gap:8px}
+  .chart-result-box{text-align:left;border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:8px}
+  .month-line{grid-template-columns:64px 1fr 78px}
+}
+</style>
+
+
+<style>
 /* V53 - Financeiro Premium */
 .finance-command-bar{
   display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
@@ -257,21 +286,38 @@
       <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
         <div>
           <div class="eyebrow mb-1">Últimos 6 meses</div>
-          <h6 class="mb-0 fw-bold">Entradas x saídas</h6>
+          <h6 class="mb-0 fw-bold">Entradas, saídas e resultado</h6>
         </div>
         <span class="badge text-bg-light">regime de caixa</span>
       </div>
-      {% for m in month_chart %}
-      <div class="chart-row">
-        <div class="chart-label">{{ m.label }}</div>
-        <div class="chart-bars">
-          <div class="chart-bar" title="Entradas R$ {{ m.income }}"><span class="chart-income" style="width: {{ m.income_width }}%"></span></div>
-          <div class="chart-bar" title="Saídas R$ {{ m.expense }}"><span class="chart-expense" style="width: {{ m.expense_width }}%"></span></div>
+      <div class="month-chart-premium">
+        {% for m in month_chart %}
+        <div class="month-chart-card">
+          <div class="month-chart-month">{{ m.label }}</div>
+          <div class="month-chart-bars">
+            <div class="month-line">
+              <div class="month-line-label">Entrada</div>
+              <div class="chart-bar clean" title="Entradas R$ {{ m.income }}"><span class="chart-income" style="width: {{ m.income_width }}%"></span></div>
+              <div class="month-line-value">R$ {{ m.income }}</div>
+            </div>
+            <div class="month-line">
+              <div class="month-line-label">Saída</div>
+              <div class="chart-bar clean" title="Saídas R$ {{ m.expense }}"><span class="chart-expense" style="width: {{ m.expense_width }}%"></span></div>
+              <div class="month-line-value">R$ {{ m.expense }}</div>
+            </div>
+          </div>
+          <div class="chart-result-box">
+            <div class="result-label">Resultado</div>
+            <div class="result-value {% if m.result_positive %}text-success{% else %}text-danger{% endif %}">R$ {{ m.result }}</div>
+          </div>
         </div>
-        <div class="chart-result {% if m.result_positive %}text-success{% else %}text-danger{% endif %}">R$ {{ m.result }}</div>
+        {% endfor %}
       </div>
-      {% endfor %}
-      <div class="d-flex gap-3 small text-muted mt-2"><span>● Entradas</span><span>● Saídas</span><span>resultado à direita</span></div>
+      <div class="d-flex gap-3 small text-muted mt-3 flex-wrap">
+        <span><i class="legend-dot dot-income"></i>Entradas recebidas</span>
+        <span><i class="legend-dot dot-expense"></i>Saídas pagas</span>
+        <span>Resultado separado por mês</span>
+      </div>
     </div>
   </div>
   <div class="col-lg-5">
