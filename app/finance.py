@@ -492,6 +492,41 @@ def transactions():
     pm_labels = {k: v for k, v in PAYMENT_METHODS}
 
     income_by_pm = {k: cents_to_brl(v) for k, v in income_by_pm_cents.items()}
+
+    expected_income_cents = cash_summary["expected_income_cents"]
+    received_cents = cash_summary["received_cents"]
+    paid_expense_cents = cash_summary["paid_expense_cents"]
+    pending_income_cents = cash_summary["pending_income_cents"]
+    overdue_income_cents = cash_summary["overdue_income_cents"]
+    total_flow_cents = max(expected_income_cents, 1)
+
+    def pct(part, total):
+        try:
+            if total <= 0:
+                return 0
+            return round((part / total) * 100, 1)
+        except Exception:
+            return 0
+
+    analytics = {
+        "collection_rate": pct(received_cents, expected_income_cents),
+        "pending_rate": pct(pending_income_cents, expected_income_cents),
+        "overdue_rate": pct(overdue_income_cents, expected_income_cents),
+        "expense_rate": pct(paid_expense_cents, received_cents),
+        "result_positive": cash_summary["result_cents"] >= 0,
+    }
+
+    payment_mix = []
+    for key, label in PAYMENT_METHODS:
+        cents = income_by_pm_cents.get(key, 0) or 0
+        if cents > 0:
+            payment_mix.append({
+                "key": key,
+                "label": label,
+                "value": cents_to_brl(cents),
+                "pct": pct(cents, received_cents),
+            })
+    payment_mix = sorted(payment_mix, key=lambda x: x["pct"], reverse=True)
     totals = {
         "income": cents_to_brl(cash_summary["expected_income_cents"]),
         "expense": cents_to_brl(cash_summary["pending_expense_cents"] + cash_summary["paid_expense_cents"]),
@@ -510,7 +545,9 @@ def transactions():
         pm_labels=pm_labels,
         filters=filters,
         totals=totals,
+        analytics=analytics,
         income_by_pm=income_by_pm,
+        payment_mix=payment_mix,
         patients=patients,
         categories=categories,
         providers=providers,

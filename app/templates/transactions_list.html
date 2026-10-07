@@ -1,6 +1,54 @@
 {% extends "base.html" %}
 {% set title = "Lançamentos" %}
 {% block content %}
+
+<style>
+.finance-hero{
+  background:linear-gradient(135deg, rgba(207,122,106,.10), rgba(205,175,135,.10), rgba(109,146,204,.08));
+  border:1px solid rgba(183,150,127,.22);
+  border-radius:24px;
+  padding:20px;
+  box-shadow:0 14px 34px rgba(69,46,37,.06);
+}
+.finance-hero h2{font-size:1.1rem;font-weight:900;color:var(--coffee);margin:0 0 12px}
+.finance-soft-card{
+  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,244,239,.96));
+  border:1px solid rgba(183,150,127,.18);
+  border-radius:22px;
+  box-shadow:0 10px 28px rgba(69,46,37,.05);
+}
+.metric-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 12px;border-radius:999px;
+  background:#fff;border:1px solid var(--line);font-weight:800;color:var(--coffee);font-size:.9rem;
+}
+.metric-number{font-size:2rem;font-weight:900;line-height:1;color:var(--coffee)}
+.metric-caption{font-size:.86rem;color:#8c7a6f}
+.progress-soft{height:12px;background:#f0e7df;border-radius:999px;overflow:hidden}
+.progress-soft > span{display:block;height:100%;border-radius:999px}
+.bar-rose{background:linear-gradient(90deg,#d98989,#c86f75)}
+.bar-gold{background:linear-gradient(90deg,#d5b37a,#b98b43)}
+.bar-blue{background:linear-gradient(90deg,#85a9d8,#5f83bb)}
+.bar-green{background:linear-gradient(90deg,#77c3a3,#4da47f)}
+.mix-item{padding:12px 14px;border-radius:16px;background:#fff;border:1px solid rgba(183,150,127,.18)}
+.mix-item .pct{font-size:1.1rem;font-weight:900;color:var(--coffee)}
+.finance-mini-kpi{
+  border-radius:20px;
+  padding:18px;
+  border:1px solid rgba(183,150,127,.18);
+  background:linear-gradient(180deg,#fff,#fbf7f3);
+  height:100%;
+}
+.finance-mini-kpi .label{font-size:.78rem;text-transform:uppercase;letter-spacing:.10em;font-weight:900;color:#9a7c69}
+.finance-mini-kpi .value{font-size:1.8rem;font-weight:900;color:var(--coffee);line-height:1.1}
+.finance-mini-kpi .sub{font-size:.9rem;color:#8b776c}
+@media (max-width: 768px){
+  .finance-hero{padding:16px}
+  .metric-number{font-size:1.55rem}
+  .finance-mini-kpi .value{font-size:1.5rem}
+}
+</style>
+
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
   <div>
     <div class="eyebrow mb-1">Fluxo e cobranças</div><h1 class="page-title mb-1" style="font-size:2.35rem">Financeiro</h1>
@@ -75,8 +123,100 @@
 
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
   <div class="text-muted small">Período do resumo: <b>{{ totals.period_label }}</b></div>
-  {% if filters.period == 'all' and not filters.date_from and not filters.date_to %}<span class="badge text-bg-warning">Mostrando tudo</span>{% else %}<span class="badge text-bg-light">Filtro mensal</span>{% endif %}
+  {% if filters.period == 'all' and not filters.date_from and not filters.date_to %}<span class="badge text-bg-light">Filtro geral</span>{% else %}<span class="badge text-bg-light">Filtro mensal</span>{% endif %}
 </div>
+
+<div class="finance-hero mb-3">
+  <div class="row g-3 align-items-stretch">
+    <div class="col-lg-5">
+      <h2>Resumo visual do financeiro</h2>
+      <div class="metric-number mb-2">R$ {{ totals.result }}</div>
+      <div class="metric-caption mb-3">
+        Resultado do período {% if analytics.result_positive %}<b class="text-success">positivo</b>{% else %}<b class="text-danger">negativo</b>{% endif %}.
+        Visual mais leve para a cliente entender rápido o que entrou, o que falta receber e o que está vencido.
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <span class="metric-chip">Recebido: <b>R$ {{ totals.paid_income }}</b></span>
+        <span class="metric-chip">A receber: <b>R$ {{ totals.pending }}</b></span>
+        <span class="metric-chip">Vencido: <b>R$ {{ totals.overdue }}</b></span>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="finance-soft-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="eyebrow" style="font-size:.72rem">Taxa de recebimento</div>
+                <div class="metric-number" style="font-size:1.55rem">{{ analytics.collection_rate }}%</div>
+              </div>
+              <span class="metric-chip">Meta visual</span>
+            </div>
+            <div class="progress-soft mb-2"><span class="bar-green" style="width: {{ analytics.collection_rate }}%"></span></div>
+            <div class="metric-caption">Quanto do valor previsto no período realmente entrou.</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="finance-soft-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="eyebrow" style="font-size:.72rem">Pendências</div>
+                <div class="metric-number" style="font-size:1.55rem">{{ analytics.pending_rate }}%</div>
+              </div>
+              <span class="metric-chip">Em aberto</span>
+            </div>
+            <div class="progress-soft mb-2"><span class="bar-gold" style="width: {{ analytics.pending_rate }}%"></span></div>
+            <div class="metric-caption">Parte do período que ainda falta receber.</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="finance-soft-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="eyebrow" style="font-size:.72rem">Vencidos</div>
+                <div class="metric-number" style="font-size:1.55rem">{{ analytics.overdue_rate }}%</div>
+              </div>
+              <span class="metric-chip">Cobrança</span>
+            </div>
+            <div class="progress-soft mb-2"><span class="bar-rose" style="width: {{ analytics.overdue_rate }}%"></span></div>
+            <div class="metric-caption">Percentual de valores vencidos dentro do previsto.</div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="finance-soft-card p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="eyebrow" style="font-size:.72rem">Saídas sobre recebido</div>
+                <div class="metric-number" style="font-size:1.55rem">{{ analytics.expense_rate }}%</div>
+              </div>
+              <span class="metric-chip">Custos</span>
+            </div>
+            <div class="progress-soft mb-2"><span class="bar-blue" style="width: {{ analytics.expense_rate if analytics.expense_rate <= 100 else 100 }}%"></span></div>
+            <div class="metric-caption">Peso das saídas em cima do que entrou de verdade.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if payment_mix %}
+  <div class="row g-3 mt-1">
+    {% for item in payment_mix[:4] %}
+    <div class="col-md-3 col-6">
+      <div class="mix-item h-100">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
+          <div class="label fw-bold text-uppercase small" style="color:#9a7c69">{{ item.label }}</div>
+          <div class="pct">{{ item.pct }}%</div>
+        </div>
+        <div class="fw-bold" style="font-size:1.05rem;color:var(--coffee)">R$ {{ item.value }}</div>
+        <div class="metric-caption">Participação no recebido</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+
 <div class="row g-3 mb-3">
   <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Total do período</div><div class="kpi-value text-success">R$ {{ totals.income }}</div><div class="small text-muted">Recebido + a receber</div></div></div></div>
   <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido no período</div><div class="kpi-value text-success">R$ {{ totals.received }}</div><div class="small text-muted">data real do pagamento</div></div></div></div>
