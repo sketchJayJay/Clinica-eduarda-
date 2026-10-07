@@ -501,7 +501,7 @@ def transactions():
         "pending_expense": cents_to_brl(cash_summary["pending_expense_cents"]),
         "overdue": cents_to_brl(cash_summary["overdue_income_cents"]),
         "result": cents_to_brl(cash_summary["result_cents"]),
-        "period_label": cash_summary["period_label"],
+        "period_label": cash_summary.get("period_label", "Período selecionado") if hasattr(cash_summary, "get") else cash_summary["period_label"],
     }
     return render_template(
         "transactions_list.html",
@@ -515,7 +515,7 @@ def transactions():
         categories=categories,
         providers=providers,
         pm=PAYMENT_METHODS,
-        today=today,
+        today=today_yyyy_mm_dd(),
     )
 
 
