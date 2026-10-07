@@ -508,29 +508,88 @@ def transactions():
         except Exception:
             return 0
 
+    def pct_width(value):
+        try:
+            return max(0, min(100, float(value or 0)))
+        except Exception:
+            return 0
+
+    def pct_delta(cur, prev):
+        cur = int(cur or 0)
+        prev = int(prev or 0)
+        if prev <= 0:
+            return 0 if cur <= 0 else 100
+        return round(((cur - prev) / prev) * 100, 1)
+
+    prev_filters = dict(filters)
+    prev_filters["date_from"] = add_months(cash_summary["date_from"], -1)
+    prev_filters["date_to"] = add_months(cash_summary["date_to"], -1)
+    prev_summary = finance_cash_summary(db, prev_filters)
+
     analytics = {
         "collection_rate": pct(received_cents, expected_income_cents),
+        "collection_width": pct_width(pct(received_cents, expected_income_cents)),
         "pending_rate": pct(pending_income_cents, expected_income_cents),
+        "pending_width": pct_width(pct(pending_income_cents, expected_income_cents)),
         "overdue_rate": pct(overdue_income_cents, expected_income_cents),
+        "overdue_width": pct_width(pct(overdue_income_cents, expected_income_cents)),
         "expense_rate": pct(paid_expense_cents, received_cents),
+        "expense_width": pct_width(pct(paid_expense_cents, received_cents)),
         "result_positive": cash_summary["result_cents"] >= 0,
+        "received_delta": pct_delta(received_cents, prev_summary["received_cents"]),
+        "result_delta": pct_delta(cash_summary["result_cents"], prev_summary["result_cents"]),
+        "pending_delta": pct_delta(pending_income_cents, prev_summary["pending_income_cents"]),
+        "prev_period_label": prev_summary["period_label"],
     }
 
     payment_mix = []
     for key, label in PAYMENT_METHODS:
         cents = income_by_pm_cents.get(key, 0) or 0
         if cents > 0:
+            item_pct = pct(cents, received_cents)
             payment_mix.append({
                 "key": key,
                 "label": label,
                 "value": cents_to_brl(cents),
-                "pct": pct(cents, received_cents),
+                "pct": item_pct,
+                "width": pct_width(item_pct),
             })
     payment_mix = sorted(payment_mix, key=lambda x: x["pct"], reverse=True)
+
+    # Mini gráfico dos últimos 6 meses, em regime de caixa.
+    month_chart = []
+    try:
+        base_month = datetime.strptime(cash_summary["date_to"], "%Y-%m-%d").date().replace(day=1)
+    except Exception:
+        base_month = date.today().replace(day=1)
+    max_bar = 1
+    for offset in range(5, -1, -1):
+        m_start = add_months(base_month.isoformat(), -offset)
+        d1 = datetime.strptime(m_start, "%Y-%m-%d").date().replace(day=1)
+        d2 = d1.replace(day=calendar.monthrange(d1.year, d1.month)[1])
+        mf = dict(filters)
+        mf["date_from"] = d1.isoformat()
+        mf["date_to"] = d2.isoformat()
+        ms = finance_cash_summary(db, mf)
+        max_bar = max(max_bar, ms["received_cents"], ms["paid_expense_cents"])
+        month_chart.append({
+            "label": f"{d1.month:02d}/{str(d1.year)[2:]}",
+            "income_cents": ms["received_cents"],
+            "expense_cents": ms["paid_expense_cents"],
+            "result_cents": ms["result_cents"],
+            "income": cents_to_brl(ms["received_cents"]),
+            "expense": cents_to_brl(ms["paid_expense_cents"]),
+            "result": cents_to_brl(ms["result_cents"]),
+        })
+    for m in month_chart:
+        m["income_width"] = max(4, round((m["income_cents"] / max_bar) * 100, 1)) if m["income_cents"] else 3
+        m["expense_width"] = max(4, round((m["expense_cents"] / max_bar) * 100, 1)) if m["expense_cents"] else 3
+        m["result_positive"] = m["result_cents"] >= 0
     totals = {
         "income": cents_to_brl(cash_summary["expected_income_cents"]),
         "expense": cents_to_brl(cash_summary["pending_expense_cents"] + cash_summary["paid_expense_cents"]),
         "received": cents_to_brl(cash_summary["received_cents"]),
+        "paid_income": cents_to_brl(cash_summary["received_cents"]),
         "paid_expense": cents_to_brl(cash_summary["paid_expense_cents"]),
         "pending": cents_to_brl(cash_summary["pending_income_cents"]),
         "pending_expense": cents_to_brl(cash_summary["pending_expense_cents"]),
@@ -548,6 +607,7 @@ def transactions():
         analytics=analytics,
         income_by_pm=income_by_pm,
         payment_mix=payment_mix,
+        month_chart=month_chart,
         patients=patients,
         categories=categories,
         providers=providers,

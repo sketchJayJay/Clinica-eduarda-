@@ -49,16 +49,59 @@
 }
 </style>
 
+<style>
+/* V53 - Financeiro Premium */
+.finance-command-bar{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:18px;padding:10px 12px;margin-bottom:14px;
+}
+.finance-command-bar .btn{padding:.46rem .74rem}
+.finance-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}
+.finance-kpi-premium{
+  position:relative;overflow:hidden;min-height:132px;border-radius:24px;border:1px solid rgba(183,150,127,.18);
+  background:linear-gradient(145deg,#fff 0%,#fbf4ed 100%);box-shadow:0 16px 34px rgba(69,46,37,.06);padding:18px;
+}
+.finance-kpi-premium:after{
+  content:"";position:absolute;right:-34px;top:-34px;width:110px;height:110px;border-radius:999px;
+  background:radial-gradient(circle,rgba(196,123,90,.16),transparent 68%);
+}
+.finance-kpi-premium .tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:#9b7d69}
+.finance-kpi-premium .value{font-size:1.78rem;font-weight:950;letter-spacing:-.05em;color:var(--coffee);margin-top:6px}
+.finance-kpi-premium .hint{color:#8b776c;font-size:.86rem}
+.delta-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:.78rem;font-weight:900;background:#fff;border:1px solid var(--line);margin-top:10px}
+.delta-good{color:#2c7a59}.delta-bad{color:#b44f57}
+.chart-card{border-radius:24px;border:1px solid rgba(183,150,127,.18);background:linear-gradient(180deg,#fff,#fcf7f2);box-shadow:0 14px 34px rgba(69,46,37,.055);padding:18px;height:100%}
+.chart-row{display:grid;grid-template-columns:54px 1fr 86px;gap:10px;align-items:center;margin:11px 0}
+.chart-label{font-weight:900;color:var(--coffee);font-size:.82rem}
+.chart-bars{display:flex;flex-direction:column;gap:5px}
+.chart-bar{height:10px;border-radius:999px;background:#f1e7dc;overflow:hidden}
+.chart-bar span{display:block;height:100%;border-radius:999px}
+.chart-income{background:linear-gradient(90deg,#6fc59b,#2d966e)}
+.chart-expense{background:linear-gradient(90deg,#de9a9a,#bd5d65)}
+.chart-result{font-size:.78rem;color:#8b776c;text-align:right;font-weight:800}
+.finance-table-card{border-radius:24px!important;overflow:hidden}
+.finance-table-title{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--line);background:#fffdfa}
+.payment-ranking{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.payment-ranking .mix-item{min-height:116px}
+@media(max-width:1100px){.finance-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.payment-ranking{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.finance-kpi-grid,.payment-ranking{grid-template-columns:1fr}.chart-row{grid-template-columns:46px 1fr}.chart-result{grid-column:2;text-align:left}.finance-command-bar{align-items:stretch}.finance-command-bar .d-flex{width:100%}.finance-command-bar .btn{flex:1}}
+</style>
+
+
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
   <div>
-    <div class="eyebrow mb-1">Fluxo e cobranças</div><h1 class="page-title mb-1" style="font-size:2.35rem">Financeiro</h1>
-    <div class="page-subtitle">Entradas, saídas, parcelas, pagamentos parciais, pendências e cobranças Asaas.</div>
+    <div class="eyebrow mb-1">Painel financeiro premium</div><h1 class="page-title mb-1" style="font-size:2.35rem">Financeiro</h1>
+    <div class="page-subtitle">Visão de caixa, cobranças, pendências, percentuais e comparação mensal.</div>
   </div>
+</div>
+
+<div class="finance-command-bar">
   <div class="d-flex gap-2 flex-wrap">
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions') }}">Mês atual</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', period='all') }}">Ver tudo</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.reports') }}">Relatórios</a>
-    <a class="btn btn-outline-secondary" href="{{ url_for('finance.export_csv') }}">CSV</a>
+  </div>
+  <div class="d-flex gap-2 flex-wrap">
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.export_excel') }}">Excel</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.export_pdf') }}">PDF</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.transaction_new', kind='expense') }}">Nova saída</a>
@@ -126,108 +169,148 @@
   {% if filters.period == 'all' and not filters.date_from and not filters.date_to %}<span class="badge text-bg-light">Filtro geral</span>{% else %}<span class="badge text-bg-light">Filtro mensal</span>{% endif %}
 </div>
 
+
+<div class="finance-kpi-grid">
+  <div class="finance-kpi-premium">
+    <div class="tag">Recebido no período</div>
+    <div class="value">R$ {{ totals.paid_income }}</div>
+    <div class="hint">Somente o que caiu de verdade.</div>
+    <span class="delta-pill {% if analytics.received_delta >= 0 %}delta-good{% else %}delta-bad{% endif %}">
+      {% if analytics.received_delta >= 0 %}+{% endif %}{{ analytics.received_delta }}% vs período anterior
+    </span>
+  </div>
+  <div class="finance-kpi-premium">
+    <div class="tag">A receber</div>
+    <div class="value">R$ {{ totals.pending }}</div>
+    <div class="hint">Cobranças pendentes pelo vencimento.</div>
+    <span class="delta-pill {% if analytics.pending_delta <= 0 %}delta-good{% else %}delta-bad{% endif %}">
+      {% if analytics.pending_delta >= 0 %}+{% endif %}{{ analytics.pending_delta }}% vs anterior
+    </span>
+  </div>
+  <div class="finance-kpi-premium">
+    <div class="tag">Resultado</div>
+    <div class="value">R$ {{ totals.result }}</div>
+    <div class="hint">{% if analytics.result_positive %}Período positivo{% else %}Saídas maiores que entradas{% endif %}</div>
+    <span class="delta-pill {% if analytics.result_delta >= 0 %}delta-good{% else %}delta-bad{% endif %}">
+      {% if analytics.result_delta >= 0 %}+{% endif %}{{ analytics.result_delta }}% vs anterior
+    </span>
+  </div>
+  <div class="finance-kpi-premium">
+    <div class="tag">Vencidos</div>
+    <div class="value">R$ {{ totals.overdue }}</div>
+    <div class="hint">Valores que precisam de cobrança.</div>
+    <span class="delta-pill delta-bad">{{ analytics.overdue_rate }}% do previsto</span>
+  </div>
+</div>
+
 <div class="finance-hero mb-3">
   <div class="row g-3 align-items-stretch">
     <div class="col-lg-5">
-      <h2>Resumo visual do financeiro</h2>
-      <div class="metric-number mb-2">R$ {{ totals.result }}</div>
+      <h2>Saúde financeira do período</h2>
+      <div class="metric-number mb-2">{{ analytics.collection_rate }}%</div>
       <div class="metric-caption mb-3">
-        Resultado do período {% if analytics.result_positive %}<b class="text-success">positivo</b>{% else %}<b class="text-danger">negativo</b>{% endif %}.
-        Visual mais leve para a cliente entender rápido o que entrou, o que falta receber e o que está vencido.
+        taxa de recebimento sobre o total previsto. Orçamento e plano aprovado continuam fora do financeiro até virar cobrança/pagamento.
       </div>
+      <div class="progress-soft mb-3"><span class="bar-green" style="width: {{ analytics.collection_width }}%"></span></div>
       <div class="d-flex gap-2 flex-wrap">
-        <span class="metric-chip">Recebido: <b>R$ {{ totals.paid_income }}</b></span>
-        <span class="metric-chip">A receber: <b>R$ {{ totals.pending }}</b></span>
-        <span class="metric-chip">Vencido: <b>R$ {{ totals.overdue }}</b></span>
+        <span class="metric-chip">Previsto: <b>R$ {{ totals.income }}</b></span>
+        <span class="metric-chip">Saídas pagas: <b>R$ {{ totals.paid_expense }}</b></span>
       </div>
     </div>
     <div class="col-lg-7">
       <div class="row g-3">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <div class="finance-soft-card p-3 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <div class="eyebrow" style="font-size:.72rem">Taxa de recebimento</div>
-                <div class="metric-number" style="font-size:1.55rem">{{ analytics.collection_rate }}%</div>
-              </div>
-              <span class="metric-chip">Meta visual</span>
-            </div>
-            <div class="progress-soft mb-2"><span class="bar-green" style="width: {{ analytics.collection_rate }}%"></span></div>
-            <div class="metric-caption">Quanto do valor previsto no período realmente entrou.</div>
+            <div class="eyebrow" style="font-size:.72rem">Recebido</div>
+            <div class="metric-number" style="font-size:1.55rem">{{ analytics.collection_rate }}%</div>
+            <div class="progress-soft my-2"><span class="bar-green" style="width: {{ analytics.collection_width }}%"></span></div>
+            <div class="metric-caption">entrou no caixa</div>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <div class="finance-soft-card p-3 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <div class="eyebrow" style="font-size:.72rem">Pendências</div>
-                <div class="metric-number" style="font-size:1.55rem">{{ analytics.pending_rate }}%</div>
-              </div>
-              <span class="metric-chip">Em aberto</span>
-            </div>
-            <div class="progress-soft mb-2"><span class="bar-gold" style="width: {{ analytics.pending_rate }}%"></span></div>
-            <div class="metric-caption">Parte do período que ainda falta receber.</div>
+            <div class="eyebrow" style="font-size:.72rem">Pendente</div>
+            <div class="metric-number" style="font-size:1.55rem">{{ analytics.pending_rate }}%</div>
+            <div class="progress-soft my-2"><span class="bar-gold" style="width: {{ analytics.pending_width }}%"></span></div>
+            <div class="metric-caption">falta receber</div>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <div class="finance-soft-card p-3 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <div class="eyebrow" style="font-size:.72rem">Vencidos</div>
-                <div class="metric-number" style="font-size:1.55rem">{{ analytics.overdue_rate }}%</div>
-              </div>
-              <span class="metric-chip">Cobrança</span>
-            </div>
-            <div class="progress-soft mb-2"><span class="bar-rose" style="width: {{ analytics.overdue_rate }}%"></span></div>
-            <div class="metric-caption">Percentual de valores vencidos dentro do previsto.</div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="finance-soft-card p-3 h-100">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-              <div>
-                <div class="eyebrow" style="font-size:.72rem">Saídas sobre recebido</div>
-                <div class="metric-number" style="font-size:1.55rem">{{ analytics.expense_rate }}%</div>
-              </div>
-              <span class="metric-chip">Custos</span>
-            </div>
-            <div class="progress-soft mb-2"><span class="bar-blue" style="width: {{ analytics.expense_rate if analytics.expense_rate <= 100 else 100 }}%"></span></div>
-            <div class="metric-caption">Peso das saídas em cima do que entrou de verdade.</div>
+            <div class="eyebrow" style="font-size:.72rem">Saídas</div>
+            <div class="metric-number" style="font-size:1.55rem">{{ analytics.expense_rate }}%</div>
+            <div class="progress-soft my-2"><span class="bar-blue" style="width: {{ analytics.expense_width }}%"></span></div>
+            <div class="metric-caption">sobre recebido</div>
           </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  {% if payment_mix %}
-  <div class="row g-3 mt-1">
-    {% for item in payment_mix[:4] %}
-    <div class="col-md-3 col-6">
-      <div class="mix-item h-100">
-        <div class="d-flex justify-content-between align-items-start gap-2 mb-1">
-          <div class="label fw-bold text-uppercase small" style="color:#9a7c69">{{ item.label }}</div>
-          <div class="pct">{{ item.pct }}%</div>
-        </div>
-        <div class="fw-bold" style="font-size:1.05rem;color:var(--coffee)">R$ {{ item.value }}</div>
-        <div class="metric-caption">Participação no recebido</div>
+      <div class="alert alert-light border mt-3 mb-0">
+        <b>Comparativo:</b> referência contra {{ analytics.prev_period_label }}.
       </div>
     </div>
-    {% endfor %}
   </div>
-  {% endif %}
 </div>
 
 <div class="row g-3 mb-3">
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Total do período</div><div class="kpi-value text-success">R$ {{ totals.income }}</div><div class="small text-muted">Recebido + a receber</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido no período</div><div class="kpi-value text-success">R$ {{ totals.received }}</div><div class="small text-muted">data real do pagamento</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Saídas pagas</div><div class="kpi-value text-danger">R$ {{ totals.paid_expense }}</div><div class="small text-muted">data real do pagamento</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Resultado recebido</div><div class="kpi-value">R$ {{ totals.result }}</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">A receber</div><div class="kpi-value">R$ {{ totals.pending }}</div><div class="small text-muted">vencimentos do período</div></div></div></div>
-  <div class="col-md-3"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Vencidos</div><div class="kpi-value text-danger">R$ {{ totals.overdue }}</div><div class="small text-muted">pendências vencidas</div></div></div></div>
-  <div class="col-md-6"><div class="card kpi shadow-sm border-0"><div class="card-body"><div class="kpi-label">Recebido no período por forma</div><div class="small">Dinheiro R$ {{ income_by_pm.cash }} · Pix R$ {{ income_by_pm.pix }} · Crédito R$ {{ income_by_pm.card_credit }} · Débito R$ {{ income_by_pm.card_debit }} · Transf. R$ {{ income_by_pm.transfer }}</div></div></div></div>
+  <div class="col-lg-7">
+    <div class="chart-card">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <div>
+          <div class="eyebrow mb-1">Últimos 6 meses</div>
+          <h6 class="mb-0 fw-bold">Entradas x saídas</h6>
+        </div>
+        <span class="badge text-bg-light">regime de caixa</span>
+      </div>
+      {% for m in month_chart %}
+      <div class="chart-row">
+        <div class="chart-label">{{ m.label }}</div>
+        <div class="chart-bars">
+          <div class="chart-bar" title="Entradas R$ {{ m.income }}"><span class="chart-income" style="width: {{ m.income_width }}%"></span></div>
+          <div class="chart-bar" title="Saídas R$ {{ m.expense }}"><span class="chart-expense" style="width: {{ m.expense_width }}%"></span></div>
+        </div>
+        <div class="chart-result {% if m.result_positive %}text-success{% else %}text-danger{% endif %}">R$ {{ m.result }}</div>
+      </div>
+      {% endfor %}
+      <div class="d-flex gap-3 small text-muted mt-2"><span>● Entradas</span><span>● Saídas</span><span>resultado à direita</span></div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="chart-card">
+      <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+        <div>
+          <div class="eyebrow mb-1">Formas de pagamento</div>
+          <h6 class="mb-0 fw-bold">Ranking do recebido</h6>
+        </div>
+        <span class="badge text-bg-light">top formas</span>
+      </div>
+      {% if payment_mix %}
+        <div class="vstack gap-2">
+          {% for item in payment_mix[:5] %}
+          <div class="mix-item">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div class="fw-bold">{{ item.label }}</div>
+              <div class="pct">{{ item.pct }}%</div>
+            </div>
+            <div class="progress-soft mb-2"><span class="bar-green" style="width: {{ item.width }}%"></span></div>
+            <div class="metric-caption">R$ {{ item.value }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div class="text-muted py-4">Nenhum pagamento recebido nesse período.</div>
+      {% endif %}
+    </div>
+  </div>
 </div>
 
-<div class="card shadow-sm border-0">
+<div class="card shadow-sm border-0 finance-table-card">
+  <div class="finance-table-title">
+    <div>
+      <div class="eyebrow mb-1">Lançamentos</div>
+      <h6 class="mb-0 fw-bold">Movimentações do período</h6>
+    </div>
+    <span class="badge text-bg-light">{{ rows|length }} registro(s)</span>
+  </div>
   <div class="table-responsive">
     <table class="table table-hover align-middle mb-0">
       <thead class="table-light"><tr><th>Data/Venc.</th><th>Tipo</th><th>Status</th><th>Paciente</th><th>Profissional</th><th>Descrição</th><th>Parc.</th><th class="text-end">Final</th><th class="text-end">Pago</th><th class="text-end">Saldo</th><th style="width: 430px"></th></tr></thead>
