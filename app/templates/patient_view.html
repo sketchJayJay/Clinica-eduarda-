@@ -33,6 +33,15 @@
     }
   }
 </style>
+
+<style>
+  /* V55 - ações financeiras na ficha */
+  .patient-fin-actions .form-control-sm{min-height:32px!important}
+  @media(max-width:768px){
+    .patient-fin-actions{min-width:230px}
+  }
+</style>
+
 {% endblock %}
 
 {% block content %}
@@ -424,7 +433,7 @@
 <div class="card shadow-sm border-0 mb-3">
   <div class="card-body">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
-      <div><h6 class="mb-1">Parcelas e pagamentos do paciente</h6><div class="text-muted small">Para emitir outro boleto, clique em Novo boleto/parcela. Quando cair no banco, dê baixa pelo valor e pela data real do pagamento.</div></div>
+      <div><h6 class="mb-1">Parcelas e pagamentos do paciente</h6><div class="text-muted small">Para emitir outro boleto, clique em Novo boleto/parcela. Quando cair no banco, dê baixa pelo valor e pela data real do pagamento. Se lançou valor errado, use <b>Editar</b> ou <b>Excluir</b> na própria linha.</div></div>
       <div class="d-flex gap-2 flex-wrap">
         <a class="btn btn-sm btn-brand" href="{{ url_for('finance.transaction_new', patient_id=patient.id, kind='income', plan_item_id=0, status='pending', payment_method='boleto', description='Boleto do tratamento') }}">
           <i class="bi bi-upc-scan me-1"></i>Novo boleto / parcela
@@ -434,7 +443,7 @@
     </div>
     <div class="table-responsive">
       <table class="table table-sm align-middle mb-0">
-        <thead class="table-light"><tr><th>Vencimento</th><th>Descrição</th><th>Status</th><th class="text-end">Final</th><th class="text-end">Pago</th><th class="text-end">Saldo</th><th style="min-width:360px">Dar baixa</th></tr></thead>
+        <thead class="table-light"><tr><th>Vencimento</th><th>Descrição</th><th>Status</th><th class="text-end">Final</th><th class="text-end">Pago</th><th class="text-end">Saldo</th><th style="min-width:360px">Dar baixa</th><th style="min-width:260px">Ações</th></tr></thead>
         <tbody>
         {% for f in tx %}
           {% if f.kind=='income' %}
@@ -455,10 +464,20 @@
               </form>
               {% else %}<span class="text-muted small">baixado</span>{% endif %}
             </td>
+            <td>
+              <div class="d-flex gap-1 flex-wrap align-items-center">
+                <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('finance.transaction_edit', tid=f.id) }}">Editar</a>
+                <form method="post" action="{{ url_for('patients.patient_transaction_delete', pid=patient.id, tid=f.id) }}" class="d-flex gap-1 align-items-center" onsubmit="return confirm('Excluir este lançamento financeiro? O valor sairá do recebido lançado e do financeiro do paciente.')">
+                  <input class="form-control form-control-sm" style="width:88px" type="password" name="finance_password" placeholder="Senha">
+                  <button class="btn btn-sm btn-outline-danger">Excluir</button>
+                </form>
+              </div>
+              <div class="form-text small">A exclusão pede senha do financeiro.</div>
+            </td>
           </tr>
           {% endif %}
         {% else %}
-          <tr><td colspan="7" class="text-center text-muted py-3">Nenhum lançamento financeiro para este paciente.</td></tr>
+          <tr><td colspan="8" class="text-center text-muted py-3">Nenhum lançamento financeiro para este paciente.</td></tr>
         {% endfor %}
         </tbody>
       </table>

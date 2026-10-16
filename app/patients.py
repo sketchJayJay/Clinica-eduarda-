@@ -748,6 +748,39 @@ def document_print(pid: int, doc_id: int):
     )
 
 
+
+@bp.post("/<int:pid>/transactions/<int:tid>/delete")
+@login_required
+def patient_transaction_delete(pid: int, tid: int):
+    """Remove lançamento financeiro do paciente direto pela ficha, protegido pela senha do financeiro."""
+    db = get_db()
+    patient = db.execute("SELECT * FROM patients WHERE id=?", (pid,)).fetchone()
+    tx = db.execute("SELECT * FROM transactions WHERE id=? AND patient_id=?", (tid, pid)).fetchone()
+    if not patient or not tx:
+        flash("Lançamento financeiro não encontrado para este paciente.", "warning")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    expected = (current_app.config.get("FINANCE_PASSWORD") or _setting(db, "finance_password", "") or "").strip()
+    senha = (request.form.get("finance_password") or "").strip()
+    if not session.get("finance_unlocked") and expected and senha != expected:
+        flash("Para excluir lançamento financeiro, informe a senha do financeiro.", "danger")
+        return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+    desc = tx["description"] or "Lançamento financeiro"
+    valor = cents_to_brl(int(tx["final_amount_cents"] or tx["amount_cents"] or 0))
+
+    # Apaga vínculos e pagamentos antes do lançamento para evitar sobras em bancos sem cascade ativo.
+    db.execute("DELETE FROM transaction_plan_items WHERE transaction_id=?", (tid,))
+    db.execute("DELETE FROM transaction_payments WHERE transaction_id=?", (tid,))
+    db.execute("DELETE FROM charge_log WHERE transaction_id=?", (tid,))
+    db.execute("DELETE FROM transactions WHERE id=? AND patient_id=?", (tid, pid))
+    db.commit()
+
+    flash(f"Lançamento removido: {desc} · R$ {valor}. O resumo do paciente foi recalculado.", "success")
+    return redirect(url_for("patients.view_patient", pid=pid, tab="plano_ficha"))
+
+
+
 @bp.post("/<int:pid>/tasks/add")
 @login_required
 def task_add(pid: int):

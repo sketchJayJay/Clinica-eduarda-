@@ -1002,9 +1002,16 @@ def transaction_edit(tid: int):
 @finance_required
 def transaction_delete(tid: int):
     db = get_db()
+    tx = db.execute("SELECT patient_id FROM transactions WHERE id=?", (tid,)).fetchone()
+    db.execute("DELETE FROM transaction_plan_items WHERE transaction_id=?", (tid,))
+    db.execute("DELETE FROM transaction_payments WHERE transaction_id=?", (tid,))
+    db.execute("DELETE FROM charge_log WHERE transaction_id=?", (tid,))
     db.execute("DELETE FROM transactions WHERE id=?", (tid,))
     db.commit()
     flash("Lançamento removido.", "info")
+    next_url = request.form.get("next") or request.args.get("next")
+    if next_url:
+        return redirect(next_url)
     return redirect(url_for("finance.transactions"))
 
 
