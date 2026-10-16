@@ -8,7 +8,7 @@
 <div class="sidebar-inner">
   <a class="sidebar-brand" href="{{ url_for('dashboard.index') }}" aria-label="Eduarda Imbelloni, início">
     <img src="{{ url_for('static', filename='logo_symbol.png') }}" width="44" height="44" alt="">
-    <span class="brand-name">Eduarda Imbelloni<small>CLÍNICA ESPECIALIZADA</small></span>
+    <span class="brand-name">Eduarda<span>Imbelloni</span><small>CLÍNICA ESPECIALIZADA</small></span>
   </a>
   <div class="sidebar-caption">ATENDIMENTO</div>
   <nav class="sidebar-nav" aria-label="Atendimento">
@@ -43,12 +43,12 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap-icons.min.css') }}">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='logo_symbol.png') }}">
   <link rel="apple-touch-icon" href="{{ url_for('static', filename='logo_symbol.png') }}">
-  <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}?v=56">
-  <meta name="theme-color" content="#302b27">
+  <link rel="manifest" href="{{ url_for('static', filename='manifest.webmanifest') }}?v=57">
+  <meta name="theme-color" content="#121c3d">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Eduarda Clínica">
   {% block head_extra %}{% endblock %}
-  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=56">
+  <link rel="stylesheet" href="{{ url_for('static', filename='app.css') }}?v=57">
 </head>
 <body class="{% if g.user %}logged-in{% else %}auth-body{% endif %}" data-section="{{ section }}">
 <a class="skip-link" href="#main-content">Pular para o conteúdo</a>
@@ -83,7 +83,7 @@
 </nav>
 {% endif %}
 <script src="{{ url_for('static', filename='vendor/bootstrap.bundle.min.js') }}"></script>
-<script src="{{ url_for('static', filename='app.js') }}?v=56" defer></script>
+<script src="{{ url_for('static', filename='app.js') }}?v=57" defer></script>
 {% block scripts %}{% endblock %}
 </body>
 </html>

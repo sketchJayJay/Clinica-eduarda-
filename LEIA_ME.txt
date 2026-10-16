@@ -1,7 +1,7 @@
 EDUARDA IMBELLONI — CLÍNICA ESPECIALIZADA
-V56 — NOVO LAYOUT
+V57 — NOVA DIREÇÃO VISUAL
 
-O guia desta atualização está em ATUALIZACAO_V56_NOVO_LAYOUT.md.
+O guia desta atualização está em ATUALIZACAO_V57_VISUAL_MARCANTE.md.
 
 COOLIFY
 Atualize o código do aplicativo existente e faça o redeploy.

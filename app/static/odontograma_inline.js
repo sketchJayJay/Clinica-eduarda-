@@ -63,8 +63,8 @@ function updateRegistroTable(tooth, status, note){
     if(!r) return;
     const c = color[status];
     r.setAttribute('fill', c || '#ffffff');
-    r.setAttribute('stroke', c || '#c7d1bb');
-    g.querySelectorAll('text').forEach(text => text.setAttribute('fill', c ? '#ffffff' : '#5b6b50'));
+    r.setAttribute('stroke', c || '#d0d6ef');
+    g.querySelectorAll('text').forEach(text => text.setAttribute('fill', c ? '#ffffff' : '#6d7b9f'));
     g.setAttribute('aria-label', 'Dente ' + g.dataset.tooth + ': ' + (status || 'sem status'));
   }
 

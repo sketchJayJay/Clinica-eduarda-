@@ -7,15 +7,20 @@
 </div>
 <section class="welcome-card" aria-labelledby="welcome-title">
   <div class="welcome-copy">
-    <div class="eyebrow">BEM-VINDO(A), {{ g.user['username']|upper }}</div>
-    <h2 class="welcome-title" id="welcome-title">Um bom dia começa<br>por aqui.</h2>
-    <p>Organize os atendimentos e acompanhe cada etapa do cuidado com seus pacientes.</p>
+    <div class="hero-welcome"><span class="hero-spark"><i class="bi bi-stars" aria-hidden="true"></i></span> BEM-VINDO(A), {{ g.user['username']|upper }}</div>
+    <h2 class="welcome-title" id="welcome-title">Sua clínica.<br><em>Em movimento.</em></h2>
+    <p>Mais organização na rotina.<br>Mais atenção a cada paciente.</p>
     <div class="welcome-actions">
-      <a class="btn btn-sage" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar-plus me-2" aria-hidden="true"></i>Agendar atendimento</a>
-      <a class="btn btn-outline-secondary" href="{{ url_for('patients.new_patient') }}"><i class="bi bi-person-plus me-2" aria-hidden="true"></i>Novo paciente</a>
+      <a class="btn btn-hero-primary" href="{{ url_for('agenda.calendar_view') }}"><i class="bi bi-calendar-plus me-2" aria-hidden="true"></i>Agendar atendimento <i class="bi bi-arrow-up-right ms-2" aria-hidden="true"></i></a>
+      <a class="btn btn-hero-secondary" href="{{ url_for('patients.new_patient') }}"><i class="bi bi-person-plus me-2" aria-hidden="true"></i>Novo paciente</a>
     </div>
   </div>
-  <div class="welcome-date" aria-label="Data de hoje"><span class="day-label">HOJE</span><span class="date-number" data-local-date="day">—</span><span class="date-month" data-local-date="month"></span><span class="date-week" data-local-date="weekday"></span></div>
+  <div class="hero-focus">
+    <div class="hero-focus-heading"><span><i class="bi bi-calendar3 me-2" aria-hidden="true"></i>SUA AGENDA</span><span class="hero-today">HOJE</span></div>
+    <div class="hero-focus-date"><span class="date-number" data-local-date="day">—</span><span><b data-local-date="month"></b><small data-local-date="weekday"></small></span></div>
+    <div class="hero-focus-count"><strong>{{ ops.agenda_today_count }}</strong><span>atendimento(s)<br>programado(s) para hoje</span><a href="{{ url_for('agenda.calendar_view') }}" aria-label="Abrir a agenda de hoje"><i class="bi bi-arrow-up-right" aria-hidden="true"></i></a></div>
+    <div class="hero-focus-foot"><i class="bi bi-heart-pulse me-2" aria-hidden="true"></i>Cuidado em cada detalhe.</div>
+  </div>
 </section>
 <div class="dashboard-metrics">
   <a class="metric-card" href="{{ url_for('patients.list_patients') }}"><div class="metric-top"><span>Pacientes cadastrados</span><span class="metric-icon"><i class="bi bi-people" aria-hidden="true"></i></span></div><div class="metric-value">{{ ops.patients_total }}</div><div class="metric-bottom">Sua base de pacientes <i class="bi bi-arrow-up-right ms-auto" aria-hidden="true"></i></div></a>
@@ -31,7 +36,7 @@
 {% endif %}
 <div class="dashboard-layout">
   <section class="panel-card agenda-day-card" aria-labelledby="agenda-day-title">
-    <div class="panel-header"><div><h2 id="agenda-day-title">Agenda do dia <span class="count-label">{{ ops.agenda_today_count }}</span></h2><p>Os atendimentos de hoje, em ordem de horário.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}">Calendário <i class="bi bi-arrow-up-right ms-1" aria-hidden="true"></i></a></div>
+    <div class="panel-header"><div><h2 id="agenda-day-title"><span class="section-icon"><i class="bi bi-calendar2-week" aria-hidden="true"></i></span>Agenda do dia <span class="count-label">{{ ops.agenda_today_count }}</span></h2><p>Os atendimentos de hoje, em ordem de horário.</p></div><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('agenda.calendar_view') }}">Calendário <i class="bi bi-arrow-up-right ms-1" aria-hidden="true"></i></a></div>
     <div class="agenda-list">
       {% for a in agenda_today %}
       <div class="agenda-row">
@@ -46,12 +51,12 @@
     <a class="panel-bottom-link" href="{{ url_for('agenda.calendar_view') }}">Ver todos os agendamentos <i class="bi bi-arrow-right" aria-hidden="true"></i></a>
   </section>
   <div class="dashboard-aside">
-    <section class="panel-card" aria-labelledby="quick-title"><div class="panel-header"><h2 id="quick-title">Acesso rápido</h2><i class="bi bi-arrow-up-right text-muted" aria-hidden="true"></i></div><div class="quick-action-list">
+    <section class="panel-card" aria-labelledby="quick-title"><div class="panel-header"><h2 id="quick-title"><span class="section-icon pink"><i class="bi bi-lightning-charge" aria-hidden="true"></i></span>Acesso rápido</h2><i class="bi bi-arrow-up-right text-muted" aria-hidden="true"></i></div><div class="quick-action-list">
       <a class="quick-action" href="{{ url_for('patients.new_patient') }}"><i class="bi bi-person-plus" aria-hidden="true"></i><span><b>Cadastrar paciente</b><small>Comece uma nova ficha</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
       <a class="quick-action" href="{{ url_for('patients.list_patients') }}"><i class="bi bi-folder2-open" aria-hidden="true"></i><span><b>Fichas e tratamentos</b><small>Encontre o paciente para continuar</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
       <a class="quick-action" href="{{ url_for('crm.index') }}"><i class="bi bi-chat-dots" aria-hidden="true"></i><span><b>Retornos e contatos</b><small>{{ ops.leads_due_count }} contato(s) para acompanhar</small></span><i class="bi bi-chevron-right" aria-hidden="true"></i></a>
     </div></section>
-    <section class="panel-card" aria-labelledby="tasks-title"><div class="panel-header"><h2 id="tasks-title">Precisa de atenção</h2><a href="{{ url_for('crm.index') }}" class="small">Ver tudo</a></div>
+    <section class="panel-card" aria-labelledby="tasks-title"><div class="panel-header"><h2 id="tasks-title"><span class="section-icon amber"><i class="bi bi-bell" aria-hidden="true"></i></span>Precisa de atenção</h2><a href="{{ url_for('crm.index') }}" class="small">Ver tudo</a></div>
       {% if tasks_due %}<div class="task-list">{% for t in tasks_due[:4] %}<a class="task-item" href="{% if t.patient_id %}{{ url_for('patients.view_patient', pid=t.patient_id, tab='retornos') }}{% else %}{{ url_for('crm.index') }}{% endif %}"><span class="task-dot{% if t.priority in ['alta','urgente'] %} high{% endif %}" aria-hidden="true"></span><span><b>{{ t.title }}</b><small>{{ t.patient_name or 'Sem paciente' }} · {{ t.due_date[8:10] ~ '/' ~ t.due_date[5:7] if t.due_date else 'Sem data' }}{% if t.priority in ['alta','urgente'] %} · {{ t.priority|capitalize }}{% endif %}</small></span></a>{% endfor %}</div>
       {% else %}<div class="empty-state compact"><div class="empty-icon"><i class="bi bi-check2-all" aria-hidden="true"></i></div><h3>Tudo em dia por aqui</h3><p>Seus retornos e tarefas pendentes aparecem neste espaço.</p></div>{% endif %}
     </section>

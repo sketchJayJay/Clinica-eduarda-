@@ -1,11 +1,11 @@
-// V56: apenas arquivos da interface. Prontuários e respostas de APIs não são armazenados.
-const CACHE_NAME = 'eduarda-clinica-v56';
+// V57: apenas arquivos da interface. Prontuários e respostas de APIs não são armazenados.
+const CACHE_NAME = 'eduarda-clinica-v57';
 const CORE_ASSETS = [
-  '/static/app.css?v=56', '/static/app.js?v=56',
+  '/static/app.css?v=57', '/static/app.js?v=57',
   '/static/vendor/bootstrap.min.css', '/static/vendor/bootstrap.bundle.min.js',
   '/static/vendor/bootstrap-icons.min.css', '/static/vendor/fonts/bootstrap-icons.woff2',
   '/static/vendor/fullcalendar.min.js', '/static/vendor/fullcalendar-locales.min.js',
-  '/static/logo.png', '/static/logo_symbol.png'
+  '/static/logo.png', '/static/logo_symbol.png', '/static/vendor/fonts/manrope-latin-variable.woff2'
 ];
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)).catch(() => null));

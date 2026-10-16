@@ -1,10 +1,11 @@
-# V56 — Interface renovada
+# V57 — Nova direção visual
 
-Esta versão renova o layout do sistema de Eduarda Imbelloni para computador e celular. A agenda do dia fica em destaque, a navegação é reorganizada, e pacientes e lançamentos financeiros ganham cartões no celular.
+Azul profundo, violeta e rosa nos destaques, indicadores com cores fortes,
+nova tipografia e cabeçalhos renovados para computador e celular.
 
-Consulte **ATUALIZACAO_V56_NOVO_LAYOUT.md** para os detalhes e o roteiro de atualização no Coolify. Atualize o aplicativo existente, preservando seu volume /data, as variáveis de ambiente e o mesmo banco de dados. A porta permanece 8000.
-
-Os documentos de versões anteriores abaixo registram a evolução do sistema.
+Veja **ATUALIZACAO_V57_VISUAL_MARCANTE.md**.
+No Coolify, atualize o aplicativo existente, mantendo o volume /data e as
+variáveis atuais. Porta: 8000.
 
 ---
 
