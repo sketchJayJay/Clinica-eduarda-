@@ -1,19 +1,17 @@
-Eduarda Imbelloni Clínica Especializada - Premium V3
+EDUARDA IMBELLONI — CLÍNICA ESPECIALIZADA
+V56 — NOVO LAYOUT
 
-LOGIN INICIAL:
-Usuário: admin
-Senha: admin123
-Senha do financeiro: eduarda2026
+O guia desta atualização está em ATUALIZACAO_V56_NOVO_LAYOUT.md.
 
-COOLIFY:
-Porta interna: 8000
-Volume persistente: /data
-Banco recomendado: /data/eduarda_imbelloni_premium_v3.db
+COOLIFY
+Atualize o código do aplicativo existente e faça o redeploy.
+Porta: 8000.
+Preserve o volume /data e as variáveis de ambiente já configuradas.
+Use o mesmo banco e a mesma pasta de uploads do aplicativo atual.
 
-ASAAS:
-O botão/lugar da cobrança já está pronto.
-Para emitir real, configure ASAAS_API_KEY e ASAAS_ENV=production.
-Para testes, use ASAAS_ENV=sandbox.
+COMPUTADOR LOCAL
+As instruções e os atalhos da versão anterior continuam disponíveis.
+Para instalar as dependências: pip install -r requirements.txt
+Para iniciar: python run.py
 
-NOVIDADES V3:
-CRM, leads, retornos, tarefas, resgate de pacientes, painel inicial mais completo, menu mobile e PWA instalável.
+O pacote não inclui banco de pacientes ou dados de teste.

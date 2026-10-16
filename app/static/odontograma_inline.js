@@ -61,9 +61,11 @@ function updateRegistroTable(tooth, status, note){
   function paintTooth(g, status){
     const r = g.querySelector('rect');
     if(!r) return;
-    const c = color[status] || '#1f2937';
-    r.setAttribute('fill', c === '#1f2937' ? '#1f2937' : c);
-    r.setAttribute('stroke', c === '#1f2937' ? '#374151' : c);
+    const c = color[status];
+    r.setAttribute('fill', c || '#ffffff');
+    r.setAttribute('stroke', c || '#c7d1bb');
+    g.querySelectorAll('text').forEach(text => text.setAttribute('fill', c ? '#ffffff' : '#5b6b50'));
+    g.setAttribute('aria-label', 'Dente ' + g.dataset.tooth + ': ' + (status || 'sem status'));
   }
 
   Array.from(svg.querySelectorAll('g.tooth')).forEach(g=>{
@@ -74,8 +76,9 @@ function updateRegistroTable(tooth, status, note){
   function showTip(txt, evt){
     if(!txt){ tip.style.display='none'; return; }
     tip.textContent = txt;
-    tip.style.left = (evt.clientX + 12 + window.scrollX) + 'px';
-    tip.style.top  = (evt.clientY + 12 + window.scrollY) + 'px';
+    const bounds = wrap.getBoundingClientRect();
+    tip.style.left = Math.max(0, Math.min(evt.clientX - bounds.left + 12, wrap.clientWidth - 180)) + 'px';
+    tip.style.top = (evt.clientY - bounds.top + 12) + 'px';
     tip.style.display = 'block';
   }
 
@@ -94,11 +97,12 @@ function updateRegistroTable(tooth, status, note){
     sel.value = state[currentTooth] || 'saudavel';
     note.value = '';
     const rect = wrap.getBoundingClientRect();
-    const x = evt.clientX - rect.left + 6;
-    const y = evt.clientY - rect.top + 6;
-    menu.style.left = x + 'px';
-    menu.style.top  = y + 'px';
+    const targetBounds = g.getBoundingClientRect();
+    const x = (evt.clientX || targetBounds.left) - rect.left + 6;
+    const y = (evt.clientY || targetBounds.bottom) - rect.top + 6;
     menu.style.display = 'block';
+    menu.style.left = Math.max(0, Math.min(x, wrap.clientWidth - menu.offsetWidth)) + 'px';
+    menu.style.top = Math.max(0, y) + 'px';
     svg.querySelectorAll('g.tooth').forEach(t=>t.classList.remove('selected'));
     g.classList.add('selected');
   }
@@ -112,6 +116,21 @@ function updateRegistroTable(tooth, status, note){
     const g = e.target.closest('g.tooth');
     if(!g) return;
     openMenu(g, e);
+  });
+  svg.addEventListener('keydown', (e) => {
+    const tooth = e.target.closest('g.tooth');
+    if (tooth && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
+      openMenu(tooth, e);
+      sel.focus();
+    }
+  });
+  menu.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const selected = svg.querySelector('g.tooth.selected');
+      closeMenu();
+      selected?.focus();
+    }
   });
   document.getElementById('odonto-cancel').addEventListener('click', (e)=>{ e.preventDefault(); closeMenu(); });
 

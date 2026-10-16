@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 {% set title = "Editar paciente" if patient else "Novo paciente" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="page-heading">
   <div>
-    <h4 class="mb-0">{{ "Editar paciente" if patient else "Novo paciente" }}</h4>
-    <div class="text-muted small">Cadastro completo para atendimento, financeiro e WhatsApp.</div>
+    <div class="eyebrow mb-1">CADASTRO DO PACIENTE</div><h1 class="page-title mb-1">{{ "Editar paciente" if patient else "Novo paciente" }}</h1>
+    <div class="page-subtitle">Cadastro completo para atendimento, financeiro e WhatsApp.</div>
   </div>
   <a class="btn btn-outline-secondary" href="{{ url_for('patients.list_patients') }}">Voltar</a>
 </div>

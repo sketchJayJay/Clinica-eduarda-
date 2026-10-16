@@ -1,42 +1,24 @@
 {% extends "base.html" %}
-{% set title = "Login | Eduarda Imbelloni Clínica" %}
+{% set title = "Entrar | Eduarda Imbelloni" %}
 {% block content %}
-<div class="auth-shell">
-  <div class="login-frame">
-    <section class="login-showcase">
-      <img src="{{ url_for('static', filename='logo.png') }}" class="showcase-logo" alt="Eduarda Imbelloni Clínica Especializada">
-      <h1>Uma experiência mais leve para a rotina da clínica.</h1>
-      <p class="mt-3 mb-0">Um sistema com visual mais clean, foco no atendimento e organização da rotina administrativa.</p>
-      <div class="login-perks">
-        <div class="login-perk"><span>✓</span><span>Painel completo do paciente</span></div>
-        <div class="login-perk"><span>✓</span><span>Financeiro protegido e Asaas preparado</span></div>
-        <div class="login-perk"><span>✓</span><span>CRM, agenda e WhatsApp no fluxo</span></div>
-      </div>
-    </section>
-    <section class="login-card-eduarda login-panel">
-      <div class="login-panel-inner">
-        <div class="text-center mb-4 d-lg-none">
-          <img src="{{ url_for('static', filename='logo.png') }}" class="logo-lg" alt="logo">
-        </div>
-        <div class="page-kicker mb-2">Painel privado</div>
-        <h2 class="mb-1">Entrar</h2>
-        <div class="text-muted mb-4">Acesso exclusivo da equipe da clínica.</div>
-        <form method="post">
-          <div class="mb-3">
-            <label class="form-label">Usuário</label>
-            <input class="form-control" name="username" autocomplete="username" placeholder="Ex.: admin" required>
-          </div>
-          <div class="mb-3">
-            <label class="form-label">Senha</label>
-            <input class="form-control" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
-          </div>
-          <button class="btn btn-brand w-100" type="submit">Acessar sistema</button>
-        </form>
-        <div class="small text-muted mt-4 text-center">
-          Use o usuário e senha definidos no primeiro acesso.
-        </div>
-      </div>
-    </section>
-  </div>
-</div>
+<div class="auth-shell"><div class="login-frame">
+  <section class="login-showcase">
+    <img src="{{ url_for('static', filename='logo.png') }}" class="showcase-logo" alt="Eduarda Imbelloni Clínica Especializada">
+    <div class="page-kicker mb-3">CUIDADO EM CADA DETALHE</div>
+    <h1>Mais presença.<br>Mais cuidado.<br><em>Uma rotina leve.</em></h1>
+    <p class="mt-3 mb-0">Tudo o que sua equipe precisa para organizar o dia e dedicar mais atenção a cada paciente.</p>
+    <div class="login-perks"><div class="login-perk"><span><i class="bi bi-check2" aria-hidden="true"></i></span><span>Agenda e atendimentos organizados</span></div><div class="login-perk"><span><i class="bi bi-check2" aria-hidden="true"></i></span><span>Histórico completo de cada paciente</span></div><div class="login-perk"><span><i class="bi bi-check2" aria-hidden="true"></i></span><span>Gestão financeira com acesso protegido</span></div></div>
+    <div class="login-showcase-footer">Eduarda Imbelloni · Clínica Especializada</div>
+  </section>
+  <section class="login-panel"><div class="login-panel-inner">
+    <div class="text-center mb-4 d-lg-none"><img src="{{ url_for('static', filename='logo.png') }}" class="logo-lg" alt="Eduarda Imbelloni Clínica Especializada"></div>
+    <div class="page-kicker">BEM-VINDO(A) DE VOLTA</div><h2 class="mb-2">Seu espaço de cuidado.</h2><p class="text-muted mb-4">Entre para acompanhar a rotina da clínica.</p>
+    <form method="post">
+      <div class="mb-3"><label class="form-label" for="login-username">Usuário</label><input class="form-control" id="login-username" name="username" autocomplete="username" placeholder="Digite seu usuário" required autofocus></div>
+      <div class="mb-4"><label class="form-label" for="login-password">Senha</label><div class="password-field"><input class="form-control" id="login-password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required><button class="password-toggle" type="button" data-password-toggle="login-password" aria-label="Mostrar senha" aria-pressed="false"><i class="bi bi-eye" aria-hidden="true"></i></button></div></div>
+      <button class="btn btn-brand w-100" type="submit">Entrar no sistema <i class="bi bi-arrow-right ms-2" aria-hidden="true"></i></button>
+    </form>
+    <div class="login-lock"><i class="bi bi-shield-lock" aria-hidden="true"></i>Acesso exclusivo da equipe da clínica</div>
+  </div></section>
+</div></div>
 {% endblock %}

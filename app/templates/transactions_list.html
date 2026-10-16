@@ -2,125 +2,10 @@
 {% set title = "Lançamentos" %}
 {% block content %}
 
-<style>
-.finance-hero{
-  background:linear-gradient(135deg, rgba(207,122,106,.10), rgba(205,175,135,.10), rgba(109,146,204,.08));
-  border:1px solid rgba(183,150,127,.22);
-  border-radius:24px;
-  padding:20px;
-  box-shadow:0 14px 34px rgba(69,46,37,.06);
-}
-.finance-hero h2{font-size:1.1rem;font-weight:900;color:var(--coffee);margin:0 0 12px}
-.finance-soft-card{
-  background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(249,244,239,.96));
-  border:1px solid rgba(183,150,127,.18);
-  border-radius:22px;
-  box-shadow:0 10px 28px rgba(69,46,37,.05);
-}
-.metric-chip{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:8px 12px;border-radius:999px;
-  background:#fff;border:1px solid var(--line);font-weight:800;color:var(--coffee);font-size:.9rem;
-}
-.metric-number{font-size:2rem;font-weight:900;line-height:1;color:var(--coffee)}
-.metric-caption{font-size:.86rem;color:#8c7a6f}
-.progress-soft{height:12px;background:#f0e7df;border-radius:999px;overflow:hidden}
-.progress-soft > span{display:block;height:100%;border-radius:999px}
-.bar-rose{background:linear-gradient(90deg,#d98989,#c86f75)}
-.bar-gold{background:linear-gradient(90deg,#d5b37a,#b98b43)}
-.bar-blue{background:linear-gradient(90deg,#85a9d8,#5f83bb)}
-.bar-green{background:linear-gradient(90deg,#77c3a3,#4da47f)}
-.mix-item{padding:12px 14px;border-radius:16px;background:#fff;border:1px solid rgba(183,150,127,.18)}
-.mix-item .pct{font-size:1.1rem;font-weight:900;color:var(--coffee)}
-.finance-mini-kpi{
-  border-radius:20px;
-  padding:18px;
-  border:1px solid rgba(183,150,127,.18);
-  background:linear-gradient(180deg,#fff,#fbf7f3);
-  height:100%;
-}
-.finance-mini-kpi .label{font-size:.78rem;text-transform:uppercase;letter-spacing:.10em;font-weight:900;color:#9a7c69}
-.finance-mini-kpi .value{font-size:1.8rem;font-weight:900;color:var(--coffee);line-height:1.1}
-.finance-mini-kpi .sub{font-size:.9rem;color:#8b776c}
-@media (max-width: 768px){
-  .finance-hero{padding:16px}
-  .metric-number{font-size:1.55rem}
-  .finance-mini-kpi .value{font-size:1.5rem}
-}
-</style>
-
-<style>
-/* V54 - gráfico financeiro mais claro */
-.month-chart-premium{display:grid;gap:12px}
-.month-chart-card{
-  display:grid;grid-template-columns:64px 1fr 136px;gap:14px;align-items:center;
-  padding:12px 14px;border:1px solid rgba(183,150,127,.16);border-radius:18px;
-  background:linear-gradient(180deg,#fff,#fffaf5);
-}
-.month-chart-month{font-weight:950;color:var(--coffee);font-size:.96rem}
-.month-chart-bars{display:grid;gap:8px;min-width:0}
-.month-line{display:grid;grid-template-columns:68px 1fr 88px;gap:10px;align-items:center}
-.month-line-label{font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;font-weight:900;color:#9b7d69}
-.month-line-value{font-size:.82rem;font-weight:900;color:var(--coffee);text-align:right;white-space:nowrap}
-.chart-bar.clean{height:12px;background:#f1e7dc}
-.chart-result-box{
-  text-align:right;border-left:1px solid var(--line);padding-left:12px;
-}
-.chart-result-box .result-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.10em;font-weight:900;color:#9b7d69}
-.chart-result-box .result-value{font-size:1rem;font-weight:950;color:var(--coffee);white-space:nowrap}
-.legend-dot{display:inline-block;width:10px;height:10px;border-radius:999px;margin-right:6px;vertical-align:-1px}
-.dot-income{background:#2d966e}.dot-expense{background:#bd5d65}
-@media(max-width:720px){
-  .month-chart-card{grid-template-columns:1fr;gap:8px}
-  .chart-result-box{text-align:left;border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:8px}
-  .month-line{grid-template-columns:64px 1fr 78px}
-}
-</style>
-
-
-<style>
-/* V53 - Financeiro Premium */
-.finance-command-bar{
-  display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between;
-  background:rgba(255,255,255,.72);border:1px solid var(--line);border-radius:18px;padding:10px 12px;margin-bottom:14px;
-}
-.finance-command-bar .btn{padding:.46rem .74rem}
-.finance-kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:14px}
-.finance-kpi-premium{
-  position:relative;overflow:hidden;min-height:132px;border-radius:24px;border:1px solid rgba(183,150,127,.18);
-  background:linear-gradient(145deg,#fff 0%,#fbf4ed 100%);box-shadow:0 16px 34px rgba(69,46,37,.06);padding:18px;
-}
-.finance-kpi-premium:after{
-  content:"";position:absolute;right:-34px;top:-34px;width:110px;height:110px;border-radius:999px;
-  background:radial-gradient(circle,rgba(196,123,90,.16),transparent 68%);
-}
-.finance-kpi-premium .tag{font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:#9b7d69}
-.finance-kpi-premium .value{font-size:1.78rem;font-weight:950;letter-spacing:-.05em;color:var(--coffee);margin-top:6px}
-.finance-kpi-premium .hint{color:#8b776c;font-size:.86rem}
-.delta-pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 9px;font-size:.78rem;font-weight:900;background:#fff;border:1px solid var(--line);margin-top:10px}
-.delta-good{color:#2c7a59}.delta-bad{color:#b44f57}
-.chart-card{border-radius:24px;border:1px solid rgba(183,150,127,.18);background:linear-gradient(180deg,#fff,#fcf7f2);box-shadow:0 14px 34px rgba(69,46,37,.055);padding:18px;height:100%}
-.chart-row{display:grid;grid-template-columns:54px 1fr 86px;gap:10px;align-items:center;margin:11px 0}
-.chart-label{font-weight:900;color:var(--coffee);font-size:.82rem}
-.chart-bars{display:flex;flex-direction:column;gap:5px}
-.chart-bar{height:10px;border-radius:999px;background:#f1e7dc;overflow:hidden}
-.chart-bar span{display:block;height:100%;border-radius:999px}
-.chart-income{background:linear-gradient(90deg,#6fc59b,#2d966e)}
-.chart-expense{background:linear-gradient(90deg,#de9a9a,#bd5d65)}
-.chart-result{font-size:.78rem;color:#8b776c;text-align:right;font-weight:800}
-.finance-table-card{border-radius:24px!important;overflow:hidden}
-.finance-table-title{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;padding:16px 18px;border-bottom:1px solid var(--line);background:#fffdfa}
-.payment-ranking{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
-.payment-ranking .mix-item{min-height:116px}
-@media(max-width:1100px){.finance-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.payment-ranking{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:640px){.finance-kpi-grid,.payment-ranking{grid-template-columns:1fr}.chart-row{grid-template-columns:46px 1fr}.chart-result{grid-column:2;text-align:left}.finance-command-bar{align-items:stretch}.finance-command-bar .d-flex{width:100%}.finance-command-bar .btn{flex:1}}
-</style>
-
-
-<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+<div class="page-heading">
   <div>
-    <div class="eyebrow mb-1">Painel financeiro premium</div><h1 class="page-title mb-1" style="font-size:2.35rem">Financeiro</h1>
-    <div class="page-subtitle">Visão de caixa, cobranças, pendências, percentuais e comparação mensal.</div>
+    <div class="eyebrow mb-1">GESTÃO DA CLÍNICA</div><h1 class="page-title mb-1">Financeiro</h1>
+    <div class="page-subtitle">Entradas, saídas e cobranças para acompanhar cada movimento da clínica.</div>
   </div>
 </div>
 
@@ -129,6 +14,7 @@
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions') }}">Mês atual</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.transactions', period='all') }}">Ver tudo</a>
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.reports') }}">Relatórios</a>
+    <a class="btn btn-outline-secondary" href="#finance-movements">Ver lançamentos</a>
   </div>
   <div class="d-flex gap-2 flex-wrap">
     <a class="btn btn-outline-secondary" href="{{ url_for('finance.export_excel') }}">Excel</a>
@@ -138,14 +24,12 @@
   </div>
 </div>
 
-<div class="alert alert-info border mb-3">
-  <b>Resumo financeiro em regime de caixa:</b> esta tela abre no mês atual.
-  <span class="d-block">Período exibido: <b>{{ totals.period_label or 'Período selecionado' }}</b></span>
-  O card <b>Recebido</b> soma somente pagamentos que realmente caíram no período.
-  Orçamento e plano aprovado não entram aqui enquanto não virar cobrança/pagamento.
-</div>
+<details class="financial-note"><summary><i class="bi bi-info-circle me-2" aria-hidden="true"></i>Período: {{ totals.period_label or 'Período selecionado' }} <span class="small ms-2">Como ler o resumo</span></summary><div>O resumo considera o que foi efetivamente recebido e pago no período. Orçamentos e planos aprovados só entram no financeiro quando geram cobranças ou pagamentos.</div></details>
 
-<form class="card shadow-sm border-0 mb-3">
+{% set has_filters = filters.kind or filters.status or filters.payment_method or filters.patient_id or filters.category_id or filters.provider_id or filters.q %}
+<details class="finance-filters mb-3"{% if has_filters %} open{% endif %}><summary><span><i class="bi bi-sliders2 me-2" aria-hidden="true"></i>Filtrar lançamentos{% if has_filters %}<span class="badge text-bg-light ms-2">Filtros aplicados</span>{% endif %}</span><i class="bi bi-chevron-down" aria-hidden="true"></i></summary>
+<form class="finance-filter-form" method="get">
+{% if filters.period %}<input type="hidden" name="period" value="{{ filters.period }}">{% endif %}
   <div class="card-body">
     <div class="row g-2 align-items-end">
       <div class="col-md-2">
@@ -192,6 +76,7 @@
     </div>
   </div>
 </form>
+</details>
 
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
   <div class="text-muted small">Período do resumo: <b>{{ totals.period_label }}</b></div>
@@ -349,7 +234,7 @@
   </div>
 </div>
 
-<div class="card shadow-sm border-0 finance-table-card">
+<div class="card shadow-sm border-0 finance-table-card" id="finance-movements">
   <div class="finance-table-title">
     <div>
       <div class="eyebrow mb-1">Lançamentos</div>
@@ -358,22 +243,22 @@
     <span class="badge text-bg-light">{{ rows|length }} registro(s)</span>
   </div>
   <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
+    <table class="table table-hover align-middle mb-0 finance-movement-table">
       <thead class="table-light"><tr><th>Data/Venc.</th><th>Tipo</th><th>Status</th><th>Paciente</th><th>Profissional</th><th>Descrição</th><th>Parc.</th><th class="text-end">Final</th><th class="text-end">Pago</th><th class="text-end">Saldo</th><th style="width: 430px"></th></tr></thead>
       <tbody>
         {% for r in rows %}
         <tr>
-          <td><div>{{ r.date }}</div>{% if r.due_date %}<div class="small text-muted">Venc. {{ r.due_date }}</div>{% endif %}</td>
-          <td>{% if r.kind=="income" %}<span class="badge bg-success-subtle text-success">Entrada</span>{% else %}<span class="badge bg-danger-subtle text-danger">Saída</span>{% endif %}</td>
-          <td>{% if r.status=="paid" %}<span class="badge bg-success">Pago</span>{% elif (r.due_date or r.date) < today %}<span class="badge bg-danger">Vencido</span>{% else %}<span class="badge bg-warning text-dark">Pendente</span>{% endif %}</td>
-          <td>{{ r.patient_name or "—" }}</td>
-          <td>{{ r.provider_name or "—" }}</td>
-          <td><div>{{ r.description or "" }}</div><div class="small text-muted">{{ r.category_name or "—" }} · {{ pm_labels.get(r.payment_method, r.payment_method) }}{% if r.discount_cents %} · Desc. R$ {{ cents_to_brl(r.discount_cents) }}{% endif %}</div>{% if r.plan_item_id is defined and r.plan_item_id==0 %}<div class="small"><span class="badge bg-info-subtle text-info">Plano completo</span> Tratamento completo do paciente</div>{% elif r.plan_item_name is defined and r.plan_item_name %}<div class="small"><span class="badge bg-info-subtle text-info">Vinculado</span> {{ r.plan_item_name }}</div>{% endif %}</td>
-          <td>{{ r.installment_number }}/{{ r.installments_total }}</td>
-          <td class="text-end">R$ {{ cents_to_brl(r.final_amount_cents or r.amount_cents) }}</td>
-          <td class="text-end">R$ {{ cents_to_brl(r.paid_amount_cents or 0) }}</td>
-          <td class="text-end"><b>R$ {{ cents_to_brl(r.balance_cents or 0) }}</b></td>
-          <td class="text-end">
+          <td class="movement-date" data-label="Data / vencimento"><div>{{ r.date }}</div>{% if r.due_date %}<div class="small text-muted">Venc. {{ r.due_date }}</div>{% endif %}</td>
+          <td class="movement-kind" data-label="Tipo">{% if r.kind=="income" %}<span class="badge bg-success-subtle text-success">Entrada</span>{% else %}<span class="badge bg-danger-subtle text-danger">Saída</span>{% endif %}</td>
+          <td class="movement-status" data-label="Status">{% if r.status=="paid" %}<span class="badge bg-success">Pago</span>{% elif (r.due_date or r.date) < today %}<span class="badge bg-danger">Vencido</span>{% else %}<span class="badge bg-warning text-dark">Pendente</span>{% endif %}</td>
+          <td class="movement-patient" data-label="Paciente">{{ r.patient_name or "—" }}</td>
+          <td class="movement-provider" data-label="Profissional">{{ r.provider_name or "—" }}</td>
+          <td class="movement-description" data-label="Descrição"><div>{{ r.description or "" }}</div><div class="small text-muted">{{ r.category_name or "—" }} · {{ pm_labels.get(r.payment_method, r.payment_method) }}{% if r.discount_cents %} · Desc. R$ {{ cents_to_brl(r.discount_cents) }}{% endif %}</div>{% if r.plan_item_id is defined and r.plan_item_id==0 %}<div class="small"><span class="badge bg-info-subtle text-info">Plano completo</span> Tratamento completo do paciente</div>{% elif r.plan_item_name is defined and r.plan_item_name %}<div class="small"><span class="badge bg-info-subtle text-info">Vinculado</span> {{ r.plan_item_name }}</div>{% endif %}</td>
+          <td class="movement-installment" data-label="Parcela">{{ r.installment_number }}/{{ r.installments_total }}</td>
+          <td class="text-end movement-amount" data-label="Final">R$ {{ cents_to_brl(r.final_amount_cents or r.amount_cents) }}</td>
+          <td class="text-end movement-amount" data-label="Pago">R$ {{ cents_to_brl(r.paid_amount_cents or 0) }}</td>
+          <td class="text-end movement-amount" data-label="Saldo"><b>R$ {{ cents_to_brl(r.balance_cents or 0) }}</b></td>
+          <td class="text-end movement-actions">
             <div class="d-flex gap-1 flex-wrap justify-content-end finance-actions">
               {% if r.status=="pending" %}
                 <form method="post" action="{{ url_for('finance.transaction_settle', tid=r.id) }}" class="d-inline-flex gap-1 align-items-center" onsubmit="return confirm('Marcar este lançamento como pago?')">

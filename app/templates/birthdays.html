@@ -3,8 +3,8 @@
 {% block content %}
 <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
   <div>
-    <h4 class="mb-0">Aniversários</h4>
-    <div class="text-muted small">Lembretes (WhatsApp) com mensagem pronta.</div>
+    <div class="eyebrow mb-1">RELACIONAMENTO</div><h1 class="page-title mb-1">Aniversários</h1>
+    <div class="text-muted small">Um gesto de carinho para lembrar quem faz parte da clínica.</div>
   </div>
 </div>
 
@@ -29,7 +29,7 @@
                     <a class="btn btn-sm btn-outline-secondary" target="_blank" href="{{ url_for('patients.view_patient', pid=p.id) }}">Abrir paciente</a>
                     {% if p.wa_link %}
                       <a class="btn btn-sm btn-brand" target="_blank" href="{{ p.wa_link }}">Abrir WhatsApp</a>
-                      <button class="btn btn-sm btn-outline-success" onclick="markSent({{ p.id }}, '{{ today }}', {{ p.message|tojson }})">Marcar como enviado</button>
+                      <button class="btn btn-sm btn-outline-success" onclick='markSent({{ p.id }}, {{ today|tojson }}, {{ p.message|tojson }})'>Marcar como enviado</button>
                     {% else %}
                       <span class="text-muted small align-self-center">Sem número</span>
                     {% endif %}

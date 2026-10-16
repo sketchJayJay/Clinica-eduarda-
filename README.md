@@ -1,3 +1,13 @@
+# V56 — Interface renovada
+
+Esta versão renova o layout do sistema de Eduarda Imbelloni para computador e celular. A agenda do dia fica em destaque, a navegação é reorganizada, e pacientes e lançamentos financeiros ganham cartões no celular.
+
+Consulte **ATUALIZACAO_V56_NOVO_LAYOUT.md** para os detalhes e o roteiro de atualização no Coolify. Atualize o aplicativo existente, preservando seu volume /data, as variáveis de ambiente e o mesmo banco de dados. A porta permanece 8000.
+
+Os documentos de versões anteriores abaixo registram a evolução do sistema.
+
+---
+
 # Eduarda Imbelloni Clínica Especializada - Luxo Clean V55
 
 Sistema em Flask pronto para Coolify, com painel completo personalizado para a identidade da Eduarda Imbelloni.

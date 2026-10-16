@@ -2,7 +2,7 @@
 {% set title = "Agenda" %}
 
 {% block head_extra %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.css">
+
 <style>
   .fc { background:#fff; border-radius:24px; padding:14px; border:1px solid var(--line); box-shadow:var(--shadow-sm); }
   .fc .fc-toolbar-title{ font-family:Georgia,"Times New Roman",serif; color:var(--coffee); font-size:1.45rem; }
@@ -186,13 +186,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+<div class="page-heading agenda-heading">
   <div>
-    <div class="eyebrow mb-1">Calendário clínico</div>
+    <div class="eyebrow mb-1">ORGANIZAÇÃO DO ATENDIMENTO</div>
     <h1 class="page-title mb-1">Agenda</h1>
-    <div class="page-subtitle">Calendário mais limpo: agende pelo botão ou clicando em um horário. Busque paciente pelo nome dentro da janela.</div>
+    <div class="page-subtitle">Os próximos cuidados começam aqui. Escolha um horário ou crie um novo agendamento.</div>
   </div>
-  <div class="d-flex gap-2 align-items-center">
+  <div class="d-flex gap-2 align-items-center agenda-heading-actions">
     <select id="providerFilter" class="form-select form-select-sm" style="max-width:260px">
       <option value="">Todos os profissionais</option>
       {% for pr in providers %}
@@ -206,15 +206,15 @@
 <div class="card border-0 shadow-sm agenda-main-card">
   <div class="card-body p-3 p-md-4">
     <div id="calendar"></div>
-    <div class="mini-hint mt-3">
-      <b>Agenda limpa:</b> clique em um horário vazio ou no botão <b>Novo agendamento</b> para agendar. 
+    <div class="agenda-legend"><span><i style="background:#965B43"></i>Agendada</span><span><i style="background:#198754"></i>Confirmada</span><span><i style="background:#0d6efd"></i>Compareceu</span><span><i style="background:#dc3545"></i>Faltou</span><span><i style="background:#6c757d"></i>Cancelada</span></div><div class="mini-hint mt-3">
+      Clique em um horário vazio ou no botão <b>Novo agendamento</b> para agendar. 
       Clique no <b>nome do paciente</b> para abrir a ficha. Clique no restante do bloco para editar.
     </div>
   </div>
 </div>
 
 <!-- Modal: Novo / Editar -->
-<div class="modal fade" id="apptModal" tabindex="-1">
+<div class="modal fade" id="apptModal" tabindex="-1" aria-labelledby="apptTitle" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-scrollable">
     <div class="modal-content">
       <form id="apptForm" method="post">
@@ -312,8 +312,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/locales-all.global.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/fullcalendar.min.js') }}"></script>
+<script src="{{ url_for('static', filename='vendor/fullcalendar-locales.min.js') }}"></script>
 <script>
   const modalEl = document.getElementById('apptModal');
   const modal = new bootstrap.Modal(modalEl, {backdrop:false});

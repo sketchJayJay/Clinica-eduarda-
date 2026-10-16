@@ -4,36 +4,36 @@
      style="position:relative">
 
   <style>
-    :root{ --border:#374151; }
-    .field{
+    
+    #odontograma-wrap .field{
       background:#fff; color:#111; border:1px solid #e5e7eb;
       border-radius:8px; padding:8px 10px; min-height:36px;
     }
     .tooth{ cursor:pointer; }
-    .tooth:hover rect{ stroke:#7ea6ff }
-    .tooth.selected rect{ stroke:#60a5fa; stroke-width:2 }
+    .tooth:hover rect{ stroke:#779365; stroke-width:2 }
+    .tooth.selected rect{ stroke:#466959; stroke-width:3 }
     .odonto-menu{
-      position:absolute; z-index:20; background:#0f1115; border:1px solid #1f2937;
-      border-radius:12px; padding:10px; width:260px; box-shadow:0 10px 30px rgba(0,0,0,.35);
+      position:absolute; z-index:20; background:#fff; border:1px solid #d6ddc9;
+      border-radius:12px; padding:10px; width:260px; box-shadow:0 12px 32px rgba(48,61,37,.14);max-width:100%;
       display:none
     }
-    .odonto-menu .row{ display:flex; gap:6px; margin-top:8px }
+    .odonto-menu .odonto-row{ display:flex; gap:6px; margin-top:8px }
     .odonto-tip{
-      position:absolute; pointer-events:none; background:#0f1115; border:1px solid #1f2937;
-      border-radius:8px; padding:6px 8px; font-size:12px; color:#cbd5e1; display:none; z-index:15
+      position:absolute; pointer-events:none; background:#fff; border:1px solid #d6ddc9;
+      border-radius:8px; padding:6px 8px; font-size:12px; color:#4b5942; display:none; z-index:15
     }
   </style>
 
-  <svg id="odontograma-svg" viewBox="0 0 1000 420"
-       style="width:100%;max-width:950px;background:#101114;border:1px solid #1f2937;border-radius:12px">
+  <svg id="odontograma-svg" viewBox="0 0 550 440" role="group" aria-label="Odontograma com numeração dos dentes"
+       style="width:100%;max-width:650px;display:block;margin:auto;background:#f7f9f1;border:1px solid #e0e5d5;border-radius:12px">
     {% macro tooth(x,y,w,h,num) -%}
-      <g class="tooth" data-tooth="{{ num }}">
+      <g class="tooth" data-tooth="{{ num }}" tabindex="0" role="button" aria-label="Dente {{ num }}: definir status">
         <rect x="{{ x }}" y="{{ y }}" width="{{ w }}" height="{{ h }}" rx="10" ry="10"
-              fill="#111827" stroke="#374151"></rect>
+              fill="#ffffff" stroke="#c7d1bb"></rect>
         <text x="{{ x + w/2 }}" y="{{ y + h*0.55 }}" text-anchor="middle"
-              font-size="20" fill="#e5e7eb">🦷</text>
+              font-size="20" fill="#3f5236">🦷</text>
         <text x="{{ x + w/2 }}" y="{{ y + h - 6 }}" text-anchor="middle"
-              font-size="11" fill="#9ca3af">{{ num }}</text>
+              font-size="11" fill="#5b6b50">{{ num }}</text>
       </g>
     {%- endmacro %}
 
@@ -57,8 +57,8 @@
   </svg>
 
   <div id="odonto-menu" class="odonto-menu">
-    <div style="font-weight:600;margin-bottom:6px;color:#e5e7eb">Definir status</div>
-    <select id="odonto-status" class="field" style="width:100%">
+    <div style="font-weight:600;margin-bottom:6px;color:#3f5236">Definir status</div>
+    <select id="odonto-status" class="field" aria-label="Status do dente" style="width:100%">
       <option value="saudavel">Saudável</option>
       <option value="carie">Cárie</option>
       <option value="restauracao">Restauração</option>
@@ -70,19 +70,17 @@
       <option value="mobilidade">Mobilidade</option>
       <option value="placa">Placa</option>
     </select>
-    <div class="row">
-      <input id="odonto-note" class="field" placeholder="Observação (opcional)" style="flex:1">
+    <div class="odonto-row">
+      <input id="odonto-note" class="field" aria-label="Observação do dente" placeholder="Observação (opcional)" style="flex:1">
     </div>
-    <div class="row" style="justify-content:flex-end">
-      <button id="odonto-cancel" class="btn btn-sm btn-outline-light">Cancelar</button>
-      <button id="odonto-save" class="btn btn-sm btn-primary">Salvar</button>
+    <div class="odonto-row" style="justify-content:flex-end">
+      <button id="odonto-cancel" class="btn btn-sm btn-outline-secondary">Cancelar</button>
+      <button id="odonto-save" class="btn btn-sm btn-brand">Salvar</button>
     </div>
   </div>
 
   <div id="odonto-tip" class="odonto-tip"></div>
 </div>
 
-<script src="{{ url_for('static', filename='odontograma_inline.js') }}"></script>
-<script>
-  window.ODONTO_STATE = {{ mapa|tojson }};
-</script>
+<script>window.ODONTO_STATE = {{ mapa|tojson }};</script>
+<script src="{{ url_for('static', filename='odontograma_inline.js') }}?v=56"></script>
